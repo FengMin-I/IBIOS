@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Spotless check
+        run: mvn spotless:check
+
+      - name: Checkstyle
+        run: mvn checkstyle:check
+
+      - name: SpotBugs + Find Security Bugs
+        run: mvn spotbugs:check
+
+      - name: PMD + Ali P3C
+        run: mvn pmd:check
+
+      - name: OWASP Dependency-Check
+        run: mvn dependency-check:check
+
+      - name: Build & Test
+        run: mvn clean verify

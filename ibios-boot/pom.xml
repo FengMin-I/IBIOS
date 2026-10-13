@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.ibios</groupId>
+        <artifactId>ibios</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>ibios-boot</artifactId>
+    <name>IBIOS Boot</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.ibios</groupId>
+            <artifactId>ibios-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.ibios</groupId>
+            <artifactId>ibios-provider</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.ibios</groupId>
+            <artifactId>ibios-memory</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.ibios</groupId>
+            <artifactId>ibios-tool</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.ibios</groupId>
+            <artifactId>ibios-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.ibios</groupId>
+            <artifactId>ibios-storage</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.logstash.logback</groupId>
+            <artifactId>logstash-logback-encoder</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <skip>false</skip>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
