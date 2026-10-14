@@ -2,9 +2,9 @@ package com.ibios.core.react;
 
 import com.ibios.core.audit.ToolInvocationAudit;
 import com.ibios.core.port.ToolRegistry;
-import com.ibios.core.port.ToolRegistry.IbiosToolLookup;
-import com.ibios.core.port.ToolRegistry.ToolExecutionResult;
 import com.ibios.core.session.ToolResult;
+import com.ibios.core.tool.IbiosTool;
+import com.ibios.core.tool.ToolExecutionResult;
 
 public class ToolExecutor {
   private final ToolRegistry toolRegistry;
@@ -18,7 +18,7 @@ public class ToolExecutor {
   public ToolResult execute(String sessionId, String toolName, String argumentsJson) {
     long startTime = System.currentTimeMillis();
 
-    IbiosToolLookup tool = toolRegistry.lookup(toolName);
+    IbiosTool tool = toolRegistry.lookup(toolName);
     if (tool == null) {
       long duration = System.currentTimeMillis() - startTime;
       String errorMsg = "Tool not found: " + toolName;
@@ -28,7 +28,6 @@ public class ToolExecutor {
     }
 
     try {
-      // TODO: Sandbox check will be added in Lesson 24
       ToolExecutionResult result = tool.execute(argumentsJson);
       long duration = System.currentTimeMillis() - startTime;
 

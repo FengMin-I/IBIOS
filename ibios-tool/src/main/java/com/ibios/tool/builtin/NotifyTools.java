@@ -1,10 +1,14 @@
 package com.ibios.tool.builtin;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ibios.core.notify.NotifyChannelAdapter;
 import com.ibios.core.notify.NotifyTarget;
 import com.ibios.core.profile.NotifyChannelConfig;
 import com.ibios.core.profile.Profile;
 import com.ibios.core.react.ProfileContext;
+import com.ibios.core.tool.IbiosTool;
+import com.ibios.core.tool.ToolExecutionResult;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,53 +17,71 @@ import org.springframework.stereotype.Component;
 /**
  * 通知工具：Agent 在 ReAct 循环中主动给用户发通知（邮件、Webhook、Slack 等）。
  *
- * <p>TODO (Lesson 20/24)：
- *
- * <ul>
- *   <li>Lesson 20：加 @Tool 注解，让 ToolRegistry 能扫描到
- *   <li>Lesson 24：执行前调 Sandbox.enforce 做沙箱检查
- * </ul>
+ * <p>TODO (Lesson 24)：执行前调 Sandbox.enforce 做沙箱检查
  */
 @Component
-public class NotifyTools {
+public class NotifyTools implements IbiosTool {
 
   private static final Logger log = LoggerFactory.getLogger(NotifyTools.class);
 
   private final NotifyChannelAdapter adapter;
+  private final ObjectMapper objectMapper;
 
   public NotifyTools(NotifyChannelAdapter adapter) {
     this.adapter = adapter;
+    this.objectMapper = new ObjectMapper();
   }
 
-  /**
-   * 发送通知到指定渠道。
-   *
-   * @param channelName Profile 中配置的 notify_channels.name
-   * @param content 通知内容
-   */
-  // TODO (Lesson 20): @Tool(description = "Send notification to user via configured channels")
-  public void sendNotification(String channelName, String content) {
-    Profile profile = ProfileContext.current();
-    if (profile == null) {
-      log.warn("ProfileContext is null, cannot send notification");
-      return;
+  @Override
+  public String name() {
+    return "notify";
+  }
+
+  @Override
+  public String description() {
+    return "Send notification to user via configured channels";
+  }
+
+  @Override
+  public String inputSchema() {
+    return """
+        {"type":"object","properties":{"channel":{"type":"string","description":"Name of the notif\
+        ication channel"},"content":{"type":"string","description":"Notification content"}},"requir\
+        ed":["channel","content"]}""";
+  }
+
+  @Override
+  public ToolExecutionResult execute(String argumentsJson) {
+    try {
+      JsonNode args = objectMapper.readTree(argumentsJson);
+      String channelName = args.get("channel").asText();
+      String content = args.get("content").asText();
+
+      Profile profile = ProfileContext.current();
+      if (profile == null) {
+        return ToolExecutionResult.failure(
+            "ProfileContext is null, cannot send notification", false);
+      }
+
+      NotifyChannelConfig channel =
+          profile.notifyChannels().stream()
+              .filter(c -> c.name().equals(channelName))
+              .findFirst()
+              .orElse(null);
+
+      if (channel == null) {
+        return ToolExecutionResult.failure(
+            "Notify channel '" + channelName + "' not found in profile", false);
+      }
+
+      // TODO (Lesson 24): Sandbox.enforce(channel.type(), channel.config())
+
+      NotifyTarget target = new NotifyTarget(channel.type(), Map.of("url", channel.url()));
+      adapter.send(target, content);
+      log.info("Notification sent to channel '{}'", channelName);
+      return ToolExecutionResult.success("Notification sent to " + channelName);
+    } catch (Exception e) {
+      return ToolExecutionResult.failure("Failed to send notification: " + e.getMessage(), false);
     }
-
-    NotifyChannelConfig channel =
-        profile.notifyChannels().stream()
-            .filter(c -> c.name().equals(channelName))
-            .findFirst()
-            .orElse(null);
-
-    if (channel == null) {
-      log.warn("Notify channel '{}' not found in profile", channelName);
-      return;
-    }
-
-    // TODO (Lesson 24): Sandbox.enforce(channel.type(), channel.config())
-
-    NotifyTarget target = new NotifyTarget(channel.type(), Map.of("url", channel.url()));
-    adapter.send(target, content);
-    log.info("Notification sent to channel '{}'", channelName);
   }
 }

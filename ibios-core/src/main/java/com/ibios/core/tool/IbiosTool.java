@@ -7,4 +7,6 @@ public interface IbiosTool {
   String description();
 
   String inputSchema();
+
+  ToolExecutionResult execute(String argumentsJson);
 }

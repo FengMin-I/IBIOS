@@ -1,17 +1,15 @@
 package com.ibios.core.port;
 
+import com.ibios.core.tool.IbiosTool;
+import java.util.List;
+
 public interface ToolRegistry {
-  IbiosToolLookup lookup(String name);
 
-  interface IbiosToolLookup {
-    String name();
+  IbiosTool lookup(String name);
 
-    String description();
+  List<IbiosTool> listAll();
 
-    String inputSchema();
+  List<IbiosTool> filterForProfile(List<String> toolNames);
 
-    ToolExecutionResult execute(String argumentsJson);
-  }
-
-  record ToolExecutionResult(String output, boolean success, String errorMessage) {}
+  void register(IbiosTool tool);
 }

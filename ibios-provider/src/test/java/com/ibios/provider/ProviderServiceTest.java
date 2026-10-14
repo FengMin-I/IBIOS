@@ -125,6 +125,11 @@ class ProviderServiceTest {
           public String inputSchema() {
             return "{\"type\":\"object\",\"properties\":{\"q\":{\"type\":\"string\"}}}";
           }
+
+          @Override
+          public com.ibios.core.tool.ToolExecutionResult execute(String argumentsJson) {
+            return com.ibios.core.tool.ToolExecutionResult.success("ok");
+          }
         };
 
     when(toolSchemaAdapter.adapt(any())).thenReturn(List.of());

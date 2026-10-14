@@ -13,9 +13,9 @@ import static org.mockito.Mockito.when;
 
 import com.ibios.core.audit.ToolInvocationAudit;
 import com.ibios.core.port.ToolRegistry;
-import com.ibios.core.port.ToolRegistry.IbiosToolLookup;
-import com.ibios.core.port.ToolRegistry.ToolExecutionResult;
 import com.ibios.core.session.ToolResult;
+import com.ibios.core.tool.IbiosTool;
+import com.ibios.core.tool.ToolExecutionResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,10 +37,9 @@ class ToolExecutorTest {
 
   @Test
   void shouldRecordSuccessAudit() {
-    IbiosToolLookup tool = mock(IbiosToolLookup.class);
+    IbiosTool tool = mock(IbiosTool.class);
     when(toolRegistry.lookup("test_tool")).thenReturn(tool);
-    when(tool.execute("{\"arg\":\"value\"}"))
-        .thenReturn(new ToolExecutionResult("output", true, null));
+    when(tool.execute("{\"arg\":\"value\"}")).thenReturn(ToolExecutionResult.success("output"));
 
     ToolResult result = toolExecutor.execute("s1", "test_tool", "{\"arg\":\"value\"}");
 
@@ -53,7 +52,7 @@ class ToolExecutorTest {
 
   @Test
   void shouldRecordFailureAuditWithErrorMessage() {
-    IbiosToolLookup tool = mock(IbiosToolLookup.class);
+    IbiosTool tool = mock(IbiosTool.class);
     when(toolRegistry.lookup("test_tool")).thenReturn(tool);
     when(tool.execute("{\"arg\":\"value\"}")).thenThrow(new RuntimeException("Tool failed"));
 

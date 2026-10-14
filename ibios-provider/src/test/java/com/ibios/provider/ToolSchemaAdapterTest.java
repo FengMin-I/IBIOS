@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.ibios.core.tool.IbiosTool;
+import com.ibios.core.tool.ToolExecutionResult;
 import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -32,6 +33,11 @@ class ToolSchemaAdapterTest {
           @Override
           public String inputSchema() {
             return "{\"type\":\"object\",\"properties\":{\"query\":{\"type\":\"string\"}}}";
+          }
+
+          @Override
+          public ToolExecutionResult execute(String argumentsJson) {
+            return ToolExecutionResult.success("ok");
           }
         };
 
@@ -73,6 +79,11 @@ class ToolSchemaAdapterTest {
           @Override
           public String inputSchema() {
             return "{}";
+          }
+
+          @Override
+          public ToolExecutionResult execute(String argumentsJson) {
+            return ToolExecutionResult.success("ok");
           }
         };
 
