@@ -14,9 +14,6 @@ spring:
       - com.alibaba.cloud.ai.autoconfigure.dashscope.DashScopeRerankAutoConfiguration
       - com.alibaba.cloud.ai.autoconfigure.dashscope.DashScopeAudioSpeechAutoConfiguration
       - com.alibaba.cloud.ai.autoconfigure.dashscope.DashScopeAudioTranscriptionAutoConfiguration
-  ai:
-    dashscope:
-      api-key: ${DASHSCOPE_API_KEY:}
   datasource:
     url: jdbc:sqlite:ibios.db
     driver-class-name: org.sqlite.JDBC
@@ -25,6 +22,12 @@ spring:
     hibernate:
       ddl-auto: update
     open-in-view: false
+
+ibios:
+  providers:
+    - name: dashscope
+      api-key: ${DASHSCOPE_API_KEY:}
+      model: qwen-plus
 
 management:
   endpoints:

@@ -1,0 +1,4 @@
+name: broken-agent
+description: Missing required provider section
+identity:
+  agent_name: BrokenAgent
