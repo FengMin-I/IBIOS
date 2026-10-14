@@ -4,7 +4,7 @@ export default defineConfig({
   title: 'IBIOS',
   titleTemplate: ':title — IBIOS',
   description: 'The self-hosted Agent OS for the enterprise — describe a task in plain language, a team of agents delivers the result',
-  base: '/ibios/',
+  base: '/IBIOS/',
   cleanUrls: true,
   appearance: 'force-light',
 
