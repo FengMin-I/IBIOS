@@ -39,7 +39,7 @@ description: >-
 
 ### 0. 确认参数
 向用户确认：`groupId`、根 `artifactId`、模块清单（默认 IBIOS 9 模块）、端口（默认 8080）、JDK（21）。
-
+ 
 ### 1. Maven 多模块骨架
 建父 `pom.xml`（packaging=pom，统一版本管理）+ 9 个子模块：
 `ibios-core`、`ibios-provider`、`ibios-memory`、`ibios-tool`、`ibios-web`、
