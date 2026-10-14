@@ -9,13 +9,15 @@ CREATE TABLE IF NOT EXISTS tool_invocations (
 );
 
 CREATE TABLE IF NOT EXISTS llm_calls (
-    id            INTEGER PRIMARY KEY AUTOINCREMENT,
-    provider      TEXT    NOT NULL,
-    model         TEXT    NOT NULL,
-    prompt_tokens INTEGER,
+    id                INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id        TEXT,
+    provider          TEXT    NOT NULL,
+    model             TEXT    NOT NULL,
+    prompt_tokens     INTEGER,
     completion_tokens INTEGER,
-    total_tokens  INTEGER,
-    latency_ms    INTEGER,
-    status        TEXT    NOT NULL,
-    called_at     TEXT    NOT NULL
+    total_tokens      INTEGER,
+    latency_ms        INTEGER,
+    success           INTEGER NOT NULL DEFAULT 1,
+    error_message     TEXT,
+    called_at         TEXT    NOT NULL
 );

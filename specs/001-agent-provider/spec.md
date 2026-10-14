@@ -35,9 +35,9 @@ LLM 调用失败时（超时、限流、模型报错），审计表 `llm_calls` 
 每条需求必须可测试。
 
 - **FR1**: Profile 从 YAML 解析为 Java 对象，携带全部字段：`name`、`description`、`identity`、`provider`（含 `name`/`model`/`temperature`）、`tools`、`skills`、`mcp_servers`、`channels`、`notify_channels`、`schedules`、`bootstrap`、`settings`。后续课节按需消费各字段，但类在本节一次性建完整。
-- **FR2**: ProfileLoader 启动时扫描 `.ibios/profiles/` 下所有 YAML 文件，用 SnakeYAML 解析为 Profile，并逐个校验（本节只校验 provider name 是否存在于全局注册表）。无效 Profile 记错误日志但不阻断启动。
+- **FR2**: ProfileLoader 启动时扫描 `.ibios/profiles/` 下所有 YAML 文件，用 SnakeYAML 解析为 Profile，并逐个校验（本节只校验 provider name 是否存在于全局 providers 列表（`ibios.providers`））。无效 Profile 记错误日志但不阻断启动。
 - **FR3**: ProfileRegistry 将解析后的 Profile 存入内存索引（`Map<String, Profile>`），提供按名字查找。
-- **FR4**: ProviderService 暴露单一方法 `chat(sessionId, Profile, Prompt)`。按 Profile 中的 provider name 从显式映射表查找对应 ChatModel，发起调用。
+- **FR4**: ProviderService 暴露单一方法 `ProviderResponse chat(sessionId, Profile, ProviderRequest)`。按 Profile 中的 provider name 从显式映射表查找对应 ChatModel，发起调用，返回 `ProviderResponse`。
 - **FR5**: Provider 到 ChatModel 的映射**必须**显式构建（`Map<String, ChatModel>`），不走类型扫描。启动时按 `application.yaml` 的 `providers` 列表逐条构建。
 - **FR6**: 每次 LLM 调用**必须**禁用 Spring AI 的自动工具执行（`autoExecuteTools=false`）。工具执行权完全归 IBIOS 的 ReActLoop + ToolExecutor。
 - **FR7**: 工具格式适配器将 IBIOS 内部 `IbiosTool` 的参数描述翻译成 Spring AI 的工具描述格式。只翻译——输出中不含执行逻辑。

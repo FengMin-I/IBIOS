@@ -1,0 +1,8 @@
+name: unknown-provider-agent
+description: References a non-existent provider
+identity:
+  agent_name: UnknownAgent
+  prompt: test
+provider:
+  name: nonexistent-provider
+  model: some-model

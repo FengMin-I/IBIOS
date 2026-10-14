@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <linearGradient id="nodeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+    <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#8b5cf6" stop-opacity="0.6"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="120" height="120" rx="24" fill="#0a0a0a"/>
+
+  <!-- Connection lines -->
+  <line x1="60" y1="32" x2="36" y2="76" stroke="url(#lineGrad)" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="60" y1="32" x2="84" y2="76" stroke="url(#lineGrad)" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="36" y1="76" x2="84" y2="76" stroke="url(#lineGrad)" stroke-width="1.5" stroke-linecap="round"/>
+
+  <!-- Central ring -->
+  <circle cx="60" cy="60" r="10" fill="none" stroke="#6366f1" stroke-width="1" opacity="0.4"/>
+
+  <!-- Nodes -->
+  <circle cx="60" cy="32" r="10" fill="url(#nodeGrad)" filter="url(#glow)"/>
+  <circle cx="36" cy="76" r="10" fill="url(#nodeGrad)" filter="url(#glow)"/>
+  <circle cx="84" cy="76" r="10" fill="url(#nodeGrad)" filter="url(#glow)"/>
+
+  <!-- Inner dots -->
+  <circle cx="60" cy="32" r="3" fill="#fff" opacity="0.9"/>
+  <circle cx="36" cy="76" r="3" fill="#fff" opacity="0.9"/>
+  <circle cx="84" cy="76" r="3" fill="#fff" opacity="0.9"/>
+</svg>

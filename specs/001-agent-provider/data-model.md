@@ -90,3 +90,38 @@ ibios:
 - `LlmCall` 由 `ProviderService` 在每次 LLM 调用时写入（FR8/FR9）
 - `ProfileRegistry` 持有 `Map<String, Profile>`，按 `Profile.name` 索引
 - `ProviderChatModelFactory` 持有 `Map<String, ChatModel>`，按 provider name 索引
+
+## 接口与传输类型
+
+### IbiosTool（ibios-core）
+
+工具统一抽象接口，内置工具和 MCP 工具均实现此接口。ReActLoop 和 ToolSchemaAdapter 面向此接口编程，不区分工具来源。
+
+| 方法 | 返回类型 | 说明 |
+|------|---------|------|
+| `name()` | String | 工具名 |
+| `description()` | String | 工具描述 |
+| `inputSchema()` | String | JSON Schema 字符串 |
+
+### ProviderRequest（ibios-provider）
+
+`ProviderService.chat()` 的入参 record。
+
+| 字段 | 类型 | 约束 | 说明 |
+|------|------|------|------|
+| `content` | String | 非空 | 发给模型的文本 |
+| `availableTools` | List\<IbiosTool\> | 可空 | 可用工具列表，null = 不带工具 |
+
+### ProviderResponse（ibios-provider）
+
+`ProviderService.chat()` 的出参 record。
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `text` | String | 模型文本回复（可能为空——当模型选择调工具时） |
+| `toolCalls` | List\<ToolCall\> | 模型提出的工具调用请求（name + argumentsJson），原样透传、零执行 |
+| `usage` | TokenUsage | token 用量（prompt/completion/total） |
+
+**嵌套类型**：
+- `ToolCall`：`name`（String）、`argumentsJson`（String）
+- `TokenUsage`：`promptTokens`（int）、`completionTokens`（int）、`totalTokens`（int）

@@ -91,7 +91,7 @@ ibios:
 
 **问题**：ProviderService 需要写审计记录。直接依赖 JPA Repository 吗？
 
-**选择**：`LlmCallAudit` 接口放在 ibios-core（或 ibios-storage），由 ibios-storage 中的 `JpaLlmCallAudit` 实现。ProviderService 依赖接口。
+**选择**：`LlmCallAudit` 接口放在 ibios-storage，由同模块的 `JpaLlmCallAudit` 实现。ProviderService 依赖接口。
 
 **理由**：依赖方向干净。ProviderService 不知道 JPA。测试可以 mock 接口。
 
