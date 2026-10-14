@@ -17,7 +17,9 @@ mcp_servers:
 channels:
   - cli
 notify_channels:
-  - log
+  - name: log
+    type: webhook
+    url: http://localhost:8080/webhook
 schedules:
   - cron: "0 9 * * *"
     zone: Asia/Shanghai

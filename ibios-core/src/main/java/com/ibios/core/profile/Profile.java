@@ -1,25 +1,33 @@
 package com.ibios.core.profile;
 
-import java.util.List;
-import java.util.Map;
-
 public record Profile(
     String name,
     String description,
     Identity identity,
     ProviderConfig provider,
-    List<String> tools,
-    List<String> skills,
-    List<String> mcpServers,
-    List<String> channels,
-    List<String> notifyChannels,
-    List<ScheduleConfig> schedules,
-    List<String> bootstrap,
-    Map<String, Object> settings) {
+    java.util.List<String> tools,
+    java.util.List<String> skills,
+    java.util.List<String> mcpServers,
+    java.util.List<String> channels,
+    java.util.List<NotifyChannelConfig> notifyChannels,
+    java.util.List<ScheduleConfig> schedules,
+    java.util.List<String> bootstrap,
+    java.util.Map<String, Object> settings,
+    int maxIterations,
+    int maxHistoryTurns) {
 
   public record Identity(String agentName, String prompt) {}
 
   public record ProviderConfig(String name, String model, Double temperature) {}
 
   public record ScheduleConfig(String cron, String zone, String message) {}
+
+  public Profile {
+    if (maxIterations <= 0) {
+      maxIterations = 10;
+    }
+    if (maxHistoryTurns <= 0) {
+      maxHistoryTurns = 20;
+    }
+  }
 }

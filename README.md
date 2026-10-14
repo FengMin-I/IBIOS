@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/images/ibios-logo.svg" alt="IBIOS Logo" width="320">
+  <img src="website/public/images/logo-on-light.svg" alt="IBIOS Logo" width="320">
 </p>
 <p align="center">
   <strong>企业级 Agent OS — 运行和管理 AI Agent 的统一底座</strong>

@@ -94,11 +94,14 @@ public class ProfileLoader {
     List<String> skills = asStringList(data.get("skills"));
     List<String> mcpServers = asStringList(data.get("mcp_servers"));
     List<String> channels = asStringList(data.get("channels"));
-    List<String> notifyChannels = asStringList(data.get("notify_channels"));
+    List<NotifyChannelConfig> notifyChannels =
+        convertNotifyChannels((List<Map<String, Object>>) data.get("notify_channels"));
     List<Profile.ScheduleConfig> schedules =
         convertSchedules((List<Map<String, Object>>) data.get("schedules"));
     List<String> bootstrap = asStringList(data.get("bootstrap"));
     Map<String, Object> settings = asObjectMap(data.get("settings"));
+    int maxIterations = asInt(data.get("max_iterations"), 10);
+    int maxHistoryTurns = asInt(data.get("max_history_turns"), 20);
     return new Profile(
         name,
         description,
@@ -111,7 +114,9 @@ public class ProfileLoader {
         notifyChannels,
         schedules,
         bootstrap,
-        settings);
+        settings,
+        maxIterations,
+        maxHistoryTurns);
   }
 
   private Profile.Identity convertIdentity(Map<String, Object> map) {
@@ -150,6 +155,21 @@ public class ProfileLoader {
     return result;
   }
 
+  private List<NotifyChannelConfig> convertNotifyChannels(List<Map<String, Object>> list) {
+    if (list == null) {
+      return Collections.emptyList();
+    }
+    List<NotifyChannelConfig> result = new ArrayList<>();
+    for (Map<String, Object> item : list) {
+      result.add(
+          new NotifyChannelConfig(
+              (String) item.getOrDefault("name", ""),
+              (String) item.getOrDefault("type", ""),
+              (String) item.getOrDefault("url", "")));
+    }
+    return result;
+  }
+
   private List<String> asStringList(Object obj) {
     if (obj == null) {
       return Collections.emptyList();
@@ -173,5 +193,15 @@ public class ProfileLoader {
       return new HashMap<>((Map<String, Object>) obj);
     }
     return Collections.emptyMap();
+  }
+
+  private int asInt(Object obj, int defaultValue) {
+    if (obj == null) {
+      return defaultValue;
+    }
+    if (obj instanceof Number) {
+      return ((Number) obj).intValue();
+    }
+    return defaultValue;
   }
 }

@@ -1,19 +1,19 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 780" width="1080" height="780">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 740" width="1120" height="740">
   <defs>
-    <filter id="shadow">
-      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="rgba(0,0,0,0.3)"/>
-    </filter>
     <filter id="glow">
-      <feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="rgba(249,115,22,0.3)"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="rgba(249,115,22,0.28)"/>
     </filter>
     <marker id="arr-gray" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
       <path d="M0,0 L0,6 L7,3 Z" fill="#4b5563"/>
     </marker>
+    <marker id="arr-blue" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L7,3 Z" fill="#3b82f6"/>
+    </marker>
     <marker id="arr-orange" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
       <path d="M0,0 L0,6 L7,3 Z" fill="#f97316"/>
     </marker>
-    <marker id="arr-blue" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
-      <path d="M0,0 L0,6 L7,3 Z" fill="#3b82f6"/>
+    <marker id="arr-amber" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L7,3 Z" fill="#f59e0b"/>
     </marker>
     <marker id="arr-purple" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
       <path d="M0,0 L0,6 L7,3 Z" fill="#a855f7"/>
@@ -21,159 +21,211 @@
     <marker id="arr-pink" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
       <path d="M0,0 L0,6 L7,3 Z" fill="#ec4899"/>
     </marker>
+    <marker id="arr-cyan" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L7,3 Z" fill="#22d3ee"/>
+    </marker>
+    <marker id="arr-green" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L7,3 Z" fill="#22c55e"/>
+    </marker>
   </defs>
 
-  <!-- Background -->
-  <rect width="1080" height="780" fill="#0a0a0a" rx="14"/>
+  <rect width="1120" height="740" fill="#0a0a0a" rx="14"/>
 
-  <!-- Title -->
-  <text x="540" y="34" font-family="'SF Mono','Fira Code',monospace" font-size="14" fill="#f97316" text-anchor="middle" letter-spacing="2" font-weight="bold">IBIOS — System Architecture</text>
+  <!-- ═══ Title ═══ -->
+  <text x="560" y="34" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="14" fill="#f97316" text-anchor="middle" letter-spacing="2" font-weight="bold">IBIOS — System Architecture</text>
 
-  <!-- ════════════════════════════════════════ -->
-  <!-- EXTERNAL: LLM Providers (top-left) -->
-  <!-- ════════════════════════════════════════ -->
-  <rect x="24" y="56" width="196" height="140" rx="8" fill="#111" stroke="#374151" stroke-width="1" stroke-dasharray="5,3"/>
-  <text x="122" y="76" font-family="'SF Mono','Fira Code',monospace" font-size="10" fill="#6b7280" text-anchor="middle" letter-spacing="1">LLM PROVIDERS</text>
-  <rect x="38" y="84" width="168" height="26" rx="5" fill="#1a1a1a" stroke="#374151" stroke-width="1"/>
-  <text x="122" y="102" font-family="'SF Mono','Fira Code',monospace" font-size="10" fill="#9ca3af" text-anchor="middle">DeepSeek · Qwen · Kimi</text>
-  <rect x="38" y="116" width="168" height="26" rx="5" fill="#1a1a1a" stroke="#374151" stroke-width="1"/>
-  <text x="122" y="134" font-family="'SF Mono','Fira Code',monospace" font-size="10" fill="#9ca3af" text-anchor="middle">OpenAI · Anthropic</text>
-  <rect x="38" y="148" width="168" height="26" rx="5" fill="#1a1a1a" stroke="#374151" stroke-width="1"/>
-  <text x="122" y="166" font-family="'SF Mono','Fira Code',monospace" font-size="10" fill="#9ca3af" text-anchor="middle">Ollama (local)</text>
-  <text x="122" y="192" font-family="'SF Mono','Fira Code',monospace" font-size="9" fill="#4b5563" text-anchor="middle">Spring AI Alibaba</text>
+  <!-- ══════════ MAIN BOX ══════════ -->
+  <rect x="320" y="56" width="480" height="568" rx="10" fill="#0d0d0d" stroke="#f97316" stroke-width="1.5" filter="url(#glow)"/>
+  <text x="560" y="80" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="12" fill="#f97316" text-anchor="middle" font-weight="bold" letter-spacing="1">IBIOS</text>
+  <text x="560" y="94" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="9" fill="#4b5563" text-anchor="middle">Spring Boot 3.x · JDK 21 · Single JAR · 私有部署</text>
 
-  <!-- ════════════════════════════════════════ -->
-  <!-- EXTERNAL: MCP Servers (top-right) -->
-  <!-- ════════════════════════════════════════ -->
-  <rect x="860" y="56" width="196" height="140" rx="8" fill="#111" stroke="#374151" stroke-width="1" stroke-dasharray="5,3"/>
-  <text x="958" y="76" font-family="'SF Mono','Fira Code',monospace" font-size="10" fill="#6b7280" text-anchor="middle" letter-spacing="1">MCP SERVERS</text>
-  <rect x="874" y="84" width="168" height="26" rx="5" fill="#1a1a1a" stroke="#374151" stroke-width="1"/>
-  <text x="958" y="102" font-family="'SF Mono','Fira Code',monospace" font-size="10" fill="#9ca3af" text-anchor="middle">github-mcp · news-mcp</text>
-  <rect x="874" y="116" width="168" height="26" rx="5" fill="#1a1a1a" stroke="#374151" stroke-width="1"/>
-  <text x="958" y="134" font-family="'SF Mono','Fira Code',monospace" font-size="10" fill="#9ca3af" text-anchor="middle">Custom MCP servers</text>
-  <rect x="874" y="148" width="168" height="26" rx="5" fill="#1a1a1a" stroke="#374151" stroke-width="1"/>
-  <text x="958" y="166" font-family="'SF Mono','Fira Code',monospace" font-size="10" fill="#9ca3af" text-anchor="middle">AGENT.md dir (zero-code)</text>
-  <text x="958" y="192" font-family="'SF Mono','Fira Code',monospace" font-size="9" fill="#4b5563" text-anchor="middle">MCP JSON-RPC protocol</text>
+  <!-- ── ① Channel / Trigger Layer ── -->
+  <rect x="336" y="88" width="448" height="66" rx="7" fill="#0f1729" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="348" y="106" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="10" fill="#3b82f6" font-weight="bold">① 接入层 · Channel / Trigger</text>
+  <rect x="348" y="112" width="133" height="30" rx="5" fill="#1e2d4a" stroke="#3b82f6" stroke-width="1" stroke-dasharray="3,2"/>
+  <text x="414" y="131" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="9.5" fill="#93c5fd" text-anchor="middle">CLI · 人推</text>
+  <rect x="493" y="112" width="133" height="30" rx="5" fill="#1e2d4a" stroke="#3b82f6" stroke-width="1" stroke-dasharray="3,2"/>
+  <text x="559" y="131" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="9.5" fill="#93c5fd" text-anchor="middle">REST API · 人推</text>
+  <rect x="638" y="112" width="133" height="30" rx="5" fill="#1e2d4a" stroke="#3b82f6" stroke-width="1" stroke-dasharray="3,2"/>
+  <text x="704" y="131" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="9.5" fill="#93c5fd" text-anchor="middle">Scheduler · 钟推</text>
 
-  <!-- ════════════════════════════════════════ -->
-  <!-- EXTERNAL: Notify Targets (right, below MCP) -->
-  <!-- ════════════════════════════════════════ -->
-  <rect x="860" y="210" width="196" height="96" rx="8" fill="#111" stroke="#374151" stroke-width="1" stroke-dasharray="5,3"/>
-  <text x="958" y="230" font-family="'SF Mono','Fira Code',monospace" font-size="10" fill="#6b7280" text-anchor="middle" letter-spacing="1">NOTIFY TARGETS</text>
-  <rect x="874" y="238" width="168" height="26" rx="5" fill="#1a1a1a" stroke="#374151" stroke-width="1"/>
-  <text x="958" y="256" font-family="'SF Mono','Fira Code',monospace" font-size="10" fill="#9ca3af" text-anchor="middle">企业微信 · 飞书 · 钉钉</text>
-  <text x="958" y="292" font-family="'SF Mono','Fira Code',monospace" font-size="9" fill="#4b5563" text-anchor="middle">Generic Webhook</text>
+  <line x1="560" y1="156" x2="560" y2="166" stroke="#4b5563" stroke-width="1.5" marker-end="url(#arr-gray)"/>
 
-  <!-- ════════════════════════════════════════ -->
-  <!-- IBIOS MAIN BOX -->
-  <!-- ════════════════════════════════════════ -->
-  <rect x="300" y="56" width="480" height="548" rx="10" fill="#0d0d0d" stroke="#f97316" stroke-width="1.5" filter="url(#glow)"/>
-  <text x="540" y="80" font-family="'SF Mono','Fira Code',monospace" font-size="12" fill="#f97316" text-anchor="middle" font-weight="bold" letter-spacing="1">IBIOS</text>
-  <text x="540" y="96" font-family="'SF Mono','Fira Code',monospace" font-size="9" fill="#4b5563" text-anchor="middle">Spring Boot 3.x · JDK 21 · Single JAR</text>
+  <!-- ── Unified entry ── -->
+  <rect x="430" y="168" width="260" height="30" rx="6" fill="#1a0f00" stroke="#f97316" stroke-width="1" stroke-dasharray="4,2"/>
+  <text x="560" y="187" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="9.5" fill="#f97316" text-anchor="middle">AgentService.process() · 统一入口</text>
 
-  <!-- ── Band 1: Channel / Trigger Layer ── -->
-  <rect x="316" y="108" width="448" height="66" rx="7" fill="#0f1729" stroke="#3b82f6" stroke-width="1.5"/>
-  <text x="332" y="126" font-family="'SF Mono','Fira Code',monospace" font-size="10" fill="#3b82f6" font-weight="bold">Channel / Trigger Layer</text>
-  <rect x="316" y="132" width="140" height="30" rx="5" fill="#1e2d4a" stroke="#3b82f6" stroke-width="1" stroke-dasharray="3,2"/>
-  <text x="386" y="151" font-family="'SF Mono','Fira Code',monospace" font-size="9.5" fill="#93c5fd" text-anchor="middle">CLI · 人推</text>
-  <rect x="470" y="132" width="140" height="30" rx="5" fill="#1e2d4a" stroke="#3b82f6" stroke-width="1" stroke-dasharray="3,2"/>
-  <text x="540" y="151" font-family="'SF Mono','Fira Code',monospace" font-size="9.5" fill="#93c5fd" text-anchor="middle">REST API · 人推</text>
-  <rect x="624" y="132" width="140" height="30" rx="5" fill="#1e2d4a" stroke="#3b82f6" stroke-width="1" stroke-dasharray="3,2"/>
-  <text x="694" y="151" font-family="'SF Mono','Fira Code',monospace" font-size="9.5" fill="#93c5fd" text-anchor="middle">Scheduler · 钟推</text>
+  <line x1="560" y1="200" x2="560" y2="210" stroke="#4b5563" stroke-width="1.5" marker-end="url(#arr-gray)"/>
 
-  <line x1="540" y1="174" x2="540" y2="196" stroke="#4b5563" stroke-width="1.5" marker-end="url(#arr-gray)"/>
+  <!-- ── ② Engine Layer ── -->
+  <rect x="336" y="212" width="448" height="112" rx="7" fill="#1a0f00" stroke="#f97316" stroke-width="1.5"/>
+  <text x="348" y="230" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="10" fill="#f97316" font-weight="bold">② 引擎层 · ibios-core · 自实现 ReAct</text>
 
-  <!-- ── Band 2: Agent Layer (NEW) ── -->
-  <rect x="316" y="196" width="448" height="58" rx="7" fill="#1f0d18" stroke="#ec4899" stroke-width="1.5"/>
-  <text x="332" y="214" font-family="'SF Mono','Fira Code',monospace" font-size="10" fill="#ec4899" font-weight="bold">Agent Layer  ·  一个业务 Agent = 一个目录（AGENT.md）</text>
-  <rect x="316" y="222" width="210" height="26" rx="5" fill="#33121f" stroke="#ec4899" stroke-width="1"/>
-  <text x="421" y="240" font-family="'SF Mono','Fira Code',monospace" font-size="9.5" fill="#f9a8d4" text-anchor="middle">正文 · 做什么（AGENT.md）</text>
-  <rect x="554" y="222" width="210" height="26" rx="5" fill="#33121f" stroke="#ec4899" stroke-width="1"/>
-  <text x="659" y="240" font-family="'SF Mono','Fira Code',monospace" font-size="9.5" fill="#f9a8d4" text-anchor="middle">frontmatter · 谁/何时/怎么跑</text>
+  <rect x="348" y="238" width="133" height="56" rx="5" fill="#2d1700" stroke="#f97316" stroke-width="1"/>
+  <text x="414" y="256" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="9.5" fill="#fb923c" text-anchor="middle" font-weight="bold">ReActLoop</text>
+  <text x="414" y="270" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="8" fill="#6b7280" text-anchor="middle">Reason → Act</text>
+  <text x="414" y="283" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="8" fill="#6b7280" text-anchor="middle">虚拟线程同步执行</text>
 
-  <line x1="540" y1="254" x2="540" y2="276" stroke="#4b5563" stroke-width="1.5" marker-end="url(#arr-gray)"/>
+  <rect x="493" y="238" width="133" height="56" rx="5" fill="#2d1700" stroke="#f97316" stroke-width="1"/>
+  <text x="559" y="256" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="9.5" fill="#fb923c" text-anchor="middle" font-weight="bold">PromptBuilder</text>
+  <text x="559" y="270" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="8" fill="#6b7280" text-anchor="middle">system + memory</text>
+  <text x="559" y="283" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="8" fill="#6b7280" text-anchor="middle">+ history + tools</text>
 
-  <!-- ── Band 3: Engine Layer ── -->
-  <rect x="316" y="276" width="448" height="88" rx="7" fill="#1a0f00" stroke="#f97316" stroke-width="1.5"/>
-  <text x="332" y="295" font-family="'SF Mono','Fira Code',monospace" font-size="10" fill="#f97316" font-weight="bold">Engine Layer  ·  ibios-core</text>
-  <rect x="316" y="300" width="138" height="52" rx="5" fill="#2d1700" stroke="#f97316" stroke-width="1"/>
-  <text x="385" y="320" font-family="'SF Mono','Fira Code',monospace" font-size="9.5" fill="#fb923c" text-anchor="middle" font-weight="bold">ReActLoop</text>
-  <text x="385" y="336" font-family="'SF Mono','Fira Code',monospace" font-size="8.5" fill="#6b7280" text-anchor="middle">Reason + Act</text>
-  <text x="385" y="348" font-family="'SF Mono','Fira Code',monospace" font-size="8.5" fill="#6b7280" text-anchor="middle">max 10 iterations</text>
-  <rect x="466" y="300" width="138" height="52" rx="5" fill="#2d1700" stroke="#f97316" stroke-width="1"/>
-  <text x="535" y="320" font-family="'SF Mono','Fira Code',monospace" font-size="9.5" fill="#fb923c" text-anchor="middle" font-weight="bold">PromptBuilder</text>
-  <text x="535" y="336" font-family="'SF Mono','Fira Code',monospace" font-size="8.5" fill="#6b7280" text-anchor="middle">system + memory</text>
-  <text x="535" y="348" font-family="'SF Mono','Fira Code',monospace" font-size="8.5" fill="#6b7280" text-anchor="middle">+ history + tools</text>
-  <rect x="616" y="300" width="148" height="52" rx="5" fill="#2d1700" stroke="#f97316" stroke-width="1"/>
-  <text x="690" y="320" font-family="'SF Mono','Fira Code',monospace" font-size="9.5" fill="#fb923c" text-anchor="middle" font-weight="bold">ToolExecutor</text>
-  <text x="690" y="336" font-family="'SF Mono','Fira Code',monospace" font-size="8.5" fill="#6b7280" text-anchor="middle">Sandbox check</text>
-  <text x="690" y="348" font-family="'SF Mono','Fira Code',monospace" font-size="8.5" fill="#6b7280" text-anchor="middle">+ audit write</text>
+  <rect x="638" y="238" width="133" height="56" rx="5" fill="#2d1700" stroke="#f97316" stroke-width="1"/>
+  <text x="704" y="256" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="9.5" fill="#fb923c" text-anchor="middle" font-weight="bold">ToolExecutor</text>
+  <text x="704" y="270" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="8" fill="#6b7280" text-anchor="middle">Sandbox 白名单</text>
+  <text x="704" y="283" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="8" fill="#6b7280" text-anchor="middle">执行 + 审计落库</text>
 
-  <line x1="540" y1="364" x2="540" y2="386" stroke="#4b5563" stroke-width="1.5" marker-end="url(#arr-gray)"/>
+  <!-- ReAct feedback loop -->
+  <path d="M 704 298 C 704 316, 414 316, 414 298" fill="none" stroke="#f97316" stroke-width="1.3" stroke-dasharray="4,2" marker-end="url(#arr-orange)"/>
+  <text x="560" y="322" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="8" fill="#f97316" text-anchor="middle">Tool 结果回填 · 继续推理（无 Tool 调用 / 达上限 → 结束）</text>
 
-  <!-- ── Band 4: Capability Layer ── -->
-  <rect x="316" y="386" width="448" height="100" rx="7" fill="#130d1f" stroke="#a855f7" stroke-width="1.5"/>
-  <text x="332" y="405" font-family="'SF Mono','Fira Code',monospace" font-size="10" fill="#a855f7" font-weight="bold">Capability Layer</text>
-  <rect x="316" y="412" width="100" height="64" rx="5" fill="#1e1030" stroke="#a855f7" stroke-width="1"/>
-  <text x="366" y="432" font-family="'SF Mono','Fira Code',monospace" font-size="9.5" fill="#c084fc" text-anchor="middle" font-weight="bold">Provider</text>
-  <text x="366" y="448" font-family="'SF Mono','Fira Code',monospace" font-size="8" fill="#6b7280" text-anchor="middle">LLM 路由</text>
-  <text x="366" y="462" font-family="'SF Mono','Fira Code',monospace" font-size="7.5" fill="#4b5563" text-anchor="middle">显式映射</text>
-  <rect x="432" y="412" width="100" height="64" rx="5" fill="#1e1030" stroke="#a855f7" stroke-width="1"/>
-  <text x="482" y="432" font-family="'SF Mono','Fira Code',monospace" font-size="9.5" fill="#c084fc" text-anchor="middle" font-weight="bold">Memory</text>
-  <text x="482" y="448" font-family="'SF Mono','Fira Code',monospace" font-size="8" fill="#6b7280" text-anchor="middle">会话+长期</text>
-  <text x="482" y="462" font-family="'SF Mono','Fira Code',monospace" font-size="7.5" fill="#4b5563" text-anchor="middle">核心/归档分区</text>
-  <rect x="548" y="412" width="100" height="64" rx="5" fill="#1e1030" stroke="#a855f7" stroke-width="1"/>
-  <text x="598" y="432" font-family="'SF Mono','Fira Code',monospace" font-size="9.5" fill="#c084fc" text-anchor="middle" font-weight="bold">Tool</text>
-  <text x="598" y="448" font-family="'SF Mono','Fira Code',monospace" font-size="8" fill="#6b7280" text-anchor="middle">内置+MCP</text>
-  <text x="598" y="462" font-family="'SF Mono','Fira Code',monospace" font-size="7.5" fill="#4b5563" text-anchor="middle">+ Sandbox</text>
-  <rect x="664" y="412" width="100" height="64" rx="5" fill="#1e1030" stroke="#a855f7" stroke-width="1"/>
-  <text x="714" y="432" font-family="'SF Mono','Fira Code',monospace" font-size="9.5" fill="#c084fc" text-anchor="middle" font-weight="bold">Notify</text>
-  <text x="714" y="448" font-family="'SF Mono','Fira Code',monospace" font-size="8" fill="#6b7280" text-anchor="middle">出站推送</text>
-  <text x="714" y="462" font-family="'SF Mono','Fira Code',monospace" font-size="7.5" fill="#4b5563" text-anchor="middle">NotifyTools</text>
+  <line x1="560" y1="326" x2="560" y2="336" stroke="#4b5563" stroke-width="1.5" marker-end="url(#arr-gray)"/>
 
-  <line x1="540" y1="486" x2="540" y2="508" stroke="#4b5563" stroke-width="1.5" marker-end="url(#arr-gray)"/>
+  <!-- ── ③ Capability Layer ── -->
+  <rect x="336" y="338" width="448" height="98" rx="7" fill="#130d1f" stroke="#a855f7" stroke-width="1.5"/>
+  <text x="348" y="356" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="10" fill="#a855f7" font-weight="bold">③ 能力层 · 五大核心能力</text>
 
-  <!-- ── Band 5: Storage Layer ── -->
-  <rect x="316" y="508" width="448" height="80" rx="7" fill="#0a1a10" stroke="#22c55e" stroke-width="1.5"/>
-  <text x="332" y="527" font-family="'SF Mono','Fira Code',monospace" font-size="10" fill="#22c55e" font-weight="bold">Storage Layer  ·  ibios-storage</text>
-  <rect x="316" y="534" width="216" height="42" rx="5" fill="#0f2a18" stroke="#22c55e" stroke-width="1" stroke-dasharray="3,2"/>
-  <text x="424" y="552" font-family="'SF Mono','Fira Code',monospace" font-size="9.5" fill="#4ade80" text-anchor="middle" font-weight="bold">SQLite (ibios.db)</text>
-  <text x="424" y="567" font-family="'SF Mono','Fira Code',monospace" font-size="8.5" fill="#6b7280" text-anchor="middle">sessions · tool_invocations · llm_calls</text>
-  <rect x="548" y="534" width="216" height="42" rx="5" fill="#0f2a18" stroke="#22c55e" stroke-width="1" stroke-dasharray="3,2"/>
-  <text x="656" y="552" font-family="'SF Mono','Fira Code',monospace" font-size="9.5" fill="#4ade80" text-anchor="middle" font-weight="bold">Filesystem (.ibios/)</text>
-  <text x="656" y="567" font-family="'SF Mono','Fira Code',monospace" font-size="8.5" fill="#6b7280" text-anchor="middle">profiles · MEMORY.md · skills</text>
+  <rect x="348" y="364" width="98" height="64" rx="5" fill="#1e1030" stroke="#a855f7" stroke-width="1"/>
+  <text x="397" y="384" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="9.5" fill="#c084fc" text-anchor="middle" font-weight="bold">Provider</text>
+  <text x="397" y="399" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="8" fill="#6b7280" text-anchor="middle">LLM 路由</text>
+  <text x="397" y="412" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="7.5" fill="#4b5563" text-anchor="middle">显式映射</text>
 
-  <!-- ════════════════════════════════════════ -->
-  <!-- EXTERNAL CONNECTIONS (arrows) -->
-  <!-- ════════════════════════════════════════ -->
-  <line x1="220" y1="126" x2="300" y2="436" stroke="#a855f7" stroke-width="1.2" stroke-dasharray="5,3" marker-end="url(#arr-purple)"/>
-  <text x="216" y="280" font-family="'SF Mono','Fira Code',monospace" font-size="8" fill="#a855f7" text-anchor="end">API</text>
+  <rect x="456" y="364" width="98" height="64" rx="5" fill="#1e1030" stroke="#a855f7" stroke-width="1"/>
+  <text x="505" y="384" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="9.5" fill="#c084fc" text-anchor="middle" font-weight="bold">Memory</text>
+  <text x="505" y="399" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="8" fill="#6b7280" text-anchor="middle">会话 + 长期</text>
+  <text x="505" y="412" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="7.5" fill="#4b5563" text-anchor="middle">核心 / 归档</text>
 
-  <line x1="860" y1="126" x2="780" y2="428" stroke="#a855f7" stroke-width="1.2" stroke-dasharray="5,3" marker-end="url(#arr-purple)"/>
-  <text x="864" y="280" font-family="'SF Mono','Fira Code',monospace" font-size="8" fill="#a855f7">JSON-RPC</text>
+  <rect x="564" y="364" width="98" height="64" rx="5" fill="#1e1030" stroke="#a855f7" stroke-width="1"/>
+  <text x="613" y="384" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="9.5" fill="#c084fc" text-anchor="middle" font-weight="bold">Tool</text>
+  <text x="613" y="399" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="8" fill="#6b7280" text-anchor="middle">内置 + MCP</text>
+  <text x="613" y="412" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="7.5" fill="#4b5563" text-anchor="middle">+ Sandbox</text>
 
-  <line x1="860" y1="265" x2="780" y2="452" stroke="#ec4899" stroke-width="1.2" stroke-dasharray="5,3" marker-end="url(#arr-pink)"/>
-  <text x="864" y="360" font-family="'SF Mono','Fira Code',monospace" font-size="8" fill="#ec4899">Webhook</text>
+  <rect x="672" y="364" width="98" height="64" rx="5" fill="#1e1030" stroke="#a855f7" stroke-width="1"/>
+  <text x="721" y="384" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="9.5" fill="#c084fc" text-anchor="middle" font-weight="bold">Notify</text>
+  <text x="721" y="399" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="8" fill="#6b7280" text-anchor="middle">出站推送</text>
+  <text x="721" y="412" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="7.5" fill="#4b5563" text-anchor="middle">→ Webhook</text>
 
-  <!-- ════════════════════════════════════════ -->
-  <!-- USERS / CLIENTS (bottom) -->
-  <!-- ════════════════════════════════════════ -->
-  <rect x="24" y="624" width="196" height="56" rx="8" fill="#111" stroke="#374151" stroke-width="1" stroke-dasharray="5,3"/>
-  <text x="122" y="646" font-family="'SF Mono','Fira Code',monospace" font-size="10" fill="#6b7280" text-anchor="middle">USERS</text>
-  <text x="122" y="664" font-family="'SF Mono','Fira Code',monospace" font-size="9" fill="#9ca3af" text-anchor="middle">ibios chat (CLI)</text>
+  <line x1="560" y1="438" x2="560" y2="448" stroke="#4b5563" stroke-width="1.5" marker-end="url(#arr-gray)"/>
 
-  <rect x="860" y="624" width="196" height="56" rx="8" fill="#111" stroke="#374151" stroke-width="1" stroke-dasharray="5,3"/>
-  <text x="958" y="646" font-family="'SF Mono','Fira Code',monospace" font-size="10" fill="#6b7280" text-anchor="middle">BUSINESS SYSTEMS</text>
-  <text x="958" y="664" font-family="'SF Mono','Fira Code',monospace" font-size="9" fill="#9ca3af" text-anchor="middle">HTTP POST /api/v1/…</text>
+  <!-- ── ④ Foundation Layer ── -->
+  <rect x="336" y="450" width="448" height="78" rx="7" fill="#0a1a1f" stroke="#22d3ee" stroke-width="1.5"/>
+  <text x="348" y="468" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="10" fill="#22d3ee" font-weight="bold">④ 基础层 · 装载与上下文装配</text>
 
-  <line x1="122" y1="624" x2="300" y2="147" stroke="#3b82f6" stroke-width="1.2" stroke-dasharray="5,3" marker-end="url(#arr-blue)"/>
-  <line x1="958" y1="624" x2="780" y2="147" stroke="#3b82f6" stroke-width="1.2" stroke-dasharray="5,3" marker-end="url(#arr-blue)"/>
+  <rect x="348" y="476" width="98" height="44" rx="5" fill="#10303a" stroke="#22d3ee" stroke-width="1"/>
+  <text x="397" y="494" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="9" fill="#67e8f9" text-anchor="middle" font-weight="bold">AgentLoader</text>
+  <text x="397" y="507" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="7.5" fill="#6b7280" text-anchor="middle">目录扫描</text>
 
-  <!-- ════════════════════════════════════════ -->
-  <!-- Legend -->
-  <!-- ════════════════════════════════════════ -->
-  <rect x="300" y="612" width="480" height="78" rx="7" fill="#0d0d0d" stroke="#1f2937" stroke-width="1"/>
-  <text x="540" y="632" font-family="'SF Mono','Fira Code',monospace" font-size="9" fill="#4b5563" text-anchor="middle" letter-spacing="1">LEGEND</text>
-  <text x="540" y="653" font-family="'SF Mono','Fira Code',monospace" font-size="9" fill="#9ca3af" text-anchor="middle">蓝 = 触发入口　粉 = Agent 定义　橙 = 引擎　紫 = 能力　绿 = 存储　灰 = 外部依赖</text>
-  <text x="540" y="674" font-family="'SF Mono','Fira Code',monospace" font-size="9" fill="#6b7280" text-anchor="middle">实线 = 内部调用　　虚线 = 外部调用</text>
+  <rect x="456" y="476" width="98" height="44" rx="5" fill="#10303a" stroke="#22d3ee" stroke-width="1"/>
+  <text x="505" y="494" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="9" fill="#67e8f9" text-anchor="middle" font-weight="bold">ContextLoader</text>
+  <text x="505" y="507" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="7.5" fill="#6b7280" text-anchor="middle">prompt 注入</text>
+
+  <rect x="564" y="476" width="98" height="44" rx="5" fill="#10303a" stroke="#22d3ee" stroke-width="1"/>
+  <text x="613" y="494" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="9" fill="#67e8f9" text-anchor="middle" font-weight="bold">SessionMgr</text>
+  <text x="613" y="507" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="7.5" fill="#6b7280" text-anchor="middle">会话生命周期</text>
+
+  <rect x="672" y="476" width="98" height="44" rx="5" fill="#10303a" stroke="#22d3ee" stroke-width="1"/>
+  <text x="721" y="494" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="9" fill="#67e8f9" text-anchor="middle" font-weight="bold">ConfigLoader</text>
+  <text x="721" y="507" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="7.5" fill="#6b7280" text-anchor="middle">配置加载</text>
+
+  <line x1="560" y1="530" x2="560" y2="540" stroke="#4b5563" stroke-width="1.5" marker-end="url(#arr-gray)"/>
+
+  <!-- ── ⑤ Storage Layer ── -->
+  <rect x="336" y="542" width="448" height="70" rx="7" fill="#0a1a10" stroke="#22c55e" stroke-width="1.5"/>
+  <text x="348" y="560" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="10" fill="#22c55e" font-weight="bold">⑤ 存储层 · ibios-storage</text>
+  <rect x="348" y="566" width="206" height="40" rx="5" fill="#0f2a18" stroke="#22c55e" stroke-width="1" stroke-dasharray="3,2"/>
+  <text x="451" y="581" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="9.5" fill="#4ade80" text-anchor="middle" font-weight="bold">SQLite (ibios.db)</text>
+  <text x="451" y="596" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="8" fill="#6b7280" text-anchor="middle">sessions · llm_calls · tool_invocations</text>
+  <rect x="566" y="566" width="206" height="40" rx="5" fill="#0f2a18" stroke="#22c55e" stroke-width="1" stroke-dasharray="3,2"/>
+  <text x="669" y="581" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="9.5" fill="#4ade80" text-anchor="middle" font-weight="bold">Filesystem (.ibios/)</text>
+  <text x="669" y="596" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="8" fill="#6b7280" text-anchor="middle">profiles · MEMORY.md · skills</text>
+
+  <!-- ══════════ LEFT COLUMN ══════════ -->
+  <!-- L1: Users / Business systems -->
+  <rect x="24" y="88" width="272" height="66" rx="8" fill="#111" stroke="#374151" stroke-width="1" stroke-dasharray="5,3"/>
+  <text x="160" y="106" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="10" fill="#6b7280" text-anchor="middle" letter-spacing="1">USERS · 业务系统</text>
+  <text x="160" y="126" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="9" fill="#9ca3af" text-anchor="middle">ibios chat (CLI)</text>
+  <text x="160" y="144" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="9" fill="#9ca3af" text-anchor="middle">HTTP POST /api/v1/…</text>
+  <line x1="298" y1="127" x2="332" y2="127" stroke="#3b82f6" stroke-width="1.3" stroke-dasharray="5,3" marker-end="url(#arr-blue)"/>
+
+  <!-- L2: Sandbox -->
+  <rect x="24" y="212" width="272" height="112" rx="8" fill="#111" stroke="#f59e0b" stroke-width="1" stroke-dasharray="5,3"/>
+  <text x="160" y="230" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="10" fill="#f59e0b" text-anchor="middle" letter-spacing="1">SANDBOX · 安全边界</text>
+  <text x="160" y="254" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="9" fill="#9ca3af" text-anchor="middle">白名单校验（核心阶段）</text>
+  <text x="160" y="274" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="9" fill="#9ca3af" text-anchor="middle">扩展：容器 / microVM</text>
+  <text x="160" y="294" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="9" fill="#9ca3af" text-anchor="middle">工具执行全程可审计</text>
+  <text x="160" y="314" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="8" fill="#4b5563" text-anchor="middle">数据不出企业</text>
+  <line x1="298" y1="266" x2="332" y2="266" stroke="#f59e0b" stroke-width="1.3" stroke-dasharray="5,3" marker-end="url(#arr-amber)"/>
+
+  <!-- L3: LLM Providers -->
+  <rect x="24" y="338" width="272" height="98" rx="8" fill="#111" stroke="#374151" stroke-width="1" stroke-dasharray="5,3"/>
+  <text x="160" y="357" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="10" fill="#6b7280" text-anchor="middle" letter-spacing="1">LLM PROVIDERS</text>
+  <text x="160" y="380" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="9" fill="#9ca3af" text-anchor="middle">DeepSeek · Qwen · Kimi</text>
+  <text x="160" y="398" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="9" fill="#9ca3af" text-anchor="middle">OpenAI · Anthropic · Ollama</text>
+  <text x="160" y="418" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="8" fill="#4b5563" text-anchor="middle">Spring AI Alibaba 适配</text>
+  <line x1="298" y1="392" x2="332" y2="392" stroke="#a855f7" stroke-width="1.3" stroke-dasharray="5,3" marker-end="url(#arr-purple)"/>
+  <line x1="332" y1="402" x2="298" y2="402" stroke="#a855f7" stroke-width="1.3" stroke-dasharray="5,3" marker-end="url(#arr-purple)" opacity="0.55"/>
+
+  <!-- L4: Config sources -->
+  <rect x="24" y="450" width="272" height="78" rx="8" fill="#111" stroke="#374151" stroke-width="1" stroke-dasharray="5,3"/>
+  <text x="160" y="468" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="10" fill="#6b7280" text-anchor="middle" letter-spacing="1">CONFIG SOURCES</text>
+  <text x="160" y="490" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="9" fill="#9ca3af" text-anchor="middle">application.yml · 环境变量</text>
+  <text x="160" y="508" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="9" fill="#9ca3af" text-anchor="middle">Provider 运行时 CRUD（SQLite）</text>
+  <line x1="298" y1="498" x2="332" y2="498" stroke="#22d3ee" stroke-width="1.3" stroke-dasharray="5,3" marker-end="url(#arr-cyan)"/>
+
+  <!-- L5: Audit -->
+  <rect x="24" y="542" width="272" height="70" rx="8" fill="#111" stroke="#374151" stroke-width="1" stroke-dasharray="5,3"/>
+  <text x="160" y="560" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="10" fill="#6b7280" text-anchor="middle" letter-spacing="1">AUDIT · OBSERVABILITY</text>
+  <text x="160" y="582" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="9" fill="#9ca3af" text-anchor="middle">llm_calls · tool_invocations 全量留痕</text>
+  <text x="160" y="600" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="8" fill="#4b5563" text-anchor="middle">Micrometer · Prometheus</text>
+  <line x1="298" y1="586" x2="332" y2="586" stroke="#22c55e" stroke-width="1.3" stroke-dasharray="5,3" marker-end="url(#arr-green)"/>
+
+  <!-- ══════════ RIGHT COLUMN ══════════ -->
+  <!-- R1: Multi-agent -->
+  <rect x="816" y="88" width="280" height="66" rx="8" fill="#111" stroke="#374151" stroke-width="1" stroke-dasharray="5,3"/>
+  <text x="956" y="106" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="10" fill="#6b7280" text-anchor="middle" letter-spacing="1">MULTI-AGENT</text>
+  <text x="956" y="126" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="9" fill="#9ca3af" text-anchor="middle">N 个 Agent 并行独立运行</text>
+  <text x="956" y="144" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="9" fill="#9ca3af" text-anchor="middle">WorkspaceWatcher 热加载上线</text>
+
+  <!-- R2: Spring AI constraint -->
+  <rect x="816" y="212" width="280" height="112" rx="8" fill="#141414" stroke="#f59e0b" stroke-width="1" stroke-dasharray="5,3"/>
+  <text x="956" y="230" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="10" fill="#f59e0b" text-anchor="middle" letter-spacing="1">SPRING AI 只用一半</text>
+  <text x="840" y="252" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="9" fill="#9ca3af">✓  Provider 抽象 + ToolSchema 生成</text>
+  <text x="840" y="270" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="9" fill="#9ca3af">✗  禁用 Spring AI Agent 抽象</text>
+  <text x="840" y="288" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="9" fill="#9ca3af">✗  禁用自动 tool 执行</text>
+  <text x="840" y="308" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="8" fill="#4b5563">宪法原则四 · 推理循环自己掌控</text>
+  <line x1="812" y1="266" x2="786" y2="266" stroke="#f59e0b" stroke-width="1.3" stroke-dasharray="5,3" marker-end="url(#arr-amber)"/>
+
+  <!-- R3: MCP -->
+  <rect x="816" y="344" width="280" height="52" rx="8" fill="#111" stroke="#374151" stroke-width="1" stroke-dasharray="5,3"/>
+  <text x="956" y="362" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="10" fill="#6b7280" text-anchor="middle" letter-spacing="1">MCP SERVERS</text>
+  <text x="956" y="382" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="9" fill="#9ca3af" text-anchor="middle">github-mcp · fetch · 自定义 server（JSON-RPC）</text>
+  <line x1="812" y1="370" x2="786" y2="370" stroke="#a855f7" stroke-width="1.3" stroke-dasharray="5,3" marker-end="url(#arr-purple)"/>
+
+  <!-- R4: Notify targets -->
+  <rect x="816" y="400" width="280" height="44" rx="8" fill="#111" stroke="#374151" stroke-width="1" stroke-dasharray="5,3"/>
+  <text x="956" y="418" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="10" fill="#6b7280" text-anchor="middle" letter-spacing="1">NOTIFY TARGETS</text>
+  <text x="956" y="436" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="9" fill="#9ca3af" text-anchor="middle">企业微信 · 飞书 · 钉钉 · Webhook</text>
+  <line x1="812" y1="422" x2="786" y2="422" stroke="#ec4899" stroke-width="1.3" stroke-dasharray="5,3" marker-end="url(#arr-pink)"/>
+
+  <!-- R5: Agent definition (context source, NOT in the call chain) -->
+  <rect x="816" y="450" width="280" height="78" rx="8" fill="#1f0d18" stroke="#ec4899" stroke-width="1.2" stroke-dasharray="5,3"/>
+  <text x="956" y="468" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="10" fill="#ec4899" text-anchor="middle" letter-spacing="1">一个目录 = 一个 Agent</text>
+  <text x="840" y="486" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="9" fill="#f9a8d4">AGENT.md = frontmatter + 正文指令</text>
+  <text x="840" y="503" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="9" fill="#f9a8d4">skills/ · scripts/ · REFERENCE.md</text>
+  <text x="840" y="520" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="8" fill="#6b7280">→ ContextLoader 注入 prompt（上下文源）</text>
+  <line x1="812" y1="498" x2="786" y2="498" stroke="#ec4899" stroke-width="1.3" stroke-dasharray="3,2" marker-end="url(#arr-pink)"/>
+
+  <!-- R6: Future governance -->
+  <rect x="816" y="542" width="280" height="70" rx="8" fill="#0d0d0d" stroke="#2d2d2d" stroke-width="1" stroke-dasharray="4,4"/>
+  <text x="956" y="560" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="10" fill="#4b5563" text-anchor="middle" letter-spacing="1">扩展阶段 · 治理层（预留）</text>
+  <text x="956" y="582" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="9" fill="#6b7280" text-anchor="middle">多租户 · SSO · RBAC</text>
+  <text x="956" y="600" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="9" fill="#6b7280" text-anchor="middle">Tool Policy · 跨节点协作</text>
+
+  <!-- ══════════ LEGEND ══════════ -->
+  <rect x="320" y="638" width="480" height="84" rx="7" fill="#0d0d0d" stroke="#1f2937" stroke-width="1"/>
+  <text x="560" y="658" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="9" fill="#4b5563" text-anchor="middle" letter-spacing="1">LEGEND</text>
+  <text x="560" y="678" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="9" fill="#9ca3af" text-anchor="middle">① 接入　② 引擎　③ 能力　④ 基础　⑤ 存储 —— 五大核心能力（US-1 → US-5）</text>
+  <text x="560" y="696" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="9" fill="#9ca3af" text-anchor="middle">蓝 = 触发入口　橙 = 引擎　紫 = 能力　青 = 基础　绿 = 存储　粉 = Agent 定义　灰 = 外部依赖</text>
+  <text x="560" y="714" font-family="'SF Mono','JetBrains Mono','Fira Code',monospace" font-size="9" fill="#6b7280" text-anchor="middle">实线 = 内部调用　　虚线 = 上下文注入 / 外部调用</text>
 </svg>

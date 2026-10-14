@@ -8,7 +8,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.ibios.core.port.ChatPort.ChatResponse;
+import com.ibios.core.port.ChatPort.Prompt;
 import com.ibios.core.profile.Profile;
+import com.ibios.core.session.Message;
 import com.ibios.core.tool.IbiosTool;
 import com.ibios.storage.audit.LlmCallAudit;
 import java.util.List;
@@ -21,9 +24,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.model.ChatModel;
-import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.model.Generation;
-import org.springframework.ai.chat.prompt.Prompt;
 
 @ExtendWith(MockitoExtension.class)
 class ProviderServiceTest {
@@ -56,33 +57,36 @@ class ProviderServiceTest {
     Profile dashscopeProfile = createProfile("dashscope", "qwen-plus");
     Profile openaiProfile = createProfile("openai", "gpt-4");
 
-    ChatResponse dashscopeResp = createChatResponse("Hello from DashScope");
-    ChatResponse openaiResp = createChatResponse("Hello from OpenAI");
+    org.springframework.ai.chat.model.ChatResponse dashscopeResp =
+        createChatResponse("Hello from DashScope");
+    org.springframework.ai.chat.model.ChatResponse openaiResp =
+        createChatResponse("Hello from OpenAI");
 
-    when(dashscopeModel.call(any(Prompt.class))).thenReturn(dashscopeResp);
-    when(openaiModel.call(any(Prompt.class))).thenReturn(openaiResp);
+    when(dashscopeModel.call(any(org.springframework.ai.chat.prompt.Prompt.class)))
+        .thenReturn(dashscopeResp);
+    when(openaiModel.call(any(org.springframework.ai.chat.prompt.Prompt.class)))
+        .thenReturn(openaiResp);
 
-    ProviderResponse resp1 =
-        providerService.chat("s1", dashscopeProfile, new ProviderRequest("Hi", null));
-    ProviderResponse resp2 =
-        providerService.chat("s2", openaiProfile, new ProviderRequest("Hi", null));
+    Prompt prompt = new Prompt("system", List.of(new Message(Message.Role.USER, "Hi")), null);
+    ChatResponse resp1 = providerService.chat("s1", dashscopeProfile, prompt);
+    ChatResponse resp2 = providerService.chat("s2", openaiProfile, prompt);
 
     assertEquals("Hello from DashScope", resp1.text());
     assertEquals("Hello from OpenAI", resp2.text());
 
-    verify(dashscopeModel).call(any(Prompt.class));
-    verify(openaiModel).call(any(Prompt.class));
+    verify(dashscopeModel).call(any(org.springframework.ai.chat.prompt.Prompt.class));
+    verify(openaiModel).call(any(org.springframework.ai.chat.prompt.Prompt.class));
   }
 
   @Test
   void shouldRecordFailedAuditAndRethrow() {
     Profile profile = createProfile("dashscope", "qwen-plus");
-    when(dashscopeModel.call(any(Prompt.class))).thenThrow(new RuntimeException("API error"));
+    when(dashscopeModel.call(any(org.springframework.ai.chat.prompt.Prompt.class)))
+        .thenThrow(new RuntimeException("API error"));
 
+    Prompt prompt = new Prompt("system", List.of(new Message(Message.Role.USER, "Hi")), null);
     RuntimeException ex =
-        assertThrows(
-            RuntimeException.class,
-            () -> providerService.chat("s1", profile, new ProviderRequest("Hi", null)));
+        assertThrows(RuntimeException.class, () -> providerService.chat("s1", profile, prompt));
 
     assertEquals("API error", ex.getMessage());
 
@@ -124,12 +128,16 @@ class ProviderServiceTest {
         };
 
     when(toolSchemaAdapter.adapt(any())).thenReturn(List.of());
-    when(dashscopeModel.call(any(Prompt.class))).thenReturn(createChatResponse("done"));
+    when(dashscopeModel.call(any(org.springframework.ai.chat.prompt.Prompt.class)))
+        .thenReturn(createChatResponse("done"));
 
-    providerService.chat("s1", profile, new ProviderRequest("use tool", List.of(mockTool)));
+    Prompt prompt =
+        new Prompt(
+            "system", List.of(new Message(Message.Role.USER, "use tool")), List.of(mockTool));
+    providerService.chat("s1", profile, prompt);
 
     verify(toolSchemaAdapter).adapt(List.of(mockTool));
-    verify(dashscopeModel).call(any(Prompt.class));
+    verify(dashscopeModel).call(any(org.springframework.ai.chat.prompt.Prompt.class));
   }
 
   private Profile createProfile(String providerName, String model) {
@@ -145,12 +153,14 @@ class ProviderServiceTest {
         List.of(),
         List.of(),
         List.of(),
-        Map.of());
+        Map.of(),
+        10,
+        20);
   }
 
-  private ChatResponse createChatResponse(String text) {
+  private org.springframework.ai.chat.model.ChatResponse createChatResponse(String text) {
     AssistantMessage message = new AssistantMessage(text);
     Generation generation = new Generation(message);
-    return new ChatResponse(List.of(generation));
+    return new org.springframework.ai.chat.model.ChatResponse(List.of(generation));
   }
 }

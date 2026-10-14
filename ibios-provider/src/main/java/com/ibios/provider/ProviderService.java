@@ -1,22 +1,24 @@
 package com.ibios.provider;
 
+import com.ibios.core.port.ChatPort;
+import com.ibios.core.port.ChatPort.ChatResponse.ToolCallResponse;
 import com.ibios.core.profile.Profile;
+import com.ibios.core.session.Message;
 import com.ibios.storage.audit.LlmCallAudit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.springframework.ai.chat.messages.AssistantMessage;
+import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatModel;
-import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.model.Generation;
-import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.model.tool.ToolCallingChatOptions;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ProviderService {
+public class ProviderService implements ChatPort {
 
   private final Map<String, ChatModel> models;
   private final ToolSchemaAdapter toolSchemaAdapter;
@@ -29,34 +31,36 @@ public class ProviderService {
     this.audit = audit;
   }
 
-  public ProviderResponse chat(String sessionId, Profile profile, ProviderRequest request) {
+  @Override
+  public ChatResponse chat(String sessionId, Profile profile, Prompt prompt) {
     String providerName = profile.provider().name();
     ChatModel chatModel = models.get(providerName);
     if (chatModel == null) {
       throw new com.ibios.core.profile.ProviderNotFoundException(providerName);
     }
 
-    UserMessage userMessage = new UserMessage(request.content());
+    List<org.springframework.ai.chat.messages.Message> springMessages = convertMessages(prompt);
     ToolCallingChatOptions options =
         (ToolCallingChatOptions)
             ToolCallingChatOptions.builder().internalToolExecutionEnabled(false).build();
     List<org.springframework.ai.tool.ToolCallback> callbacks =
-        toolSchemaAdapter.adapt(request.availableTools());
+        toolSchemaAdapter.adapt(prompt.availableTools());
     if (!callbacks.isEmpty()) {
       options.setToolCallbacks(callbacks);
     }
 
-    Prompt prompt = new Prompt(userMessage, options);
+    org.springframework.ai.chat.prompt.Prompt springPrompt =
+        new org.springframework.ai.chat.prompt.Prompt(springMessages, options);
     long start = System.currentTimeMillis();
     try {
-      ChatResponse chatResponse = chatModel.call(prompt);
+      org.springframework.ai.chat.model.ChatResponse chatResponse = chatModel.call(springPrompt);
       long latency = System.currentTimeMillis() - start;
-      ProviderResponse response = toProviderResponse(chatResponse);
+      ChatResponse response = toChatResponse(chatResponse);
       audit.record(
           sessionId,
           providerName,
           profile.provider().model(),
-          toAuditUsage(response.usage()),
+          toAuditUsage(response),
           true,
           null,
           latency);
@@ -75,35 +79,51 @@ public class ProviderService {
     }
   }
 
-  private ProviderResponse toProviderResponse(ChatResponse chatResponse) {
+  private List<org.springframework.ai.chat.messages.Message> convertMessages(Prompt prompt) {
+    List<org.springframework.ai.chat.messages.Message> result = new ArrayList<>();
+
+    if (prompt.systemPrompt() != null && !prompt.systemPrompt().isEmpty()) {
+      result.add(new SystemMessage(prompt.systemPrompt()));
+    }
+
+    for (Message msg : prompt.messages()) {
+      switch (msg.role()) {
+        case USER:
+          result.add(new UserMessage(msg.content()));
+          break;
+        case ASSISTANT:
+          result.add(new AssistantMessage(msg.content()));
+          break;
+        case SYSTEM:
+          result.add(new SystemMessage(msg.content()));
+          break;
+        case TOOL:
+          break;
+      }
+    }
+
+    return result;
+  }
+
+  private ChatResponse toChatResponse(org.springframework.ai.chat.model.ChatResponse chatResponse) {
     Generation generation = chatResponse.getResult();
     if (generation == null) {
-      return new ProviderResponse(
-          "", Collections.emptyList(), new ProviderResponse.TokenUsage(0, 0, 0));
+      return new ChatResponse("", Collections.emptyList());
     }
     AssistantMessage assistantMessage = generation.getOutput();
     String text = assistantMessage.getText();
 
-    List<ProviderResponse.ToolCall> toolCalls = new ArrayList<>();
+    List<ToolCallResponse> toolCalls = new ArrayList<>();
     if (assistantMessage.hasToolCalls()) {
       for (AssistantMessage.ToolCall tc : assistantMessage.getToolCalls()) {
-        toolCalls.add(new ProviderResponse.ToolCall(tc.name(), tc.arguments()));
+        toolCalls.add(new ToolCallResponse(tc.name(), tc.arguments()));
       }
     }
 
-    ProviderResponse.TokenUsage usage = new ProviderResponse.TokenUsage(0, 0, 0);
-    if (chatResponse.getMetadata() != null && chatResponse.getMetadata().getUsage() != null) {
-      org.springframework.ai.chat.metadata.Usage aiUsage = chatResponse.getMetadata().getUsage();
-      int prompt = aiUsage.getPromptTokens() != null ? aiUsage.getPromptTokens() : 0;
-      int completion = aiUsage.getCompletionTokens() != null ? aiUsage.getCompletionTokens() : 0;
-      int total = aiUsage.getTotalTokens() != null ? aiUsage.getTotalTokens() : 0;
-      usage = new ProviderResponse.TokenUsage(prompt, completion, total);
-    }
-    return new ProviderResponse(text, toolCalls, usage);
+    return new ChatResponse(text, toolCalls);
   }
 
-  private LlmCallAudit.TokenUsage toAuditUsage(ProviderResponse.TokenUsage usage) {
-    return new LlmCallAudit.TokenUsage(
-        usage.promptTokens(), usage.completionTokens(), usage.totalTokens());
+  private LlmCallAudit.TokenUsage toAuditUsage(ChatResponse response) {
+    return new LlmCallAudit.TokenUsage(0, 0, 0);
   }
 }

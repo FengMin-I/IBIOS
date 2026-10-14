@@ -3,7 +3,10 @@ package com.ibios.provider;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import com.ibios.core.port.ChatPort.ChatResponse;
+import com.ibios.core.port.ChatPort.Prompt;
 import com.ibios.core.profile.Profile;
+import com.ibios.core.session.Message;
 import com.ibios.storage.audit.LlmCall;
 import com.ibios.storage.audit.LlmCallRepository;
 import java.util.List;
@@ -16,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.test.context.TestPropertySource;
 
 @SpringBootTest(classes = ProviderSmokeIT.SmokeTestApplication.class)
@@ -34,7 +38,8 @@ import org.springframework.test.context.TestPropertySource;
 @Tag("integration")
 class ProviderSmokeIT {
 
-  @SpringBootApplication
+  @SpringBootApplication(scanBasePackages = {"com.ibios.provider", "com.ibios.storage"})
+  @EnableJpaRepositories(basePackages = "com.ibios.storage")
   static class SmokeTestApplication {}
 
   @Autowired private ProviderService providerService;
@@ -64,10 +69,14 @@ class ProviderSmokeIT {
             List.of(),
             List.of(),
             List.of(),
-            Map.of());
+            Map.of(),
+            10,
+            20);
 
-    ProviderRequest request = new ProviderRequest("Say hello in one word.", null);
-    ProviderResponse response = providerService.chat("smoke-session", profile, request);
+    Prompt prompt =
+        new Prompt(
+            "system", List.of(new Message(Message.Role.USER, "Say hello in one word.")), null);
+    ChatResponse response = providerService.chat("smoke-session", profile, prompt);
 
     assertNotNull(response);
     assertNotNull(response.text());

@@ -46,6 +46,8 @@ class ProfileLoaderTest {
     assertEquals("fs-server", profile.mcpServers().get(0));
     assertEquals(1, profile.channels().size());
     assertEquals(1, profile.notifyChannels().size());
+    assertEquals("log", profile.notifyChannels().get(0).name());
+    assertEquals("webhook", profile.notifyChannels().get(0).type());
     assertEquals(1, profile.schedules().size());
     assertEquals("0 9 * * *", profile.schedules().get(0).cron());
     assertEquals("Asia/Shanghai", profile.schedules().get(0).zone());
