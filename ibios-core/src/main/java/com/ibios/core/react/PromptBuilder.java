@@ -1,5 +1,6 @@
 package com.ibios.core.react;
 
+import com.ibios.core.memory.MemoryService;
 import com.ibios.core.port.ChatPort.Prompt;
 import com.ibios.core.profile.Profile;
 import com.ibios.core.session.Message;
@@ -13,19 +14,25 @@ import java.util.List;
 
 public class PromptBuilder {
   private final ContextLoader contextLoader;
+  private final MemoryService memoryService;
 
   public PromptBuilder(ContextLoader contextLoader) {
+    this(contextLoader, null);
+  }
+
+  public PromptBuilder(ContextLoader contextLoader, MemoryService memoryService) {
     this.contextLoader = contextLoader;
+    this.memoryService = memoryService;
   }
 
   public Prompt build(Session session, Profile profile) {
-    String systemPrompt = buildSystemPrompt(profile);
+    String systemPrompt = buildSystemPrompt(session, profile);
     List<Message> messages = truncateHistory(session.messages(), profile.maxHistoryTurns());
     List<IbiosTool> tools = Collections.emptyList();
     return new Prompt(systemPrompt, messages, tools);
   }
 
-  private String buildSystemPrompt(Profile profile) {
+  private String buildSystemPrompt(Session session, Profile profile) {
     StringBuilder sb = new StringBuilder();
 
     String identityPrompt = profile.identity().prompt();
@@ -41,6 +48,13 @@ public class PromptBuilder {
     String skillContent = contextLoader.loadSkillContent(profile);
     if (!skillContent.isEmpty()) {
       sb.append(skillContent).append("\n\n");
+    }
+
+    if (memoryService != null) {
+      String memoryContext = memoryService.buildContext(session);
+      if (memoryContext != null && !memoryContext.isEmpty()) {
+        sb.append("## Long-term Memory\n").append(memoryContext).append("\n\n");
+      }
     }
 
     String currentDateTime = ZonedDateTime.now().format(DateTimeFormatter.RFC_1123_DATE_TIME);

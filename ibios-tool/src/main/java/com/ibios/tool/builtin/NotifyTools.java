@@ -8,27 +8,27 @@ import com.ibios.core.profile.NotifyChannelConfig;
 import com.ibios.core.profile.Profile;
 import com.ibios.core.react.ProfileContext;
 import com.ibios.core.tool.IbiosTool;
+import com.ibios.core.tool.Sandbox;
+import com.ibios.core.tool.SandboxAction;
+import com.ibios.core.tool.SandboxAction.ActionType;
 import com.ibios.core.tool.ToolExecutionResult;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-/**
- * 通知工具：Agent 在 ReAct 循环中主动给用户发通知（邮件、Webhook、Slack 等）。
- *
- * <p>TODO (Lesson 24)：执行前调 Sandbox.enforce 做沙箱检查
- */
 @Component
 public class NotifyTools implements IbiosTool {
 
   private static final Logger log = LoggerFactory.getLogger(NotifyTools.class);
 
   private final NotifyChannelAdapter adapter;
+  private final Sandbox sandbox;
   private final ObjectMapper objectMapper;
 
-  public NotifyTools(NotifyChannelAdapter adapter) {
+  public NotifyTools(NotifyChannelAdapter adapter, Sandbox sandbox) {
     this.adapter = adapter;
+    this.sandbox = sandbox;
     this.objectMapper = new ObjectMapper();
   }
 
@@ -74,7 +74,7 @@ public class NotifyTools implements IbiosTool {
             "Notify channel '" + channelName + "' not found in profile", false);
       }
 
-      // TODO (Lesson 24): Sandbox.enforce(channel.type(), channel.config())
+      sandbox.enforce(new SandboxAction(ActionType.HTTP_REQUEST, channel.url()));
 
       NotifyTarget target = new NotifyTarget(channel.type(), Map.of("url", channel.url()));
       adapter.send(target, content);

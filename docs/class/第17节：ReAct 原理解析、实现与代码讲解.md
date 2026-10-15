@@ -1,6 +1,6 @@
 # ReAct：原理解析、实现与代码讲解
 
-ReAct 是 OryxOS 的第二块核心能力，也是整个 Agent 最关键的一段代码。这节讲四件事：ReAct 是什么、动手前该想清楚什么、代码怎么写、做完怎么验。
+ReAct 是 IBIOS 的第二块核心能力，也是整个 Agent 最关键的一段代码。这节讲四件事：ReAct 是什么、动手前该想清楚什么、代码怎么写、做完怎么验。
 
 它依赖上一节的 Provider——每转一圈都要通过 Provider 调一次大模型。技术栈还是 JDK 21 + Spring Boot 3.x。
 
@@ -102,7 +102,7 @@ public String process(Session session, String userMessage) {
 
 为什么需要 `ProfileContext`（一个 ThreadLocal）：`OryxTool.execute` 的签名不带 Profile，但有些工具执行时需要知道当前 Agent 的配置——比如 19 节的 `notify` 要读当前 Profile 的 `notify_channels`。改工具接口签名代价太大，让 `AgentService` 在入口处把 Profile 放进 ThreadLocal、出口处清掉，工具想用就取——虚拟线程下每个请求独占一个线程，天然不串。
 
-**供给者 ContextLoader，也归这节。** `PromptBuilder` 的第一部分（Bootstrap 三件套 + SKILL.md）由它提供：按 Profile 的 `bootstrap` 和 `skills` 字段读 `.oryxos/` 下对应文件、拼成文本。两条铁律：**每次组装 prompt 都重新读文件、不缓存**（用户改完立即生效）；**Profile 里显式引用的文件缺失要报错、Bootstrap 缺失至少 WARN**——静默跳过会造成"人格悄悄丢了"这种最难查的软故障。
+**供给者 ContextLoader，也归这节。** `PromptBuilder` 的第一部分（Bootstrap 三件套 + SKILL.md）由它提供：按 Profile 的 `bootstrap` 和 `skills` 字段读 `.ibios/` 下对应文件、拼成文本。两条铁律：**每次组装 prompt 都重新读文件、不缓存**（用户改完立即生效）；**Profile 里显式引用的文件缺失要报错、Bootstrap 缺失至少 WARN**——静默跳过会造成"人格悄悄丢了"这种最难查的软故障。
 
 **有几样先别做。** 工具并行调用、Agent 之间互相委托、流式输出、上下文压缩，这些核心阶段都先不做。上下文先用"只留最近 N 轮"这种简单办法顶着，够用就行，压缩留到扩展阶段。
 

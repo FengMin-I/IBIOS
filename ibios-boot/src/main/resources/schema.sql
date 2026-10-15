@@ -22,6 +22,15 @@ CREATE TABLE IF NOT EXISTS tool_invocations (
     created_at    TEXT    NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS memory_entries (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    scope       VARCHAR(16) NOT NULL,
+    content     TEXT        NOT NULL,
+    created_at  TEXT        NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_memory_scope ON memory_entries (scope);
+
 CREATE TABLE IF NOT EXISTS llm_calls (
     id                INTEGER PRIMARY KEY AUTOINCREMENT,
     session_id        TEXT,

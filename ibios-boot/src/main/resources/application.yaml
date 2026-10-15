@@ -23,6 +23,23 @@ spring:
       ddl-auto: update
     open-in-view: false
 
+memory:
+  backend: markdown
+
+file:
+  allowed-paths:
+    - .ibios
+
+shell:
+  allowed-commands:
+    - ls
+    - cat
+    - echo
+
+http:
+  allowed-domains:
+    - "*"
+
 ibios:
   providers:
     - name: dashscope

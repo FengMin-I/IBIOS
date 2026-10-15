@@ -1,6 +1,6 @@
 # CLI：功能概述、实现思路与代码讲解
 
-有了 Provider（会调模型）和 ReAct（会思考的循环），OryxOS 的"大脑"已经能转了，但还缺一个能亲手操作它的入口。这节讲四件事：CLI 是什么、动手前该想清楚什么、代码怎么写、怎么用和怎么验。
+有了 Provider（会调模型）和 ReAct（会思考的循环），IBIOS 的"大脑"已经能转了，但还缺一个能亲手操作它的入口。这节讲四件事：CLI 是什么、动手前该想清楚什么、代码怎么写、怎么用和怎么验。
 
 技术栈还是 JDK 21 + Spring Boot 3.x，命令行部分用 Picocli。下面的代码是示意。
 
@@ -8,17 +8,17 @@
 
 ## 一、CLI 是什么，干嘛用的
 
-一句话：**CLI 就是 OryxOS 的命令行入口——你在终端里敲命令，跟 Agent 对话、把服务跑起来、查配置和状态。**
+一句话：**CLI 就是 IBIOS 的命令行入口——你在终端里敲命令，跟 Agent 对话、把服务跑起来、查配置和状态。**
 
-OryxOS 打包出来是一个可执行 JAR，`OryxOsCli` 就是整个程序的 `main` 入口。所有操作都通过子命令来做，核心阶段有 12 个：
+IBIOS 打包出来是一个可执行 JAR，`IbiosCli` 就是整个程序的 `main` 入口。所有操作都通过子命令来做，核心阶段有 12 个：
 
 - **跑 Agent**：`chat`（在终端里交互式对话）、`serve`（启动 Web Service）、`gateway`（守护进程，同时挂多个通道）。
 - **看情况**：`status`、`profile list/create/show/delete`、`provider list`、`tool list`、`session list`。
-- **起项目**：`init`（初始化一个 OryxOS 工程）。
+- **起项目**：`init`（初始化一个 IBIOS 工程）。
 
 其中三个是**运行模式**，区别只在"消息从哪进来"：`chat` 走终端，`serve` 走 HTTP，`gateway` 同时挂多个通道。三种模式共享同一份 Profile 配置和同一套 Session 存储，底下的引擎是同一个。
 
-放到整体架构里看，OryxOS 有两个"人推"入口：**CLI 管本地交互和调试，Web Service 管业务系统通过 REST API 集成**（后面 25 节还会加上第三种触发源——定时任务的"钟推"）。所有入口的消息最后都汇进同一个 ReAct 引擎。
+放到整体架构里看，IBIOS 有两个"人推"入口：**CLI 管本地交互和调试，Web Service 管业务系统通过 REST API 集成**（后面 25 节还会加上第三种触发源——定时任务的"钟推"）。所有入口的消息最后都汇进同一个 ReAct 引擎。
 
 ![两个入口汇入同一个 ReAct 引擎：CLI 和 Web Service](../../website/public/images/class-18-1.svg)
 
@@ -34,7 +34,7 @@ CLI 看着杂（12 个命令），但每个命令要做的事都很浅。动手�
 
 ![CLI 负责什么、不管什么](../../website/public/images/class-18-2.svg)
 
-**第二，命令分两类，为的是启动够快。** Spring Boot 在 JDK 21 下启动要 2~4 秒。对 `serve` 这种常驻服务无所谓，但对 `oryxos profile list` 这种"看一眼就退"的命令，等 4 秒才出结果太难受。所以命令分两类：
+**第二，命令分两类，为的是启动够快。** Spring Boot 在 JDK 21 下启动要 2~4 秒。对 `serve` 这种常驻服务无所谓，但对 `ibios profile list` 这种"看一眼就退"的命令，等 4 秒才出结果太难受。所以命令分两类：
 
 - **轻命令**（如 `init`、`profile list`）：不需要调模型，直接用标准 API 读写文件，**不启动 Spring 上下文**，秒回。
 - **重命令**（如 `chat`、`serve`、`gateway`）：要调模型、要跑引擎，**才启动 Spring 上下文**。
@@ -51,7 +51,7 @@ CLI 看着杂（12 个命令），但每个命令要做的事都很浅。动手�
 
 ## 三、代码怎么写
 
-入口是 `OryxOsCli`，它是 `main` 函数，底下挂 12 个 `@Command` 子命令类。每个子命令各写各的，互不干扰。
+入口是 `IbiosCli`，它是 `main` 函数，底下挂 12 个 `@Command` 子命令类。每个子命令各写各的，互不干扰。
 
 先看最典型、也最能说明问题的 `chat` 命令。它的交互流程是这样：
 
@@ -101,7 +101,7 @@ public class ChatCommand implements Runnable {
 public class ProfileListCommand implements Runnable {
     @Override
     public void run() {
-        // 直接读 .oryxos/profiles/ 目录下的 YAML，列出来就行
+        // 直接读 .ibios/profiles/ 目录下的 YAML，列出来就行
         Files.list(profilesDir()).forEach(p -> System.out.println(p.getFileName()));
     }
 }
@@ -113,7 +113,7 @@ public class ProfileListCommand implements Runnable {
 
 **本节交付物**（Spec-Kit 拆解锚点）：
 
-- 代码：`OryxOsCli` 主入口、12 个 `@Command` 子命令类、`CliChannel`（chat 交互）、`Session` 实体 + `SessionRepository`、`SessionManager`
+- 代码：`IbiosCli` 主入口、12 个 `@Command` 子命令类、`CliChannel`（chat 交互）、`Session` 实体 + `SessionRepository`、`SessionManager`
 - 测试：`SessionManagerTest`、`SessionRepositoryTest`（见验收 harness）
 - 表：`sessions`（`session_id` 由 SessionManager 按 channel+user+profile 唯一拼接，手工建表脚本）
 - 约定：轻命令不启动 Spring；重命令启动类显式声明 `@EnableJpaRepositories`/`@EntityScan` 的 `basePackages`
@@ -152,19 +152,19 @@ void 同一三元组_历次getOrCreate都是同一个Session() {
 装好之后，常用的几条命令：
 
 ```bash
-oryxos init                 # 初始化一个 OryxOS 工程
-oryxos profile list         # 看有哪些 Agent（Profile）
-oryxos chat                 # 在终端里和默认 Agent 对话
-oryxos chat --profile weather   # 和指定的 Agent 对话
-oryxos serve                # 启动 HTTP 服务，供业务系统调
-oryxos status               # 看当前状态
+ibios init                 # 初始化一个 IBIOS 工程
+ibios profile list         # 看有哪些 Agent（Profile）
+ibios chat                 # 在终端里和默认 Agent 对话
+ibios chat --profile weather   # 和指定的 Agent 对话
+ibios serve                # 启动 HTTP 服务，供业务系统调
+ibios status               # 看当前状态
 ```
 
 `chat` 进去后就是一问一答，输入 `/quit` 退出。
 
 harness 全绿后，剩下的人工确认：
 
-- `oryxos chat` 能进入交互，完成一次多轮对话，`/quit` 正常退出；Demo 一的对话版能从头走通。
+- `ibios chat` 能进入交互，完成一次多轮对话，`/quit` 正常退出；Demo 一的对话版能从头走通。
 - 轻命令（`init`、`profile list`）秒回；重命令（`chat`、`serve`）才启动 Spring。
 - `chat` 启动日志里 "Found N JPA repository interfaces" 的 N > 0。
 - 三种运行模式共享同一份 Profile 和 Session 存储，切换模式数据不丢。
