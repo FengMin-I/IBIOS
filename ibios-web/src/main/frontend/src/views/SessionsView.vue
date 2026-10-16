@@ -14,7 +14,11 @@
       </thead>
       <tbody>
         <tr v-for="session in sessions" :key="session.sessionId">
-          <td class="mono">{{ session.sessionId }}</td>
+          <td>
+            <router-link :to="`/sessions/${session.sessionId}`" class="mono link">
+              {{ session.sessionId }}
+            </router-link>
+          </td>
           <td>{{ session.profileName }}</td>
           <td>{{ session.messages?.length || 0 }}</td>
         </tr>
@@ -43,3 +47,30 @@ onMounted(async () => {
   }
 })
 </script>
+
+<style scoped>
+.mono {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+.link {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.loading,
+.error,
+.empty {
+  color: var(--text-secondary);
+  padding: 40px 0;
+  text-align: center;
+}
+
+.error {
+  color: #e74c3c;
+}
+</style>

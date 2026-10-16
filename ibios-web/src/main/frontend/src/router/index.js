@@ -8,6 +8,7 @@ import MemoryView from '../views/MemoryView.vue'
 import InfoView from '../views/InfoView.vue'
 import SessionsView from '../views/SessionsView.vue'
 import SchedulesView from '../views/SchedulesView.vue'
+import SessionDetailView from '../views/SessionDetailView.vue'
 
 const routes = [
   { path: '/', component: OverviewView },
@@ -18,7 +19,8 @@ const routes = [
   { path: '/memory', component: MemoryView },
   { path: '/schedules', component: SchedulesView },
   { path: '/info', component: InfoView },
-  { path: '/sessions', component: SessionsView }
+  { path: '/sessions', component: SessionsView },
+  { path: '/sessions/:id', component: SessionDetailView }
 ]
 
 const router = createRouter({

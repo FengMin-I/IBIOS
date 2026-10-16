@@ -44,11 +44,12 @@ public class Session {
   }
 
   public void appendAssistantMessage(String content, List<ToolCall> toolCalls) {
-    messages.add(new Message(Message.Role.ASSISTANT, content));
+    String toolName = (toolCalls != null && !toolCalls.isEmpty()) ? toolCalls.get(0).name() : null;
+    messages.add(new Message(Message.Role.ASSISTANT, content, toolName));
   }
 
   public void appendToolResult(ToolResult result) {
-    messages.add(new Message(Message.Role.TOOL, result.output()));
+    messages.add(new Message(Message.Role.TOOL, result.output(), result.toolName()));
   }
 
   public boolean hasToolCalls() {
@@ -56,10 +57,16 @@ public class Session {
       return false;
     }
     Message last = messages.get(messages.size() - 1);
-    return last.role() == Message.Role.ASSISTANT && !getToolCalls().isEmpty();
+    return last.role() == Message.Role.ASSISTANT && last.toolName() != null;
   }
 
   public List<ToolCall> getToolCalls() {
-    return Collections.emptyList();
+    List<ToolCall> result = new ArrayList<>();
+    for (Message msg : messages) {
+      if (msg.role() == Message.Role.ASSISTANT && msg.toolName() != null) {
+        result.add(new ToolCall(msg.toolName(), ""));
+      }
+    }
+    return result;
   }
 }

@@ -98,7 +98,7 @@ public class SessionApiController {
     List<SessionResponse.MessageItem> messages =
         session.messages().stream()
             .skip(Math.max(0, session.messages().size() - MAX_HISTORY_SIZE))
-            .map(m -> new SessionResponse.MessageItem(m.role().name(), m.content()))
+            .map(m -> new SessionResponse.MessageItem(m.role().name(), m.content(), m.toolName()))
             .toList();
     return new SessionResponse(session.id(), session.profileName(), messages);
   }
