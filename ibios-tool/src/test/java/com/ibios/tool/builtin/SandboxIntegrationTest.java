@@ -8,6 +8,7 @@ import com.ibios.core.tool.ToolExecutionResult;
 import com.ibios.tool.sandbox.FileSandboxProperties;
 import com.ibios.tool.sandbox.HttpSandboxProperties;
 import com.ibios.tool.sandbox.ShellSandboxProperties;
+import com.ibios.tool.sandbox.WhitelistManager;
 import com.ibios.tool.sandbox.WhitelistSandbox;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
@@ -19,9 +20,10 @@ class SandboxIntegrationTest {
 
   private final Sandbox sandbox =
       new WhitelistSandbox(
-          new FileSandboxProperties(List.of("/workspace")),
-          new ShellSandboxProperties(List.of("ls")),
-          new HttpSandboxProperties(List.of("api.weather.com")));
+          new WhitelistManager(
+              new FileSandboxProperties(List.of("/workspace")),
+              new ShellSandboxProperties(List.of("ls")),
+              new HttpSandboxProperties(List.of("api.weather.com"))));
 
   @Test
   @DisplayName("FileTools: 白名单外路径被拦")

@@ -51,6 +51,11 @@ public class JpaSessionManager implements SessionManager {
     repository.save(entity);
   }
 
+  @Override
+  public List<Session> listAll() {
+    return repository.findAll().stream().map(this::toDomain).toList();
+  }
+
   String buildSessionId(String channel, String userId, String profileName) {
     return channel + ":" + userId + ":" + profileName;
   }

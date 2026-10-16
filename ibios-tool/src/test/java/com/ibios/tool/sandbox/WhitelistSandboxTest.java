@@ -18,11 +18,12 @@ class WhitelistSandboxTest {
 
   @BeforeEach
   void setUp() {
-    sandbox =
-        new WhitelistSandbox(
+    WhitelistManager manager =
+        new WhitelistManager(
             new FileSandboxProperties(List.of("/workspace")),
             new ShellSandboxProperties(List.of("ls", "cat", "echo")),
             new HttpSandboxProperties(List.of("api.weather.com", "*.example.com")));
+    sandbox = new WhitelistSandbox(manager);
   }
 
   @Test
@@ -117,11 +118,12 @@ class WhitelistSandboxTest {
   @Test
   @DisplayName("空配置 = 全部拒绝：文件路径")
   void emptyConfigDeniesAllFile() {
-    WhitelistSandbox empty =
-        new WhitelistSandbox(
+    WhitelistManager mgr =
+        new WhitelistManager(
             new FileSandboxProperties(List.of()),
             new ShellSandboxProperties(List.of("ls")),
             new HttpSandboxProperties(List.of("*")));
+    WhitelistSandbox empty = new WhitelistSandbox(mgr);
     assertThrows(
         SandboxViolationException.class,
         () -> empty.enforce(new SandboxAction(ActionType.FILE_READ, "/any/path")));
@@ -130,11 +132,12 @@ class WhitelistSandboxTest {
   @Test
   @DisplayName("空配置 = 全部拒绝：Shell 命令")
   void emptyConfigDeniesAllShell() {
-    WhitelistSandbox empty =
-        new WhitelistSandbox(
+    WhitelistManager mgr =
+        new WhitelistManager(
             new FileSandboxProperties(List.of("/tmp")),
             new ShellSandboxProperties(List.of()),
             new HttpSandboxProperties(List.of("*")));
+    WhitelistSandbox empty = new WhitelistSandbox(mgr);
     assertThrows(
         SandboxViolationException.class,
         () -> empty.enforce(new SandboxAction(ActionType.SHELL_COMMAND, "ls")));
@@ -143,11 +146,12 @@ class WhitelistSandboxTest {
   @Test
   @DisplayName("通配符 * 允许所有域名")
   void wildcardStarAllowsAll() {
-    WhitelistSandbox permissive =
-        new WhitelistSandbox(
+    WhitelistManager mgr =
+        new WhitelistManager(
             new FileSandboxProperties(List.of("/tmp")),
             new ShellSandboxProperties(List.of("ls")),
             new HttpSandboxProperties(List.of("*")));
+    WhitelistSandbox permissive = new WhitelistSandbox(mgr);
     assertDoesNotThrow(
         () ->
             permissive.enforce(

@@ -5,31 +5,15 @@ import com.ibios.core.tool.SandboxAction;
 import com.ibios.core.tool.SandboxViolationException;
 import java.net.URI;
 import java.nio.file.Path;
-import java.util.List;
-import java.util.Set;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 @Component
-@EnableConfigurationProperties({
-  FileSandboxProperties.class,
-  ShellSandboxProperties.class,
-  HttpSandboxProperties.class
-})
 public class WhitelistSandbox implements Sandbox {
 
-  private final List<Path> allowedRoots;
-  private final Set<String> allowedCommands;
-  private final List<String> allowedDomainPatterns;
+  private final WhitelistManager whitelistManager;
 
-  public WhitelistSandbox(
-      FileSandboxProperties fileProps,
-      ShellSandboxProperties shellProps,
-      HttpSandboxProperties httpProps) {
-    this.allowedRoots =
-        fileProps.allowedPaths().stream().map(Path::of).map(Path::normalize).toList();
-    this.allowedCommands = Set.copyOf(shellProps.allowedCommands());
-    this.allowedDomainPatterns = List.copyOf(httpProps.allowedDomains());
+  public WhitelistSandbox(WhitelistManager whitelistManager) {
+    this.whitelistManager = whitelistManager;
   }
 
   @Override
@@ -53,7 +37,7 @@ public class WhitelistSandbox implements Sandbox {
   private void checkFilePath(String rawPath) {
     Path target = Path.of(rawPath).normalize().toAbsolutePath();
     boolean allowed =
-        allowedRoots.stream()
+        whitelistManager.getAllowedRoots().stream()
             .anyMatch(root -> target.startsWith(root.toAbsolutePath().normalize()));
     if (!allowed) {
       throw new SandboxViolationException("路径不在白名单内: " + rawPath);
@@ -62,7 +46,7 @@ public class WhitelistSandbox implements Sandbox {
 
   private void checkShellCommand(String command) {
     String firstToken = command.trim().split("\\s+")[0];
-    if (!allowedCommands.contains(firstToken)) {
+    if (!whitelistManager.getAllowedCommands().contains(firstToken)) {
       throw new SandboxViolationException("命令不在白名单内: " + firstToken);
     }
   }
@@ -70,7 +54,8 @@ public class WhitelistSandbox implements Sandbox {
   private void checkHttpUrl(String url) {
     String host = URI.create(url).getHost();
     boolean allowed =
-        allowedDomainPatterns.stream().anyMatch(pattern -> matchesDomain(host, pattern));
+        whitelistManager.getAllowedDomainPatterns().stream()
+            .anyMatch(pattern -> matchesDomain(host, pattern));
     if (!allowed) {
       throw new SandboxViolationException("域名不在白名单内: " + host);
     }

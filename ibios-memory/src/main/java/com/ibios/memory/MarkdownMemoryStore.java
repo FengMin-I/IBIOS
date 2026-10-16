@@ -8,9 +8,7 @@ import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
-import org.springframework.stereotype.Component;
 
-@Component
 public class MarkdownMemoryStore implements LongTermMemoryStore {
 
   private static final String CORE_HEADER = "## 核心记忆";
