@@ -49,6 +49,7 @@ class ProfileLoaderTest {
     assertEquals("log", profile.notifyChannels().get(0).name());
     assertEquals("webhook", profile.notifyChannels().get(0).type());
     assertEquals(1, profile.schedules().size());
+    assertEquals("morning-greeting", profile.schedules().get(0).id());
     assertEquals("0 9 * * *", profile.schedules().get(0).cron());
     assertEquals("Asia/Shanghai", profile.schedules().get(0).zone());
     assertEquals("Good morning!", profile.schedules().get(0).message());

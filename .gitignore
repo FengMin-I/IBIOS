@@ -38,3 +38,6 @@ build/
 ### SQLite ###
 *.db
 *.db-journal
+
+### Secrets ###
+ibios.yaml

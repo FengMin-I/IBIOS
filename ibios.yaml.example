@@ -1,0 +1,12 @@
+# IBIOS 配置文件
+# 复制此文件为 ibios.yaml 并填入你的 API Key
+
+ibios:
+  providers:
+    - name: dashscope
+      api-key: your_dashscope_api_key_here
+      model: qwen-plus
+    # 内置 mock provider（无需 key，用于测试全链路）
+    # - name: mock
+    #   api-key: ""
+    #   model: mock

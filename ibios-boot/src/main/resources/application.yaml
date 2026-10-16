@@ -14,6 +14,7 @@ spring:
       - com.alibaba.cloud.ai.autoconfigure.dashscope.DashScopeRerankAutoConfiguration
       - com.alibaba.cloud.ai.autoconfigure.dashscope.DashScopeAudioSpeechAutoConfiguration
       - com.alibaba.cloud.ai.autoconfigure.dashscope.DashScopeAudioTranscriptionAutoConfiguration
+      - org.springframework.ai.autoconfigure.openai.OpenAiAutoConfiguration
   datasource:
     url: jdbc:sqlite:ibios.db
     driver-class-name: org.sqlite.JDBC
@@ -45,6 +46,9 @@ ibios:
     - name: dashscope
       api-key: ${DASHSCOPE_API_KEY:}
       model: qwen-plus
+    - name: deepseek
+      api-key: ${DEEPSEEK_API_KEY:}
+      model: deepseek-chat
 
 management:
   endpoints:

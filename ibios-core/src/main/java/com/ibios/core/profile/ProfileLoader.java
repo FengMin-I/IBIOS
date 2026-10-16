@@ -148,6 +148,7 @@ public class ProfileLoader {
     for (Map<String, Object> item : list) {
       result.add(
           new Profile.ScheduleConfig(
+              (String) item.getOrDefault("id", ""),
               (String) item.getOrDefault("cron", ""),
               (String) item.getOrDefault("zone", ""),
               (String) item.getOrDefault("message", "")));

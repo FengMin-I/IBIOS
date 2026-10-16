@@ -21,7 +21,8 @@ notify_channels:
     type: webhook
     url: http://localhost:8080/webhook
 schedules:
-  - cron: "0 9 * * *"
+  - id: morning-greeting
+    cron: "0 9 * * *"
     zone: Asia/Shanghai
     message: Good morning!
 bootstrap:

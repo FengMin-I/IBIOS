@@ -20,7 +20,7 @@ public record Profile(
 
   public record ProviderConfig(String name, String model, Double temperature) {}
 
-  public record ScheduleConfig(String cron, String zone, String message) {}
+  public record ScheduleConfig(String id, String cron, String zone, String message) {}
 
   public Profile {
     if (maxIterations <= 0) {
