@@ -116,7 +116,8 @@ public class ProfileLoader {
         bootstrap,
         settings,
         maxIterations,
-        maxHistoryTurns);
+        maxHistoryTurns,
+        null);
   }
 
   private Profile.Identity convertIdentity(Map<String, Object> map) {

@@ -40,6 +40,11 @@ public class PromptBuilder {
       sb.append(identityPrompt).append("\n\n");
     }
 
+    String agentBody = contextLoader.loadAgentBody(profile);
+    if (!agentBody.isEmpty()) {
+      sb.append(agentBody).append("\n\n");
+    }
+
     String bootstrapContent = contextLoader.loadBootstrapContent(profile);
     if (!bootstrapContent.isEmpty()) {
       sb.append(bootstrapContent).append("\n\n");

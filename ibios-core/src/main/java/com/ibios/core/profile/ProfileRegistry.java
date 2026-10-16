@@ -20,4 +20,12 @@ public class ProfileRegistry {
   public void register(Profile profile) {
     profiles.put(profile.name(), profile);
   }
+
+  public void remove(String name) {
+    profiles.remove(name);
+  }
+
+  public boolean exists(String name) {
+    return profiles.containsKey(name);
+  }
 }

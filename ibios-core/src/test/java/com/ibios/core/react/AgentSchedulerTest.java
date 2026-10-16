@@ -47,6 +47,9 @@ class AgentSchedulerTest {
   void cronTriggerIncludesExpressionAndZone() {
     Profile profile = createProfileWithSchedule("task-1", "0 0 9 * * *", "Asia/Shanghai", "hello");
     when(profileRegistry.getAll()).thenReturn(List.of(profile));
+    when(taskScheduler.schedule(
+            any(Runnable.class), any(org.springframework.scheduling.Trigger.class)))
+        .thenReturn(org.mockito.Mockito.mock(java.util.concurrent.ScheduledFuture.class));
 
     scheduler.registerAll();
 
@@ -124,6 +127,7 @@ class AgentSchedulerTest {
         List.of(),
         Map.of(),
         10,
-        20);
+        20,
+        null);
   }
 }

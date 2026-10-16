@@ -70,6 +70,7 @@ class ContextLoaderTest {
         bootstrap,
         Map.of(),
         10,
-        20);
+        20,
+        null);
   }
 }

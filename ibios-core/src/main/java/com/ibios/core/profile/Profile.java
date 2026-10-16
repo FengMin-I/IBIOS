@@ -1,5 +1,7 @@
 package com.ibios.core.profile;
 
+import java.nio.file.Path;
+
 public record Profile(
     String name,
     String description,
@@ -14,7 +16,8 @@ public record Profile(
     java.util.List<String> bootstrap,
     java.util.Map<String, Object> settings,
     int maxIterations,
-    int maxHistoryTurns) {
+    int maxHistoryTurns,
+    Path agentDir) {
 
   public record Identity(String agentName, String prompt) {}
 

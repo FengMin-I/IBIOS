@@ -10,8 +10,10 @@ import com.ibios.core.session.SessionManager;
 import jakarta.annotation.PostConstruct;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
@@ -31,6 +33,7 @@ public class AgentScheduler {
   private final SessionManager sessionManager;
   private final ScheduledTaskStore taskStore;
   private final Map<String, Lock> taskLocks = new ConcurrentHashMap<>();
+  private final Map<String, ScheduledFuture<?>> scheduledTasks = new ConcurrentHashMap<>();
 
   public AgentScheduler(
       TaskScheduler taskScheduler,
@@ -48,34 +51,44 @@ public class AgentScheduler {
   @PostConstruct
   public void registerAll() {
     for (Profile profile : profileRegistry.getAll()) {
-      for (Profile.ScheduleConfig sc : profile.schedules()) {
-        ZoneId zoneId = ZoneId.of(sc.zone());
-        Instant nextRun = computeNextRun(sc.cron(), zoneId);
-        ScheduledTaskView view =
-            new ScheduledTaskView(
-                sc.id(),
-                profile.name(),
-                sc.cron(),
-                sc.zone(),
-                sc.message(),
-                true,
-                nextRun,
-                null,
-                null,
-                0,
-                Instant.now());
-        taskStore.register(view);
-
-        taskScheduler.schedule(() -> runOnce(profile, sc), new CronTrigger(sc.cron(), zoneId));
-        LOG.info(
-            "Registered scheduled task '"
-                + sc.id()
-                + "' for profile '"
-                + profile.name()
-                + "', next run: "
-                + nextRun);
-      }
+      registerProfile(profile);
     }
+  }
+
+  public void registerProfile(Profile profile) {
+    for (Profile.ScheduleConfig sc : profile.schedules()) {
+      ZoneId zoneId = ZoneId.of(sc.zone());
+      Instant nextRun = computeNextRun(sc.cron(), zoneId);
+      ScheduledTaskView view =
+          new ScheduledTaskView(
+              sc.id(),
+              profile.name(),
+              sc.cron(),
+              sc.zone(),
+              sc.message(),
+              true,
+              nextRun,
+              null,
+              null,
+              0,
+              Instant.now());
+      taskStore.register(view);
+
+      ScheduledFuture<?> future =
+          taskScheduler.schedule(() -> runOnce(profile, sc), new CronTrigger(sc.cron(), zoneId));
+      scheduledTasks.put(sc.id(), future);
+      LOG.info(
+          "Registered scheduled task '"
+              + sc.id()
+              + "' for profile '"
+              + profile.name()
+              + "', next run: "
+              + nextRun);
+    }
+  }
+
+  public Map<String, ScheduledFuture<?>> scheduledTasks() {
+    return Collections.unmodifiableMap(scheduledTasks);
   }
 
   void runOnce(Profile profile, Profile.ScheduleConfig sc) {

@@ -160,7 +160,8 @@ class ProviderServiceTest {
         List.of(),
         Map.of(),
         10,
-        20);
+        20,
+        null);
   }
 
   private org.springframework.ai.chat.model.ChatResponse createChatResponse(String text) {

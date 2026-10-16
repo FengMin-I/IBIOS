@@ -1,5 +1,6 @@
 package com.ibios.config;
 
+import com.ibios.core.agent.AgentLoader;
 import com.ibios.core.audit.ToolInvocationAudit;
 import com.ibios.core.memory.MemoryService;
 import com.ibios.core.port.ChatPort;
@@ -49,6 +50,11 @@ public class IbiosConfiguration {
             .map(ProvidersProperties.ProviderEntry::getName)
             .collect(Collectors.toSet());
     return new ProfileLoader(registry, validProviderNames);
+  }
+
+  @Bean
+  public AgentLoader agentLoader() {
+    return new AgentLoader();
   }
 
   @Bean

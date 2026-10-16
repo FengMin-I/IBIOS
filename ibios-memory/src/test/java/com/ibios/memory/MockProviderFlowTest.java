@@ -59,7 +59,8 @@ class MockProviderFlowTest {
             List.of(),
             Map.of(),
             10,
-            20);
+            20,
+            null);
     toolAudit = new CountingToolInvocationAudit();
   }
 

@@ -7,9 +7,13 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ContextLoader {
   private static final Logger LOG = Logger.getLogger(ContextLoader.class.getName());
+  private static final Pattern FRONTMATTER_PATTERN =
+      Pattern.compile("\\A---\\s*\\n.*?\\n---\\s*\\n(.*)\\z", Pattern.DOTALL);
 
   public String loadBootstrapContent(Profile profile) {
     List<String> bootstrapPaths = profile.bootstrap();
@@ -54,5 +58,28 @@ public class ContextLoader {
       }
     }
     return sb.toString();
+  }
+
+  public String loadAgentBody(Profile profile) {
+    Path agentDir = profile.agentDir();
+    if (agentDir == null) {
+      return "";
+    }
+    Path agentMd = agentDir.resolve("AGENT.md");
+    if (!Files.isRegularFile(agentMd)) {
+      LOG.log(Level.WARNING, "AGENT.md not found: {0}", agentMd);
+      return "";
+    }
+    try {
+      String raw = Files.readString(agentMd);
+      Matcher matcher = FRONTMATTER_PATTERN.matcher(raw);
+      if (matcher.matches()) {
+        return matcher.group(1).trim();
+      }
+      return raw;
+    } catch (IOException e) {
+      LOG.log(Level.WARNING, "Failed to read AGENT.md: " + agentMd, e);
+      return "";
+    }
   }
 }

@@ -58,7 +58,8 @@ class FullFlowIntegrationTest {
               List.of(),
               Map.of(),
               10,
-              20);
+              20,
+              null);
       profileRegistry.register(profile);
     }
   }
