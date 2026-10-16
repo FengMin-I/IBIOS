@@ -13,29 +13,38 @@ public class GlobalExceptionHandler {
 
   private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-  @ExceptionHandler(IllegalArgumentException.class)
-  public ResponseEntity<ApiResponse<Void>> handleBadRequest(IllegalArgumentException ex) {
+  @ExceptionHandler({IllegalArgumentException.class, InvalidRequestException.class})
+  public ResponseEntity<ApiResponse<Void>> handleBadRequest(RuntimeException ex) {
     return ResponseEntity.status(HttpStatus.BAD_REQUEST)
         .body(ApiResponse.error(400, ex.getMessage()));
   }
 
-  @ExceptionHandler(ResourceNotFoundException.class)
-  public ResponseEntity<ApiResponse<Void>> handleNotFound(ResourceNotFoundException ex) {
+  @ExceptionHandler({
+    SessionNotFoundException.class,
+    AgentNotFoundException.class,
+    ResourceNotFoundException.class
+  })
+  public ResponseEntity<ApiResponse<Void>> handleNotFound(RuntimeException ex) {
     return ResponseEntity.status(HttpStatus.NOT_FOUND)
         .body(ApiResponse.error(404, ex.getMessage()));
   }
 
-  @ExceptionHandler(ServiceUnavailableException.class)
-  public ResponseEntity<ApiResponse<Void>> handleServiceUnavailable(
-      ServiceUnavailableException ex) {
+  @ExceptionHandler({ServiceUnavailableException.class, IllegalStateException.class})
+  public ResponseEntity<ApiResponse<Void>> handleServiceUnavailable(RuntimeException ex) {
     return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
         .body(ApiResponse.error(503, ex.getMessage()));
+  }
+
+  @ExceptionHandler(AgentTimeoutException.class)
+  public ResponseEntity<ApiResponse<Void>> handleTimeout(AgentTimeoutException ex) {
+    return ResponseEntity.status(HttpStatus.GATEWAY_TIMEOUT)
+        .body(ApiResponse.error(504, ex.getMessage()));
   }
 
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ApiResponse<Void>> handleGeneral(Exception ex) {
     log.error("Unhandled exception", ex);
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .body(ApiResponse.error(500, "Internal Server Error"));
+        .body(ApiResponse.error(500, "Internal server error"));
   }
 }

@@ -41,3 +41,10 @@ build/
 
 ### Secrets ###
 ibios.yaml
+
+### Frontend ###
+**/node_modules/
+
+### Runtime ###
+bin/ibios.log
+bin/ibios.pid
