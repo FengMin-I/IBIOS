@@ -1,5 +1,6 @@
 package com.ibios.core.react;
 
+import com.ibios.core.agent.ToolExecutionContext;
 import com.ibios.core.audit.ToolInvocationAudit;
 import com.ibios.core.port.ToolRegistry;
 import com.ibios.core.session.ToolResult;
@@ -48,6 +49,16 @@ public class ToolExecutor {
       audit.recordToolInvocation(
           sessionId, toolName, argumentsJson, null, false, errorMsg, duration);
       return new ToolResult(toolName, argumentsJson, null, false, errorMsg);
+    }
+  }
+
+  public ToolResult execute(
+      String sessionId, String profileName, String toolName, String argumentsJson) {
+    ToolExecutionContext.setAgentName(profileName);
+    try {
+      return execute(sessionId, toolName, argumentsJson);
+    } finally {
+      ToolExecutionContext.clear();
     }
   }
 }

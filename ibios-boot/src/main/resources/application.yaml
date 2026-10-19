@@ -42,12 +42,15 @@ http:
     - "*"
 
 ibios:
+  author:
+    provider: ${IBIOS_AUTHOR_PROVIDER:dashscope}
+    model: ${IBIOS_AUTHOR_MODEL:qwen-plus}
   providers:
     - name: dashscope
-      api-key: ${DASHSCOPE_API_KEY:}
+      api-key: sk-f8476cad880849338c4f3748ee570dc9
       model: qwen-plus
     - name: deepseek
-      api-key: ${DEEPSEEK_API_KEY:}
+      api-key: sk-abf9db7368ce44108cfc67061d348366
       model: deepseek-chat
 
 management:

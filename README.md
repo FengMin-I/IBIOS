@@ -45,27 +45,82 @@ IBIOS 是一个 **Java 原生的企业级 Agent OS**，为企业提供一个私�
 
 - JDK 21+
 - Maven 3.9+
+- Node.js 18+（仅开发管理台前端时需要）
 - LLM API Key（如 DashScope）
 
-### 构建
+### 编译
 
 ```bash
 git clone https://github.com/FengMin-I/IBIOS.git
 cd IBIOS
-mvn clean verify
+mvn clean install -DskipTests
 ```
 
 ### 配置 LLM Provider
+
+编辑 `ibios.yaml`（或复制 `ibios.yaml.example`）：
+
+```yaml
+ibios:
+  providers:
+    - name: dashscope
+      api-key: ${DASHSCOPE_API_KEY}
+      model: qwen-plus
+```
+
+设置环境变量：
 
 ```bash
 export DASHSCOPE_API_KEY=your-api-key
 ```
 
-### 运行
+### 一键启动
+
+使用提供的脚本启动 Server 和管理台：
 
 ```bash
-java -jar ibios-boot/target/ibios-boot.jar
+# 启动服务（默认使用 ibios.yaml 配置）
+./bin/start.sh
+
+# 使用指定配置文件
+./bin/start.sh ibios.yaml
+
+# 停止服务
+./bin/stop.sh
 ```
+
+启动后访问：
+- **管理台**：http://localhost:8080/admin
+- **API 文档**：http://localhost:8080/swagger-ui.html
+- **健康检查**：http://localhost:8080/api/v1/health
+
+### 管理台开发模式
+
+如果需要开发管理台前端，可以使用 Vite 开发服务器：
+
+```bash
+cd ibios-web/src/main/frontend
+npm install
+npm run dev
+```
+
+开发服务器启动在 http://localhost:5173，API 请求会自动代理到后端 http://localhost:8080。
+
+修改前端代码后，页面会自动热更新。开发完成后执行 `npm run build` 构建生产版本，产物输出到 `ibios-web/src/main/resources/static/admin/`。
+
+## 管理台预览
+
+![IBIOS 管理台](website/public/images/manager.jpg)
+
+管理台提供以下功能页面：
+- **概览** — 系统状态、核心能力展示
+- **Agent** — 已配置的 Agent Profile 列表
+- **Provider** — LLM Provider 连接状态
+- **Tool** — 已注册的工具列表
+- **Sandbox 白名单** — 文件/Shell/HTTP 访问控制规则
+- **长期记忆** — MEMORY.md 内容查看
+- **运行状态** — 系统健康状态和版本信息
+- **会话** — 历史会话记录
 
 ## 架构
 
@@ -76,11 +131,11 @@ java -jar ibios-boot/target/ibios-boot.jar
 ```
 ibios/
 ├── ibios-core          # 核心抽象：Profile、IbiosTool、ReActLoop、Sandbox
-├── ibios-provider      # LLM Provider 抽象、多 Provider 路由、ToolSchema 翻译
-├── ibios-storage       # 持久化：Session、LlmCall、ToolInvocation
+── ibios-provider      # LLM Provider 抽象、多 Provider 路由、ToolSchema 翻译
+── ibios-storage       # 持久化：Session、LlmCall、ToolInvocation
 ├── ibios-memory        # MemoryService 三层门面、LongTermMemory
 ├── ibios-tool          # 内置 Tool、MCP Client、ToolRegistry
-├── ibios-web           # REST API、Web Server
+├── ibios-web           # REST API、Web Server、管理台前端
 ├── ibios-cli           # Picocli 命令行工具
 ├── ibios-channel-cli   # CLI Channel 接入
 └── ibios-boot          # Spring Boot 启动模块
@@ -111,6 +166,7 @@ ibios/
 | CLI | Picocli |
 | 日志 | Logback + SLF4J |
 | 监控 | Micrometer + Prometheus |
+| 管理台前端 | Vue 3 + Vite |
 
 ## 项目路线图
 
@@ -147,6 +203,10 @@ mvn spotless:apply
 
 # 跑集成测试
 DASHSCOPE_API_KEY=xxx mvn verify -Dgroups=integration
+
+# 管理台前端开发
+cd ibios-web/src/main/frontend
+npm run dev
 ```
 
 ## 贡献

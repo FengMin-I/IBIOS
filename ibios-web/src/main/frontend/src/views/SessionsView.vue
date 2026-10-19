@@ -10,6 +10,7 @@
           <th>Session ID</th>
           <th>Profile</th>
           <th>消息数</th>
+          <th>操作</th>
         </tr>
       </thead>
       <tbody>
@@ -21,6 +22,9 @@
           </td>
           <td>{{ session.profileName }}</td>
           <td>{{ session.messages?.length || 0 }}</td>
+          <td>
+            <button class="btn-delete" @click="deleteSession(session.sessionId)">删除</button>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -46,6 +50,18 @@ onMounted(async () => {
     loading.value = false
   }
 })
+
+async function deleteSession(sessionId) {
+  if (!confirm(`确认删除会话 "${sessionId}"？`)) return
+  try {
+    const res = await fetch(`/api/v1/sessions/${sessionId}`, { method: 'DELETE' })
+    if (res.ok) {
+      sessions.value = sessions.value.filter(s => s.sessionId !== sessionId)
+    }
+  } catch (e) {
+    // silent
+  }
+}
 </script>
 
 <style scoped>
@@ -72,5 +88,42 @@ onMounted(async () => {
 
 .error {
   color: #e74c3c;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  text-align: left;
+  padding: 12px 16px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  font-size: 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+  vertical-align: middle;
+}
+
+.btn-delete {
+  padding: 5px 14px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-delete:hover {
+  border-color: var(--error);
+  color: var(--error);
 }
 </style>

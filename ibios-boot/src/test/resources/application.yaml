@@ -1,0 +1,54 @@
+server:
+  port: 0
+
+spring:
+  threads:
+    virtual:
+      enabled: true
+  autoconfigure:
+    exclude:
+      - com.alibaba.cloud.ai.autoconfigure.dashscope.DashScopeAgentAutoConfiguration
+      - com.alibaba.cloud.ai.autoconfigure.dashscope.DashScopeChatAutoConfiguration
+      - com.alibaba.cloud.ai.autoconfigure.dashscope.DashScopeImageAutoConfiguration
+      - com.alibaba.cloud.ai.autoconfigure.dashscope.DashScopeEmbeddingAutoConfiguration
+      - com.alibaba.cloud.ai.autoconfigure.dashscope.DashScopeRerankAutoConfiguration
+      - com.alibaba.cloud.ai.autoconfigure.dashscope.DashScopeAudioSpeechAutoConfiguration
+      - com.alibaba.cloud.ai.autoconfigure.dashscope.DashScopeAudioTranscriptionAutoConfiguration
+      - org.springframework.ai.autoconfigure.openai.OpenAiAutoConfiguration
+  datasource:
+    url: jdbc:sqlite:file:mock_e2e_test?mode=memory&cache=shared
+    driver-class-name: org.sqlite.JDBC
+  jpa:
+    database-platform: org.hibernate.community.dialect.SQLiteDialect
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+
+memory:
+  backend: markdown
+
+file:
+  allowed-paths:
+    - .ibios
+
+shell:
+  allowed-commands:
+    - ls
+    - cat
+    - echo
+
+http:
+  allowed-domains:
+    - "*"
+
+ibios:
+  providers:
+    - name: mock
+      api-key: ""
+      model: mock
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

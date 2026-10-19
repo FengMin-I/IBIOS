@@ -13,27 +13,38 @@ import com.ibios.core.profile.ProfileRegistry;
 import com.ibios.core.react.AgentService;
 import com.ibios.core.session.Session;
 import com.ibios.core.session.SessionManager;
+import com.ibios.web.exception.GlobalExceptionHandler;
 import com.ibios.web.model.SendMessageRequest;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.mockito.Mockito;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-@WebMvcTest(SessionApiController.class)
 class SessionApiControllerTest {
 
-  @Autowired private MockMvc mockMvc;
+  private MockMvc mockMvc;
+  private ObjectMapper objectMapper;
+  private AgentService agentService;
+  private SessionManager sessionManager;
 
-  @Autowired private ObjectMapper objectMapper;
+  @BeforeEach
+  void setUp() {
+    agentService = Mockito.mock(AgentService.class);
+    sessionManager = Mockito.mock(SessionManager.class);
+    ProfileRegistry profileRegistry = Mockito.mock(ProfileRegistry.class);
+    objectMapper = new ObjectMapper();
 
-  @MockBean private AgentService agentService;
+    SessionApiController controller =
+        new SessionApiController(agentService, sessionManager, profileRegistry);
 
-  @MockBean private SessionManager sessionManager;
-
-  @MockBean private ProfileRegistry profileRegistry;
+    mockMvc =
+        MockMvcBuilders.standaloneSetup(controller)
+            .setControllerAdvice(new GlobalExceptionHandler())
+            .build();
+  }
 
   @Test
   @DisplayName("消息超 32KB 返回 400")

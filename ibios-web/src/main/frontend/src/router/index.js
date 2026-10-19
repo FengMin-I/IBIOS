@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import OverviewView from '../views/OverviewView.vue'
 import AgentsView from '../views/AgentsView.vue'
+import AgentDetailView from '../views/AgentDetailView.vue'
 import ProvidersView from '../views/ProvidersView.vue'
 import ToolsView from '../views/ToolsView.vue'
 import SandboxView from '../views/SandboxView.vue'
@@ -13,6 +14,7 @@ import SessionDetailView from '../views/SessionDetailView.vue'
 const routes = [
   { path: '/', component: OverviewView },
   { path: '/agents', component: AgentsView },
+  { path: '/agents/:name', component: AgentDetailView },
   { path: '/providers', component: ProvidersView },
   { path: '/tools', component: ToolsView },
   { path: '/sandbox', component: SandboxView },

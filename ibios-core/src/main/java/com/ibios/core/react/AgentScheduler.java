@@ -87,6 +87,17 @@ public class AgentScheduler {
     }
   }
 
+  public void unregisterProfile(Profile profile) {
+    for (Profile.ScheduleConfig sc : profile.schedules()) {
+      ScheduledFuture<?> future = scheduledTasks.remove(sc.id());
+      if (future != null) {
+        future.cancel(false);
+        LOG.info(
+            "Unregistered scheduled task '" + sc.id() + "' for profile '" + profile.name() + "'");
+      }
+    }
+  }
+
   public Map<String, ScheduledFuture<?>> scheduledTasks() {
     return Collections.unmodifiableMap(scheduledTasks);
   }

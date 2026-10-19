@@ -12,6 +12,8 @@ public interface ScheduledTaskStore {
 
   void setEnabled(String taskId, boolean enabled);
 
+  void delete(String taskId);
+
   ScheduledTaskView get(String taskId);
 
   List<ScheduledTaskView> listAll();

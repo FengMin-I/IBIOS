@@ -3,6 +3,7 @@ package com.ibios.web.exception;
 import com.ibios.web.model.ApiResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ai.retry.NonTransientAiException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -33,6 +34,17 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ApiResponse<Void>> handleServiceUnavailable(RuntimeException ex) {
     return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
         .body(ApiResponse.error(503, ex.getMessage()));
+  }
+
+  @ExceptionHandler(NonTransientAiException.class)
+  public ResponseEntity<ApiResponse<Void>> handleAiException(NonTransientAiException ex) {
+    log.warn("AI service error: {}", ex.getMessage());
+    String message = "LLM 服务调用失败";
+    if (ex.getMessage() != null && ex.getMessage().contains("API-key")) {
+      message = "LLM API Key 未配置，请设置环境变量后重试";
+    }
+    return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+        .body(ApiResponse.error(503, message));
   }
 
   @ExceptionHandler(AgentTimeoutException.class)

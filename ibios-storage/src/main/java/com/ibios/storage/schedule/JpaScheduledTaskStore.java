@@ -65,6 +65,17 @@ public class JpaScheduledTaskStore implements ScheduledTaskStore {
   }
 
   @Override
+  public void delete(String taskId) {
+    taskRepo
+        .findById(taskId)
+        .ifPresent(
+            task -> {
+              execRepo.deleteByTaskId(taskId);
+              taskRepo.delete(task);
+            });
+  }
+
+  @Override
   public ScheduledTaskView get(String taskId) {
     return taskRepo.findById(taskId).map(this::toView).orElse(null);
   }

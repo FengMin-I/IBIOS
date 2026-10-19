@@ -5,4 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface TaskExecutionRepository extends JpaRepository<TaskExecution, Long> {
   List<TaskExecution> findByTaskIdOrderByStartedAtDesc(String taskId);
+
+  void deleteByTaskId(String taskId);
 }

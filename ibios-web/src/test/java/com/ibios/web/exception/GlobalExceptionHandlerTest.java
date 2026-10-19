@@ -6,27 +6,33 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.ibios.web.model.ApiResponse;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@WebMvcTest(GlobalExceptionHandlerTest.TestController.class)
-@Import({GlobalExceptionHandler.class, GlobalExceptionHandlerTest.TestController.class})
 class GlobalExceptionHandlerTest {
 
-  @Autowired private MockMvc mockMvc;
+  private MockMvc mockMvc;
+
+  @BeforeEach
+  void setUp() {
+    mockMvc =
+        MockMvcBuilders.standaloneSetup(new TestController())
+            .setControllerAdvice(new GlobalExceptionHandler())
+            .build();
+  }
 
   @Test
   @DisplayName("IllegalArgumentException 返回 400")
   void illegalArgumentException_returns400() throws Exception {
     mockMvc
-        .perform(get("/test/bad-request"))
+        .perform(get("/test/bad-request").accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.code").value(400))
         .andExpect(jsonPath("$.message").value("bad param"));
@@ -36,7 +42,7 @@ class GlobalExceptionHandlerTest {
   @DisplayName("InvalidRequestException 返回 400")
   void invalidRequestException_returns400() throws Exception {
     mockMvc
-        .perform(get("/test/invalid-request"))
+        .perform(get("/test/invalid-request").accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.code").value(400));
   }
@@ -45,7 +51,7 @@ class GlobalExceptionHandlerTest {
   @DisplayName("SessionNotFoundException 返回 404")
   void sessionNotFoundException_returns404() throws Exception {
     mockMvc
-        .perform(get("/test/session-not-found"))
+        .perform(get("/test/session-not-found").accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.code").value(404));
   }
@@ -54,7 +60,7 @@ class GlobalExceptionHandlerTest {
   @DisplayName("AgentNotFoundException 返回 404")
   void agentNotFoundException_returns404() throws Exception {
     mockMvc
-        .perform(get("/test/agent-not-found"))
+        .perform(get("/test/agent-not-found").accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.code").value(404));
   }
@@ -63,7 +69,7 @@ class GlobalExceptionHandlerTest {
   @DisplayName("AgentTimeoutException 返回 504")
   void agentTimeoutException_returns504() throws Exception {
     mockMvc
-        .perform(get("/test/timeout"))
+        .perform(get("/test/timeout").accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isGatewayTimeout())
         .andExpect(jsonPath("$.code").value(504));
   }
@@ -72,7 +78,7 @@ class GlobalExceptionHandlerTest {
   @DisplayName("IllegalStateException 返回 503")
   void illegalStateException_returns503() throws Exception {
     mockMvc
-        .perform(get("/test/service-unavailable"))
+        .perform(get("/test/service-unavailable").accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isServiceUnavailable())
         .andExpect(jsonPath("$.code").value(503));
   }
@@ -81,7 +87,7 @@ class GlobalExceptionHandlerTest {
   @DisplayName("未知异常返回 500，响应体不含内部异常细节")
   void unknownException_returns500WithoutLeakingDetails() throws Exception {
     mockMvc
-        .perform(get("/test/internal-error"))
+        .perform(get("/test/internal-error").accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isInternalServerError())
         .andExpect(jsonPath("$.code").value(500))
         .andExpect(jsonPath("$.message").value("Internal server error"))
@@ -96,7 +102,7 @@ class GlobalExceptionHandlerTest {
   @DisplayName("所有错误响应都是统一 ApiResponse 信封")
   void allErrorsReturnApiResponseEnvelope() throws Exception {
     mockMvc
-        .perform(get("/test/bad-request"))
+        .perform(get("/test/bad-request").accept(MediaType.APPLICATION_JSON))
         .andExpect(jsonPath("$.code").exists())
         .andExpect(jsonPath("$.message").exists())
         .andExpect(jsonPath("$.timestamp").exists());

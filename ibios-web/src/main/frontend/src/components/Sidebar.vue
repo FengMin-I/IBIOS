@@ -4,27 +4,61 @@
       <img src="/logo.svg" alt="IBIOS" class="logo-img" />
     </div>
     <ul class="nav-list">
-      <li v-for="item in navItems" :key="item.path">
-        <router-link :to="item.path" :class="{ active: $route.path === item.path }">
-          {{ item.label }}
-        </router-link>
+      <li v-for="item in navItems" :key="item.path || item.group">
+        <template v-if="item.children">
+          <div class="nav-group">
+            <div class="group-header" @click="toggleGroup(item.group)">
+              <span>{{ item.label }}</span>
+              <span class="group-arrow" :class="{ expanded: expandedGroups.has(item.group) }">▼</span>
+            </div>
+            <ul v-show="expandedGroups.has(item.group)" class="nav-sublist">
+              <li v-for="child in item.children" :key="child.path">
+                <router-link :to="child.path" :class="{ active: $route.path === child.path }">
+                  {{ child.label }}
+                </router-link>
+              </li>
+            </ul>
+          </div>
+        </template>
+        <template v-else>
+          <router-link :to="item.path" :class="{ active: $route.path === item.path }">
+            {{ item.label }}
+          </router-link>
+        </template>
       </li>
     </ul>
   </nav>
 </template>
 
 <script setup>
+import { ref } from 'vue'
+
+const expandedGroups = ref(new Set(['os-runtime']))
+
 const navItems = [
   { path: '/', label: '概览' },
-  { path: '/agents', label: 'Agent' },
-  { path: '/providers', label: 'Provider' },
-  { path: '/tools', label: 'Tool' },
-  { path: '/sandbox', label: 'Sandbox 白名单' },
-  { path: '/memory', label: '长期记忆' },
-  { path: '/info', label: '运行状态' },
+  { path: '/agents', label: 'Agent 列表' },
   { path: '/schedules', label: '定时任务' },
-  { path: '/sessions', label: '会话' }
+  {
+    group: 'os-runtime',
+    label: 'OS 运行时',
+    children: [
+      { path: '/sessions', label: '会话列表' },
+      { path: '/providers', label: 'Provider 列表' },
+      { path: '/tools', label: 'Tool 列表' },
+      { path: '/sandbox', label: 'SandBox 列表' },
+      { path: '/memory', label: '长期记忆' }
+    ]
+  }
 ]
+
+function toggleGroup(group) {
+  if (expandedGroups.value.has(group)) {
+    expandedGroups.value.delete(group)
+  } else {
+    expandedGroups.value.add(group)
+  }
+}
 </script>
 
 <style scoped>
@@ -53,9 +87,11 @@ const navItems = [
 
 .nav-list {
   list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
-.nav-list li {
+.nav-list > li {
   margin: 4px 12px;
 }
 
@@ -65,6 +101,7 @@ const navItems = [
   color: var(--text-secondary);
   border-radius: 4px;
   transition: all 0.2s;
+  text-decoration: none;
 }
 
 .nav-list a:hover {
@@ -75,6 +112,55 @@ const navItems = [
 .nav-list a.active {
   background: var(--accent);
   color: white;
+}
+
+.nav-group {
+  margin: 4px 0;
+}
+
+.group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s;
+  user-select: none;
+}
+
+.group-header:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.group-arrow {
+  font-size: 10px;
+  transition: transform 0.2s;
+}
+
+.group-arrow.expanded {
+  transform: rotate(0deg);
+}
+
+.group-arrow:not(.expanded) {
+  transform: rotate(-90deg);
+}
+
+.nav-sublist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-sublist li {
+  margin: 2px 0;
+}
+
+.nav-sublist a {
+  padding: 8px 12px 8px 24px;
+  font-size: 13px;
 }
 
 @media (max-width: 768px) {
