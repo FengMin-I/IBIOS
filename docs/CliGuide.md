@@ -147,7 +147,7 @@ ibios profile list               # 列出全部（每行一个 Agent 目录名�
 ibios profile delete ops-agent   # 删除整个 Agent 目录（不存在则报错点名）
 ```
 
-**一个目录 = 一个 Agent**：每个 Agent 是 `.ibios/agents/<name>/` 下的一个目录，核心是 `AGENT.md`——YAML frontmatter（这个 Agent 的 profile：identity/provider/tools/bootstrap/settings）+ 正文（任务指令），外加可选的 `skills/`、`scripts/`、`REFERENCE.md`。**不再有 `.ibios/profiles/` 目录**。create 生成的模板直接编辑即可定制——**改配置就是改 Agent，不需要写代码**。改完无需重启：下一轮对话即生效（上下文文件每次组装都重新读取）。
+**一个目录 = 一个 Agent**：每个 Agent 是 `.ibios/agents/<name>/` 下的一个目录，核心是 `AGENT.md`——YAML frontmatter（这个 Agent 的 profile：identity/provider/schedules/bootstrap/settings）+ 正文（任务指令），外加可选的 `skills/`、`scripts/`、`REFERENCE.md`。工具是全局注册表，不在 profile 里声明。**不再有 `.ibios/profiles/` 目录**。create 生成的模板直接编辑即可定制——**改配置就是改 Agent，不需要写代码**。改完无需重启：下一轮对话即生效（上下文文件每次组装都重新读取）。
 
 ### 4.6 provider list / tool list / session list——三张清单
 

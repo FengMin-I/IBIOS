@@ -11,8 +11,12 @@ import com.ibios.core.session.ToolResult;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ReActLoop {
+  private static final Logger log = LoggerFactory.getLogger(ReActLoop.class);
+
   private final PromptBuilder promptBuilder;
   private final ChatPort chatPort;
   private final ToolExecutor toolExecutor;
@@ -36,9 +40,13 @@ public class ReActLoop {
         return response.text();
       }
 
+      log.info("Executing {} tool calls", response.toolCalls().size());
       for (ToolCallResponse toolCall : response.toolCalls()) {
+        log.info("Executing tool: {} with args: {}", toolCall.name(), toolCall.argumentsJson());
         ToolResult result =
-            toolExecutor.execute(session.id(), toolCall.name(), toolCall.argumentsJson());
+            toolExecutor.execute(
+                session.id(), profile.name(), toolCall.name(), toolCall.argumentsJson());
+        log.info("Tool {} execution result: success={}", toolCall.name(), result.success());
         session.appendToolResult(result);
       }
     }

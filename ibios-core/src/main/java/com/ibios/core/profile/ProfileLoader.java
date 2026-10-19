@@ -75,7 +75,7 @@ public class ProfileLoader {
       String varName = matcher.group(1);
       String value = System.getenv(varName);
       if (value == null) {
-        throw new IllegalStateException("Environment variable not set: " + varName);
+        value = "";
       }
       matcher.appendReplacement(sb, Matcher.quoteReplacement(value));
     }
@@ -90,12 +90,9 @@ public class ProfileLoader {
     Profile.Identity identity = convertIdentity((Map<String, Object>) data.get("identity"));
     Profile.ProviderConfig provider =
         convertProviderConfig((Map<String, Object>) data.get("provider"));
-    List<String> tools = asStringList(data.get("tools"));
     List<String> skills = asStringList(data.get("skills"));
     List<String> mcpServers = asStringList(data.get("mcp_servers"));
     List<String> channels = asStringList(data.get("channels"));
-    List<NotifyChannelConfig> notifyChannels =
-        convertNotifyChannels((List<Map<String, Object>>) data.get("notify_channels"));
     List<Profile.ScheduleConfig> schedules =
         convertSchedules((List<Map<String, Object>>) data.get("schedules"));
     List<String> bootstrap = asStringList(data.get("bootstrap"));
@@ -107,11 +104,9 @@ public class ProfileLoader {
         description,
         identity,
         provider,
-        tools,
         skills,
         mcpServers,
         channels,
-        notifyChannels,
         schedules,
         bootstrap,
         settings,
@@ -153,21 +148,6 @@ public class ProfileLoader {
               (String) item.getOrDefault("cron", ""),
               (String) item.getOrDefault("zone", ""),
               (String) item.getOrDefault("message", "")));
-    }
-    return result;
-  }
-
-  private List<NotifyChannelConfig> convertNotifyChannels(List<Map<String, Object>> list) {
-    if (list == null) {
-      return Collections.emptyList();
-    }
-    List<NotifyChannelConfig> result = new ArrayList<>();
-    for (Map<String, Object> item : list) {
-      result.add(
-          new NotifyChannelConfig(
-              (String) item.getOrDefault("name", ""),
-              (String) item.getOrDefault("type", ""),
-              (String) item.getOrDefault("url", "")));
     }
     return result;
   }

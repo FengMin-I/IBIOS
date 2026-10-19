@@ -104,7 +104,6 @@ Scaffolds `.ibios/agents/<name>/AGENT.md`, derives its Profile, and registers it
   "description": "Operations assistant",
   "provider": "deepseek",
   "model": "deepseek-chat",
-  "tools": ["read_file", "shell", "http_get"],
   "schedules": []
 }
 ```
@@ -121,7 +120,6 @@ Scaffolds `.ibios/agents/<name>/AGENT.md`, derives its Profile, and registers it
     "description": "Operations assistant",
     "provider": "deepseek",
     "model": "deepseek-chat",
-    "tools": ["read_file", "shell", "http_get"],
     "schedules": []
   }
 ]
@@ -138,7 +136,6 @@ Scaffolds `.ibios/agents/<name>/AGENT.md`, derives its Profile, and registers it
   "description": "Daily weather + dress advice pushed to Lark",
   "provider": "deepseek",
   "model": "deepseek-chat",
-  "tools": ["http_get", "notify"],
   "schedules": [
     { "id": "morning", "cron": "0 0 8 * * *", "zone": "Asia/Shanghai", "message": "推送今天的天气和穿衣建议" }
   ]
@@ -165,7 +162,6 @@ Overwrites the entire `AGENT.md` text. If the `schedules` changed, the Agent is 
   "description": "Operations assistant",
   "provider": "deepseek",
   "model": "deepseek-chat",
-  "tools": ["read_file", "shell", "http_get"],
   "schedules": []
 }
 ```
@@ -288,7 +284,6 @@ Saves a (possibly user-edited) set of Agent files. Saving takes effect immediate
   "description": "Daily GitHub trending to Lark",
   "provider": "deepseek",
   "model": "deepseek-chat",
-  "tools": ["shell", "notify"],
   "schedules": []
 }
 ```
@@ -665,8 +660,7 @@ Returns the derived Profiles — one per Agent directory under `.ibios/agents/`.
     "name": "ops-agent",
     "description": "Operations assistant",
     "provider": "deepseek",
-    "model": "deepseek-chat",
-    "tools": ["read_file", "shell", "http_get", "save_memory", "recall_memory"]
+    "model": "deepseek-chat"
   }
 ]
 ```
@@ -752,13 +746,13 @@ The `value` is a **query parameter**; a blank value returns `400`.
 
 ## Tool policy
 
-The platform administrator's governance layer (020): global + per-agent tool allow/deny, separate from the author-owned `tools:` list in `AGENT.md`. Policy is subtraction-only — the effective tool set is always ⊆ the declared set; it is orthogonal to the sandbox whitelist (policy decides *whether an agent may use a tool*, the sandbox decides *what resources a tool may touch*). Zero rules = current behavior unchanged; rule changes take effect immediately (hot reload).
+The platform administrator's governance layer (planned extension): global + per-agent tool deny on top of the global registry. Policy is subtraction-only — the effective tool set is always ⊆ the globally registered set; it is orthogonal to the sandbox whitelist (policy decides *whether an agent may use a tool*, the sandbox decides *what resources a tool may touch*). Zero rules = current behavior unchanged; rule changes take effect immediately (hot reload).
 
 Three rule types: `GLOBAL_DENY` (all agents, no agentName), `AGENT_EXEMPT` (lifts the global deny for one agent), `AGENT_DENY` (tightens one agent — exemptions cannot save it). `pattern` is an exact tool name or an MCP server wildcard (`github-mcp:*`, matched by the tool's registered ownership). Three guards: denied tools never enter the model's tool list (before), the executor rejects by the latest policy at execution time (during, catches hallucinated calls), and `tool_invocations.blocked_by='policy'` marks the audit row (after, filterable).
 
 ### Get policy and effective tool sets
 
-**GET** `/api/v1/tool-policy` — returns `rules` plus each agent's `declared` / `effective` / `removed` (with the matched-rule reason).
+**GET** `/api/v1/tool-policy` — returns `rules` plus each agent's `registered` / `effective` / `removed` (with the matched-rule reason).
 
 ### Create a rule
 

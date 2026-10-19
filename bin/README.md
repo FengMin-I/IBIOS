@@ -2,26 +2,29 @@
 
 ## 快速开始
 
-### 1. 首次使用
+### 1. 配置凭证（环境变量）
+
+凭证只通过环境变量提供，不写入任何配置文件：
 
 ```bash
-# 复制配置文件模板
-cp ibios.yaml.example ibios.yaml
-
-# 编辑配置文件，填入你的 API Key
-vim ibios.yaml
+export DASHSCOPE_API_KEY=your_dashscope_key
+export DEEPSEEK_API_KEY=your_deepseek_key
 ```
+
+只需使用某个 Provider 时，设置对应的变量即可；只用 `mock` Provider 时可都不设，应用照常启动。
 
 ### 2. 启动服务
 
 ```bash
-# 使用配置文件启动（推荐）
-bin/start.sh ibios.yaml
-
-# 或使用默认配置（需要 DASHSCOPE_API_KEY 环境变量）
-export DASHSCOPE_API_KEY=your_key_here
+# 使用环境变量中的凭证启动
 bin/start.sh
+
+# 如需覆盖非敏感配置（端口、白名单等），传入外部配置文件
+cp ibios.yaml.example ibios.yaml
+bin/start.sh ibios.yaml
 ```
+
+不要把 API Key 写进 `ibios.yaml`——示例文件里用的是 `${DASHSCOPE_API_KEY:}` 这类占位符，由环境变量在启动时解析。
 
 ### 3. 访问服务
 
@@ -44,16 +47,18 @@ tail -f bin/ibios.log
 ## 配置文件格式
 
 ```yaml
-# ibios.yaml
+# ibios.yaml（可选，仅非敏感配置）
 ibios:
   providers:
     - name: dashscope
-      api-key: your_dashscope_api_key_here
+      api-key: ${DASHSCOPE_API_KEY:}
       model: qwen-plus
 ```
 
 ## 注意事项
 
+- 环境变量必须在启动前设置；服务运行中新增或修改不会生效，需要重启
+- 首次启动时 Provider 从配置播种进 SQLite；之后以数据库为准，可在管理台或 `/api/v1/providers` 修改
 - 首次启动前需要运行 `mvn clean install -DskipTests` 构建项目
 - 脚本会自动检测 Java 23（Homebrew 安装），如果未找到则使用默认 java 命令
 - PID 文件保存在 `bin/ibios.pid`，日志保存在 `bin/ibios.log`

@@ -3,8 +3,6 @@ package com.ibios.core.profile;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -38,16 +36,10 @@ class ProfileLoaderTest {
     assertEquals("dashscope", profile.provider().name());
     assertEquals("qwen-plus", profile.provider().model());
     assertEquals(0.7, profile.provider().temperature(), 0.001);
-    assertEquals(2, profile.tools().size());
-    assertTrue(profile.tools().contains("web_search"));
-    assertTrue(profile.tools().contains("calculator"));
     assertEquals(1, profile.skills().size());
     assertEquals(1, profile.mcpServers().size());
     assertEquals("fs-server", profile.mcpServers().get(0));
     assertEquals(1, profile.channels().size());
-    assertEquals(1, profile.notifyChannels().size());
-    assertEquals("log", profile.notifyChannels().get(0).name());
-    assertEquals("webhook", profile.notifyChannels().get(0).type());
     assertEquals(1, profile.schedules().size());
     assertEquals("morning-greeting", profile.schedules().get(0).id());
     assertEquals("0 9 * * *", profile.schedules().get(0).cron());
@@ -89,9 +81,10 @@ class ProfileLoaderTest {
   }
 
   @Test
-  void shouldThrowOnMissingEnvVar() {
+  void shouldUseEmptyStringForMissingEnvVar() {
     String input = "value: ${IBIOS_NONEXISTENT_VAR_12345}";
-    assertThrows(IllegalStateException.class, () -> ProfileLoader.resolveEnvVars(input));
+    String resolved = ProfileLoader.resolveEnvVars(input);
+    assertEquals("value: ", resolved);
   }
 
   private Path testProfilesDir() {

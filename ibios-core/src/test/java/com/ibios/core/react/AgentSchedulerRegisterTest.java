@@ -76,8 +76,6 @@ class AgentSchedulerRegisterTest {
         List.of(),
         List.of(),
         List.of(),
-        List.of(),
-        List.of(),
         List.of(sc),
         List.of(),
         Map.of(),

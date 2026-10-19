@@ -150,7 +150,7 @@ ibios gateway
 
 ## Agent (profile) management
 
-Each agent is one directory under `<workspace>/agents/<name>/`, holding an `AGENT.md` (YAML frontmatter = the agent's profile: identity, provider, tools, settings; body = task instructions) plus optional `skills/`, `scripts/`, and `REFERENCE.md`. One directory = one agent — there is no `.ibios/profiles/` directory. The `profile` sub-commands are light (no Spring) and read/write these `AGENT.md` files directly, honoring `IBIOS_ROOT` / `-Dibios.root`.
+Each agent is one directory under `<workspace>/agents/<name>/`, holding an `AGENT.md` (YAML frontmatter = the agent's profile: identity, provider, schedules, settings; body = task instructions) plus optional `skills/`, `scripts/`, and `REFERENCE.md`. Tools are global — every registered tool is available to every agent — so there is no `tools:` list in the profile. One directory = one agent — there is no `.ibios/profiles/` directory. The `profile` sub-commands are light (no Spring) and read/write these `AGENT.md` files directly, honoring `IBIOS_ROOT` / `-Dibios.root`.
 
 ### profile list
 

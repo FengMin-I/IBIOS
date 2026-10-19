@@ -21,7 +21,7 @@
 
 这就是 IBIOS 的全部要义：**把「定义一个 Agent」的成本压到趋近于零。** 你写想要什么，OS 负责供给能力、安全护栏和审计记录。
 
-具体形态是 **一个目录 = 一个 Agent**：`.ibios/agents/<name>/` 下的一个目录，一份 `AGENT.md`——YAML frontmatter 是这个 Agent 的 profile（身份、对话的模型、引用哪些工具 / Skill），正文是任务指令。目录放进去就上线。通过 REST API 或 Web 管理台在运行时创建、编辑、删除 Agent——包括用一句话生成一个完整的 Agent。业务系统走 HTTP 接入。数据始终不出你的基础设施。
+具体形态是 **一个目录 = 一个 Agent**：`.ibios/agents/<name>/` 下的一个目录，一份 `AGENT.md`——YAML frontmatter 是这个 Agent 的 profile（身份、对话的模型、定时任务与行为参数），正文是任务指令。工具是全局的：`ToolRegistry` 中注册的每个工具对所有 Agent 可用，具体能碰什么资源由沙箱白名单约束。目录放进去就上线。通过 REST API 或 Web 管理台在运行时创建、编辑、删除 Agent——包括用一句话生成一个完整的 Agent。业务系统走 HTTP 接入。数据始终不出你的基础设施。
 
 ## 什么是 agent harness（以及为什么是 OS）
 
@@ -55,7 +55,7 @@
 
 ### 工具体系
 
-**24 个内置工具**覆盖基础场景：文件操作（读 / 写 / 列目录 / 追加 / 移动 / 复制 / 删除 / 建目录）、Shell、HTTP（get / post / 任意请求 / 抓网页 / 下载）、时间与 JSON 工具、记忆，以及 `notify`。全部在沙箱管控下执行——文件走路径白名单、Shell 走命令白名单、HTTP **读写分治**（读：默认放行 + SSRF 黑名单；写：域名通配符白名单）——每次调用都有审计。`notify` 按名字推送到通知渠道（飞书 / 企业微信 / 钉钉 / Slack / Discord / Telegram / WhatsApp / Teams / Google Chat / Mattermost / Matrix / 通用 webhook），渠道本身也是支持完整 CRUD 的动态注册表。
+**24 个内置工具**覆盖基础场景：文件操作（读 / 写 / 列目录 / 追加 / 移动 / 复制 / 删除 / 建目录）、Shell、HTTP（get / post / 任意请求 / 抓网页 / 下载）、时间与 JSON 工具、记忆，以及 `notify`。工具是全局的——每个已注册工具对所有 Agent 可见，没有 per-Agent 白名单。全部在沙箱管控下执行——文件走路径白名单、Shell 走命令白名单、HTTP **读写分治**（读：默认放行 + SSRF 黑名单；写：域名通配符白名单）——每次调用都有审计。`notify` 按名字推送到通知渠道（飞书 / 企业微信 / 钉钉 / Slack / Discord / Telegram / WhatsApp / Teams / Google Chat / Mattermost / Matrix / 通用 webhook），渠道本身也是支持完整 CRUD 的动态注册表。
 
 扩展按三档进行，按工作量从低到高：
 

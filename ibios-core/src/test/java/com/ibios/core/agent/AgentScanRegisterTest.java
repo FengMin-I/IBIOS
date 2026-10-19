@@ -32,8 +32,7 @@ class AgentScanRegisterTest {
     ProfileRegistry registry = new ProfileRegistry();
     AgentScheduler scheduler = Mockito.mock(AgentScheduler.class);
 
-    loader.scanAndRegister(
-        agentsDir, registry, scheduler, Set.of("deepseek", "dashscope"), Set.of());
+    loader.scanAndRegister(agentsDir, registry, scheduler, Set.of("deepseek", "dashscope"));
 
     assertEquals(3, registry.getAll().size());
     assertNotNull(registry.get("agent-a"));
@@ -57,7 +56,7 @@ class AgentScanRegisterTest {
     ProfileRegistry registry = new ProfileRegistry();
     AgentScheduler scheduler = Mockito.mock(AgentScheduler.class);
 
-    loader.scanAndRegister(agentsDir, registry, scheduler, Set.of("deepseek"), Set.of());
+    loader.scanAndRegister(agentsDir, registry, scheduler, Set.of("deepseek"));
 
     Mockito.verify(scheduler).registerProfile(Mockito.any(Profile.class));
   }
@@ -71,14 +70,14 @@ class AgentScanRegisterTest {
 
     ProfileRegistry registry = new ProfileRegistry();
 
-    loader.scanAndRegister(agentsDir, registry, null, Set.of("deepseek"), Set.of());
+    loader.scanAndRegister(agentsDir, registry, null, Set.of("deepseek"));
 
     assertNull(registry.get("bad-agent"));
   }
 
   @Test
-  @DisplayName("tools 引用未注册工具 → 告警但不阻断")
-  void unregisteredToolWarnsButContinues() throws IOException {
+  @DisplayName("AGENT.md 遗留 tools 字段被忽略，Agent 照常注册")
+  void legacyToolsFieldIgnored() throws IOException {
     Path agentsDir = tempDir.resolve("agents");
     Files.createDirectories(agentsDir);
     Path agentDir = agentsDir.resolve("tool-agent");
@@ -90,7 +89,7 @@ class AgentScanRegisterTest {
 
     ProfileRegistry registry = new ProfileRegistry();
 
-    loader.scanAndRegister(agentsDir, registry, null, Set.of("deepseek"), Set.of("read_file"));
+    loader.scanAndRegister(agentsDir, registry, null, Set.of("deepseek"));
 
     assertNotNull(registry.get("tool-agent"));
   }
@@ -101,7 +100,7 @@ class AgentScanRegisterTest {
     Path agentsDir = tempDir.resolve("nonexistent");
     ProfileRegistry registry = new ProfileRegistry();
 
-    assertDoesNotThrow(() -> loader.scanAndRegister(agentsDir, registry, null, Set.of(), Set.of()));
+    assertDoesNotThrow(() -> loader.scanAndRegister(agentsDir, registry, null, Set.of()));
     assertTrue(registry.getAll().isEmpty());
   }
 

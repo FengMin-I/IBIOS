@@ -22,6 +22,16 @@ CREATE TABLE IF NOT EXISTS tool_invocations (
     created_at    TEXT    NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS notify_channels (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    name        VARCHAR(255) NOT NULL UNIQUE,
+    type        VARCHAR(255) NOT NULL,
+    url         VARCHAR(1024),
+    description VARCHAR(1024),
+    created_at  TIMESTAMP    NOT NULL,
+    updated_at  TIMESTAMP    NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS llm_calls (
     id                INTEGER PRIMARY KEY AUTOINCREMENT,
     session_id        TEXT,

@@ -2,11 +2,12 @@ package com.ibios.tool.builtin;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ibios.core.memory.MemoryScope;
+import com.ibios.core.memory.MemoryService;
 import com.ibios.core.notify.NotifyChannelAdapter;
+import com.ibios.core.notify.NotifyChannelStore;
+import com.ibios.core.notify.NotifyChannelView;
 import com.ibios.core.notify.NotifyTarget;
-import com.ibios.core.profile.NotifyChannelConfig;
-import com.ibios.core.profile.Profile;
-import com.ibios.core.react.ProfileContext;
 import com.ibios.core.tool.IbiosTool;
 import com.ibios.core.tool.Sandbox;
 import com.ibios.core.tool.SandboxAction;
@@ -21,15 +22,24 @@ import org.springframework.stereotype.Component;
 public class NotifyTools implements IbiosTool {
 
   private static final Logger log = LoggerFactory.getLogger(NotifyTools.class);
+  private static final int MAX_MEMORY_CHARS = 500;
 
   private final NotifyChannelAdapter adapter;
   private final Sandbox sandbox;
   private final ObjectMapper objectMapper;
+  private final MemoryService memoryService;
+  private final NotifyChannelStore channelStore;
 
-  public NotifyTools(NotifyChannelAdapter adapter, Sandbox sandbox) {
+  public NotifyTools(
+      NotifyChannelAdapter adapter,
+      Sandbox sandbox,
+      MemoryService memoryService,
+      NotifyChannelStore channelStore) {
     this.adapter = adapter;
     this.sandbox = sandbox;
     this.objectMapper = new ObjectMapper();
+    this.memoryService = memoryService;
+    this.channelStore = channelStore;
   }
 
   @Override
@@ -39,7 +49,7 @@ public class NotifyTools implements IbiosTool {
 
   @Override
   public String description() {
-    return "Send notification to user via configured channels";
+    return "Send notification to user via configured channels and save to memory";
   }
 
   @Override
@@ -57,21 +67,19 @@ public class NotifyTools implements IbiosTool {
       String channelName = args.get("channel").asText();
       String content = args.get("content").asText();
 
-      Profile profile = ProfileContext.current();
-      if (profile == null) {
-        return ToolExecutionResult.failure(
-            "ProfileContext is null, cannot send notification", false);
-      }
-
-      NotifyChannelConfig channel =
-          profile.notifyChannels().stream()
-              .filter(c -> c.name().equals(channelName))
-              .findFirst()
-              .orElse(null);
+      NotifyChannelView channel = channelStore.getByName(channelName);
 
       if (channel == null) {
         return ToolExecutionResult.failure(
-            "Notify channel '" + channelName + "' not found in profile", false);
+            "Notify channel '" + channelName + "' not found in registry", false);
+      }
+
+      if (channel.url() == null || channel.url().isBlank()) {
+        return ToolExecutionResult.failure(
+            "Notify channel '"
+                + channelName
+                + "' has empty URL. Please set the required environment variable.",
+            false);
       }
 
       sandbox.enforce(new SandboxAction(ActionType.HTTP_REQUEST, channel.url()));
@@ -79,9 +87,23 @@ public class NotifyTools implements IbiosTool {
       NotifyTarget target = new NotifyTarget(channel.type(), Map.of("url", channel.url()));
       adapter.send(target, content);
       log.info("Notification sent to channel '{}'", channelName);
+
+      if (memoryService != null) {
+        String memoryContent = "[通知] 发送到 " + channelName + ": " + truncate(content);
+        memoryService.remember(memoryContent, MemoryScope.ARCHIVAL);
+        log.debug("Notification saved to memory");
+      }
+
       return ToolExecutionResult.success("Notification sent to " + channelName);
     } catch (Exception e) {
       return ToolExecutionResult.failure("Failed to send notification: " + e.getMessage(), false);
     }
+  }
+
+  private String truncate(String content) {
+    if (content.length() <= MAX_MEMORY_CHARS) {
+      return content;
+    }
+    return content.substring(0, MAX_MEMORY_CHARS) + "…";
   }
 }

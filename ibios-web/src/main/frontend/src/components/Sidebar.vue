@@ -47,7 +47,7 @@ const navItems = [
       { path: '/providers', label: 'Provider 列表' },
       { path: '/tools', label: 'Tool 列表' },
       { path: '/sandbox', label: 'SandBox 列表' },
-      { path: '/memory', label: '长期记忆' }
+      { path: '/notify-channels', label: 'Notify 渠道' }
     ]
   }
 ]

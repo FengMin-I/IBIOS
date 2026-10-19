@@ -2,7 +2,7 @@
 
 在 IBIOS 里，**一个目录 = 一个 Agent**。一个 Agent 就是 `.ibios/agents/<name>/` 目录下由 `AGENT.md` 定义的实体。该文件由两部分组成：
 
-- **YAML frontmatter** —— 这个 Agent 的 *Profile*：它是谁、用哪个 Provider/模型、能调哪些工具、有哪些定时任务、以及对话行为上限。
+- **YAML frontmatter** —— 这个 Agent 的 *Profile*：它是谁、用哪个 Provider/模型、有哪些定时任务、以及对话行为上限。
 - **Markdown 正文** —— 这个 Agent 的任务指令，注入 system prompt。
 
 **不再有 `.ibios/profiles/` 目录**。Profile 就是 frontmatter，不是单独的文件。可选的 `skills/*.md`、`scripts/`、`REFERENCE.md` 放在同一目录，由正文用 `read_file` / `shell` 按需加载——它们**不在** frontmatter 里声明。
@@ -31,14 +31,6 @@ provider:
   model: deepseek-chat
   temperature: 0.7
   api_key: ${DEEPSEEK_API_KEY}
-
-tools:
-  - read_file
-  - shell
-  - http_get
-  - save_memory
-  - recall_memory
-  - notify
 
 mcp_servers:
   - github-mcp
@@ -81,8 +73,7 @@ settings:
 | `description` | string | 否 | 人类可读的描述，展示在管理台和 `ibios profile list` |
 | `identity` | object | 是 | Agent 的名字和核心 prompt，见 [Identity](#identity) |
 | `provider` | object | 是 | LLM Provider 和模型选择，见 [Provider](#provider) |
-| `tools` | list | 否 | 该 Agent 可用的工具名列表，必须已在 `ToolRegistry` 注册，默认无工具 |
-| `mcp_servers` | list | 否 | 接入的 MCP server 名列表（来自 `mcp_servers.yaml`），其暴露的工具对该 Agent 可用 |
+| `mcp_servers` | list | 否 | 接入的 MCP server 名列表（来自 `mcp_servers.yaml`），其暴露的工具全局注册后对所有 Agent 可用 |
 | `channels` | list | 否 | 接入渠道，核心阶段支持 `cli` |
 | `bootstrap` | list | 否 | 按序注入 system prompt 的 Bootstrap 文件，从工作区根解析 |
 | `schedules` | list | 否 | 该 Agent 的定时触发任务，见 [Schedules](#schedules) |
@@ -134,7 +125,7 @@ export DEEPSEEK_API_KEY=sk-...
 
 ## Tools
 
-`tools` 字段列出该 Agent 在 ReAct Loop 中可调用的内置工具和 MCP 工具。只有列表里的工具才会作为可调用函数传给 LLM。
+工具是**全局**的：`ToolRegistry` 中注册的所有工具——内置工具与 MCP 工具——对所有 Agent 的 ReAct Loop 都可用。`AGENT.md` 不再声明 `tools` 列表，也没有按 Agent 过滤。工具能碰什么资源仍由沙箱白名单约束（路径、命令、域名）。
 
 内置工具名：
 
@@ -147,14 +138,12 @@ export DEEPSEEK_API_KEY=sk-...
 | `http_get` | HTTP GET（默认放行 + SSRF 黑名单） |
 | `http_post` | HTTP POST（域名白名单） |
 | `fetch_webpage` | 抓取网页并抽取可读正文（默认放行 + SSRF） |
-| `web_search` | 网络搜索（默认放行 + SSRF；须显式列入 `tools:`） |
+| `web_search` | 网络搜索（默认放行 + SSRF） |
 | `save_memory` | 向 `MEMORY.md` 追加记忆 |
 | `recall_memory` | 关键词检索 `MEMORY.md` |
 | `notify` | 向按名引用的通知渠道推送消息 |
 
-> 飞书 / 企微 / 钉钉入站绑定的 Agent 若要「搜一下 / 查最新」，必须在 `tools:` 中加入 `web_search`（建议同时加 `http_get`、`fetch_webpage`）。仅渠道 `CONNECTED` 不够——未列入的工具不会出现在模型侧。详见 [Tool 体系](/zh/docs/tool)（「给 IM / 业务 Agent 开联网检索」一节）。
-
-来自 `mcp_servers` 的 MCP 工具以 server 声明的名称暴露（如 `github_create_pr`）。运行 `ibios tool list` 查看所有已注册名称。详见 [Tool 体系](/zh/docs/tool)，包括 `notify` 如何按名解析渠道。
+运行 `ibios tool list` 查看所有已注册名称。详见 [Tool 体系](/zh/docs/tool)，包括 `notify` 如何按名解析渠道。
 
 ### 子指令与脚本（无 frontmatter 字段）
 

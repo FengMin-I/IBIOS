@@ -71,3 +71,13 @@ CREATE TABLE IF NOT EXISTS task_executions (
 );
 
 CREATE INDEX IF NOT EXISTS idx_task_executions_task_id ON task_executions (task_id);
+
+CREATE TABLE IF NOT EXISTS notify_channels (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    name        VARCHAR(255) NOT NULL UNIQUE,
+    type        VARCHAR(255) NOT NULL,
+    url         VARCHAR(1024),
+    description VARCHAR(1024),
+    created_at  TIMESTAMP    NOT NULL,
+    updated_at  TIMESTAMP    NOT NULL
+);

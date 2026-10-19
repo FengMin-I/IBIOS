@@ -5,7 +5,7 @@ import AgentDetailView from '../views/AgentDetailView.vue'
 import ProvidersView from '../views/ProvidersView.vue'
 import ToolsView from '../views/ToolsView.vue'
 import SandboxView from '../views/SandboxView.vue'
-import MemoryView from '../views/MemoryView.vue'
+import NotifyChannelsView from '../views/NotifyChannelsView.vue'
 import InfoView from '../views/InfoView.vue'
 import SessionsView from '../views/SessionsView.vue'
 import SchedulesView from '../views/SchedulesView.vue'
@@ -18,7 +18,7 @@ const routes = [
   { path: '/providers', component: ProvidersView },
   { path: '/tools', component: ToolsView },
   { path: '/sandbox', component: SandboxView },
-  { path: '/memory', component: MemoryView },
+  { path: '/notify-channels', component: NotifyChannelsView },
   { path: '/schedules', component: SchedulesView },
   { path: '/info', component: InfoView },
   { path: '/sessions', component: SessionsView },

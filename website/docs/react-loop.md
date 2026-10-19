@@ -39,7 +39,7 @@ User message
 | 1 | System prompt — the Agent's `AGENT.md` body + Bootstrap files (`AGENTS.md`, `SOUL.md`, `USER.md`) | Filesystem | `ContextLoader` |
 | 2 | Long-term memory — full text of the Agent's `MEMORY.md` (truncated at 4 000 chars) | `.ibios/agents/<name>/MEMORY.md` (falls back to `.ibios/memory/MEMORY.md`) | `MemoryService` |
 | 3 | Conversation history — last `max_history_turns` turns, as structured messages (including prior assistant tool calls and tool results with their ids) | SQLite `sessions.messages_json` | `SessionManager` |
-| 4 | Available tools — JSON Schema for each tool the Agent exposes | `ToolRegistry` | `ToolRegistry` |
+| 4 | Available tools — JSON Schema for every tool in the global registry | `ToolRegistry` | `ToolRegistry` |
 
 Sub-instructions (`skills/*.md`) and scripts (`scripts/`) inside the Agent directory are **not** pre-injected — the body directs the model to read them on demand via `read_file` / `shell`.
 

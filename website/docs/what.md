@@ -21,7 +21,7 @@ Everything an agent needs is **built into the OS**. An agent is just a declarati
 
 This is the whole point of IBIOS: **drive the cost of defining an agent toward zero.** You write what you want; the OS supplies the capabilities, the safety rails, and the audit trail.
 
-Concretely, **one directory = one Agent**: a folder under `.ibios/agents/<name>/` with an `AGENT.md` — YAML frontmatter as the agent's profile (identity, which LLM it talks to, which tools/skills it references) plus a body of task instructions. Drop the directory in and it goes live. Create, edit, and delete agents at runtime over the REST API or the web console — including generating a complete agent from a single sentence. Business systems integrate over HTTP. Data never leaves your infrastructure.
+Concretely, **one directory = one Agent**: a folder under `.ibios/agents/<name>/` with an `AGENT.md` — YAML frontmatter as the agent's profile (identity, which LLM it talks to, its schedules and settings) plus a body of task instructions. Tools are global: every tool registered in `ToolRegistry` is available to every agent, with the sandbox whitelist constraining what each tool may touch. Drop the directory in and it goes live. Create, edit, and delete agents at runtime over the REST API or the web console — including generating a complete agent from a single sentence. Business systems integrate over HTTP. Data never leaves your infrastructure.
 
 ## What is an agent harness (and why an OS)
 
@@ -55,7 +55,7 @@ Two layers today. Session memory holds the conversation history, persisted and r
 
 ### Tool System
 
-**24 built-in tools** cover the baseline: file operations (read / write / list / append / move / copy / delete / mkdir), shell, HTTP (get / post / arbitrary request / fetch-webpage / download), time and JSON utilities, memory, and `notify`. All execute under sandbox enforcement — path whitelist for files, command whitelist for shell, and **split HTTP policy** (reads: default allow + SSRF blocklist; writes: domain wildcard whitelist) — with every invocation audited. The `notify` tool pushes to named channels (Feishu / WeCom / DingTalk / Slack / Discord / Telegram / WhatsApp / Teams / Google Chat / Mattermost / Matrix / generic webhook), themselves a dynamic registry with full CRUD.
+**24 built-in tools** cover the baseline: file operations (read / write / list / append / move / copy / delete / mkdir), shell, HTTP (get / post / arbitrary request / fetch-webpage / download), time and JSON utilities, memory, and `notify`. Tools are global — every registered tool is visible to every agent; no per-agent allow-list. All execute under sandbox enforcement — path whitelist for files, command whitelist for shell, and **split HTTP policy** (reads: default allow + SSRF blocklist; writes: domain wildcard whitelist) — with every invocation audited. The `notify` tool pushes to named channels (Feishu / WeCom / DingTalk / Slack / Discord / Telegram / WhatsApp / Teams / Google Chat / Mattermost / Matrix / generic webhook), themselves a dynamic registry with full CRUD.
 
 Extension follows three tiers, ordered by effort:
 

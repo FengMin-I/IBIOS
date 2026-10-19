@@ -310,7 +310,7 @@ US-3 实施完成后跑 `/speckit.analyze`。
 | 内置 Tool 补齐类 | `read_file`、`write_file`、`list_dir`，Shell Tool 带白名单，`SandboxChecker` 完整实现 |
 | MCP Client 类 | `mcp_servers.yaml` 解析、`McpClientService` 启动时连接、`tools/list` 拉工具、`McpToolAdapter` 包装成 `IbiosTool` |
 | `AGENT.md` 类 | `ContextLoader` 加载 `.ibios/agents/` 下每个 Agent 的 `AGENT.md` 正文拼接到 system prompt，这部分归 core 不归 tool |
-| Agent 定义类 | `AgentLoader.deriveProfile` 从 `AGENT.md` frontmatter 派生 `Profile`（含 `tools` / `mcp_servers` 等字段） |
+| Agent 定义类 | `AgentLoader.deriveProfile` 从 `AGENT.md` frontmatter 派生 `Profile`（含 `mcp_servers` / `schedules` 等字段；工具走全局注册表，不在 Profile 内声明） |
 
 **关键 task 颗粒度**：US-4 的 task 数量较多，几个需要重点拆解的复杂 task：
 

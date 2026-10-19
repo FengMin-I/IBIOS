@@ -4,8 +4,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.ibios.core.port.ChatPort.Prompt;
+import com.ibios.core.port.ToolRegistry;
 import com.ibios.core.profile.Profile;
 import com.ibios.core.session.Session;
+import com.ibios.core.tool.IbiosTool;
+import com.ibios.core.tool.ToolExecutionResult;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
@@ -59,15 +62,78 @@ class PromptBuilderTest {
     assertTrue(prompt.systemPrompt().contains("Current date and time:"));
   }
 
+  @Test
+  void shouldExposeAllGlobalToolsToEveryProfile() {
+    Session session = new Session("s1", "test-profile", "cli", "test-user");
+    Profile profile = createProfile("prompt", List.of(), List.of());
+    ToolRegistry registry = new FixedToolRegistry(List.of(tool("tool_a"), tool("tool_b")));
+    PromptBuilder builder = new PromptBuilder(contextLoader, null, registry);
+
+    Prompt prompt = builder.build(session, profile);
+
+    List<String> names = prompt.availableTools().stream().map(IbiosTool::name).toList();
+    assertEquals(List.of("tool_a", "tool_b"), names);
+  }
+
+  private static IbiosTool tool(String name) {
+    return new IbiosTool() {
+      @Override
+      public String name() {
+        return name;
+      }
+
+      @Override
+      public String description() {
+        return name;
+      }
+
+      @Override
+      public String inputSchema() {
+        return "{\"type\":\"object\",\"properties\":{}}";
+      }
+
+      @Override
+      public ToolExecutionResult execute(String argumentsJson) {
+        return ToolExecutionResult.success("ok");
+      }
+    };
+  }
+
+  private static final class FixedToolRegistry implements ToolRegistry {
+    private final List<IbiosTool> tools;
+
+    private FixedToolRegistry(List<IbiosTool> tools) {
+      this.tools = tools;
+    }
+
+    @Override
+    public IbiosTool lookup(String name) {
+      for (IbiosTool tool : tools) {
+        if (tool.name().equals(name)) {
+          return tool;
+        }
+      }
+      return null;
+    }
+
+    @Override
+    public List<IbiosTool> listAll() {
+      return tools;
+    }
+
+    @Override
+    public void register(IbiosTool tool) {
+      throw new UnsupportedOperationException();
+    }
+  }
+
   private Profile createProfile(String systemPrompt, List<String> bootstrap, List<String> skills) {
     return new Profile(
         "test",
         "test profile",
         new Profile.Identity("agent", systemPrompt),
         new Profile.ProviderConfig("dashscope", "qwen-plus", null),
-        List.of(),
         skills,
-        List.of(),
         List.of(),
         List.of(),
         List.of(),

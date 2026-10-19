@@ -205,6 +205,8 @@ DASHSCOPE_API_KEY=xxx mvn verify -Dgroups=integration
 - `AGENT.md` = frontmatter（运行配置）+ 任务说明正文
 - 可选 `skills/` 软连接、`scripts/*.py`、`REFERENCE.md`
 
+工具是**全局注册表**：所有已注册的 Tool 对所有 Agent 可见，`AGENT.md` 不声明 `tools` 列表；资源级约束（路径 / 命令 / 域名）由 `Sandbox` 白名单负责。`ToolRegistry` 只提供 `register` / `lookup` / `listAll`。
+
 Agent 目录是**上下文来源**，不是 Tool。`AgentLoader`/`ContextLoader` 归 `ibios-core`。
 
 ---

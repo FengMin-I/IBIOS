@@ -9,7 +9,5 @@ public interface ToolRegistry {
 
   List<IbiosTool> listAll();
 
-  List<IbiosTool> filterForProfile(List<String> toolNames);
-
   void register(IbiosTool tool);
 }

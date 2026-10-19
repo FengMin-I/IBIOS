@@ -6,7 +6,6 @@ import com.ibios.core.profile.Profile;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -34,7 +33,6 @@ class DeriveProfileTest {
             + "  name: deepseek\n"
             + "  model: deepseek-chat\n"
             + "  temperature: 0.3\n"
-            + "tools: [read_file, shell]\n"
             + "max_iterations: 5\n"
             + "max_history_turns: 10\n"
             + "---\n\n"
@@ -49,7 +47,6 @@ class DeriveProfileTest {
     assertEquals("deepseek", profile.provider().name());
     assertEquals("deepseek-chat", profile.provider().model());
     assertEquals(0.3, profile.provider().temperature());
-    assertEquals(List.of("read_file", "shell"), profile.tools());
     assertEquals(5, profile.maxIterations());
     assertEquals(10, profile.maxHistoryTurns());
   }

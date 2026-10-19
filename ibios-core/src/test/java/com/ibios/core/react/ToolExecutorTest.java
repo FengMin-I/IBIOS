@@ -2,6 +2,7 @@ package com.ibios.core.react;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -11,6 +12,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.ibios.core.agent.ToolExecutionContext;
 import com.ibios.core.audit.ToolInvocationAudit;
 import com.ibios.core.port.ToolRegistry;
 import com.ibios.core.session.ToolResult;
@@ -63,5 +65,21 @@ class ToolExecutorTest {
     verify(audit)
         .recordToolInvocation(
             eq("s1"), eq("test_tool"), anyString(), any(), eq(false), eq("Tool failed"), anyLong());
+  }
+
+  @Test
+  void executeWithProfileName_exposesAgentNameToToolAndClearsAfter() {
+    IbiosTool tool = mock(IbiosTool.class);
+    when(toolRegistry.lookup("test_tool")).thenReturn(tool);
+    when(tool.execute(anyString()))
+        .thenAnswer(
+            invocation -> {
+              assertEquals("weather-daily", ToolExecutionContext.getAgentName());
+              return ToolExecutionResult.success("ok");
+            });
+
+    toolExecutor.execute("s1", "weather-daily", "test_tool", "{}");
+
+    assertNull(ToolExecutionContext.getAgentName());
   }
 }

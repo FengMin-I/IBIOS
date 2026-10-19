@@ -3,7 +3,6 @@ package com.ibios.tool.registry;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.ibios.core.tool.IbiosTool;
 import com.ibios.core.tool.ToolExecutionResult;
@@ -43,44 +42,6 @@ class ToolRegistryTest {
 
     List<IbiosTool> all = registry.listAll();
     assertEquals(3, all.size());
-  }
-
-  @Test
-  void filterForProfileReturnsExactSubset() {
-    registry.register(createTool("tool_a", "Tool A"));
-    registry.register(createTool("tool_b", "Tool B"));
-    registry.register(createTool("tool_c", "Tool C"));
-
-    List<IbiosTool> filtered = registry.filterForProfile(List.of("tool_a", "tool_c"));
-    assertEquals(2, filtered.size());
-    assertEquals("tool_a", filtered.get(0).name());
-    assertEquals("tool_c", filtered.get(1).name());
-  }
-
-  @Test
-  void filterForProfileSkipsMissingTools() {
-    registry.register(createTool("tool_a", "Tool A"));
-
-    List<IbiosTool> filtered = registry.filterForProfile(List.of("tool_a", "nonexistent"));
-    assertEquals(1, filtered.size());
-    assertEquals("tool_a", filtered.get(0).name());
-  }
-
-  @Test
-  void filterForProfileReturnsAllWhenNull() {
-    registry.register(createTool("tool_a", "Tool A"));
-    registry.register(createTool("tool_b", "Tool B"));
-
-    List<IbiosTool> all = registry.filterForProfile(null);
-    assertEquals(2, all.size());
-  }
-
-  @Test
-  void filterForProfileReturnsAllWhenEmpty() {
-    registry.register(createTool("tool_a", "Tool A"));
-
-    List<IbiosTool> all = registry.filterForProfile(List.of());
-    assertTrue(all.size() >= 1);
   }
 
   private IbiosTool createTool(String name, String description) {

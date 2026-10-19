@@ -12,7 +12,6 @@
           <th>name</th>
           <th>provider</th>
           <th>model</th>
-          <th>tools</th>
           <th>定时</th>
           <th>操作</th>
         </tr>
@@ -22,7 +21,6 @@
           <td class="mono name-cell">{{ agent.name }}</td>
           <td>{{ agent.provider }}</td>
           <td class="mono">{{ agent.model }}</td>
-          <td class="mono tools-cell">{{ (agent.tools || []).join(', ') }}</td>
           <td class="mono cron-cell">
             <span v-if="agent.schedules && agent.schedules.length">
               {{ agent.schedules.map(s => s.cron).join(' ') }}
@@ -30,6 +28,7 @@
             <span v-else>–</span>
           </td>
           <td class="actions-cell">
+            <button class="btn-trigger" @click="triggerAgent(agent.name)">立即触发</button>
             <button class="btn-edit" @click="editAgent(agent.name)">详情</button>
             <button class="btn-delete" @click="deleteAgent(agent.name)">删除</button>
           </td>
@@ -131,6 +130,26 @@ async function deleteAgent(name) {
   }
 }
 
+async function triggerAgent(name) {
+  if (!confirm(`确认立即触发 Agent "${name}"？执行结果将发送到飞书。`)) return
+  try {
+    const res = await fetch(`/api/v1/agents/${name}/invoke`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: '到点了，按你的说明执行。完成后调用 notify 发送到 team-webhook。' })
+    })
+    if (res.ok) {
+      const data = await res.json()
+      alert('Agent 已触发并执行完成，结果已发送到飞书。请查看会话记录。')
+    } else {
+      const data = await res.json()
+      alert('触发失败：' + (data.message || '未知错误'))
+    }
+  } catch (e) {
+    alert('触发失败：' + e.message)
+  }
+}
+
 onMounted(loadAgents)
 </script>
 
@@ -199,11 +218,6 @@ td {
   color: var(--text-primary);
 }
 
-.tools-cell {
-  color: var(--text-secondary);
-  font-size: 13px;
-}
-
 .cron-cell {
   color: var(--text-secondary);
   font-size: 13px;
@@ -227,6 +241,23 @@ td {
 
 .btn-edit:hover {
   background: var(--accent);
+  color: white;
+}
+
+.btn-trigger {
+  padding: 5px 14px;
+  background: transparent;
+  border: 1px solid var(--success, #10b981);
+  border-radius: 4px;
+  color: var(--success, #10b981);
+  font-size: 13px;
+  margin-right: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-trigger:hover {
+  background: var(--success, #10b981);
   color: white;
 }
 

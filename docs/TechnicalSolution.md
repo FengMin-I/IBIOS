@@ -172,7 +172,7 @@ ReAct 是 **Reason** 加 **Act** 的简称。算法步骤：
 
 **`ToolExecutor` 模块。** 执行 LLM 返回的 Tool 调用请求。从 `ToolRegistry` 找到对应 Tool，做 Sandbox 检查，执行 Tool，把结果包装成 `ToolResult` 返回给 ReAct 循环，并写入 `tool_invocations` 表。失败时按可重试策略返回错误信息。
 
-**`AgentService` 模块。** 三种触发源共用的统一入口，也是一次处理的编排者：`process(Session, String)` 内部依次做——把当前 Profile 放进 `ProfileContext`（ThreadLocal，虚拟线程下每个请求天然独立）、调 `ReActLoop.run` 跑完循环、持久化 Session、`finally` 里清掉 `ProfileContext`。`ProfileContext` 解决的是"工具执行时怎么知道当前是哪个 Agent"：`IbiosTool.execute` 的签名不带 Profile，按 Profile 过滤工具子集这类需求从 `ProfileContext` 读，不改工具接口；`NotifyTools` 则按渠道名称查询全局通知渠道注册表。
+**`AgentService` 模块。** 三种触发源共用的统一入口，也是一次处理的编排者：`process(Session, String)` 内部依次做——把当前 Profile 放进 `ProfileContext`（ThreadLocal，虚拟线程下每个请求天然独立）、调 `ReActLoop.run` 跑完循环、持久化 Session、`finally` 里清掉 `ProfileContext`。`ProfileContext` 解决的是"工具执行时怎么知道当前是哪个 Agent"：`IbiosTool.execute` 的签名不带 Profile，需要读取当前 Agent 身份或记忆路径的工具从 `ProfileContext` 取，不改工具接口；`NotifyTools` 则按渠道名称查询全局通知渠道注册表。
 
 ### 4.3 关键设计点
 
@@ -313,7 +313,7 @@ IBIOS **主推**的接入方式。业务方不写代码，只写一个 Agent 目
 
 ### 6.6 ToolRegistry
 
-统一管理所有 Tool。启动时通过 Spring 容器扫描所有 `@Tool` 注解的方法（内置 Tool 和方式三的 Plugin Tool），加上 MCP Client 注册的工具（方式二），全部包装成 `IbiosTool` 实例。Profile 启动 Agent 时按 `tools` 字段从 Registry 过滤出该 Profile 可用的 Tool 子集。
+统一管理所有 Tool。启动时通过 Spring 容器扫描所有 `@Tool` 注解的方法（内置 Tool 和方式三的 Plugin Tool），加上 MCP Client 注册的工具（方式二），全部包装成 `IbiosTool` 实例。Registry 是**全局的**：注册进来的工具对所有 Agent 一视同仁，`PromptBuilder` 每轮把 `listAll()` 全量交给模型，不做 per-Agent 过滤；具体某个工具能碰到哪些文件、命令、域名，由 `Sandbox` 白名单在资源层约束。
 
 ### 6.7 Sandbox 检查
 
@@ -355,7 +355,7 @@ ActionType     = FILE_READ | FILE_WRITE | SHELL_COMMAND | HTTP_REQUEST
 
 > **要点一：** 应用层白名单是"劝阻级"防线，防的是模型犯傻误操作，防不住蓄意绕过，核心阶段不建议用它跑完全不可信的代码或对外做多租户。
 >
-> **要点二：** Sandbox 加白名单是核心阶段唯一的 Tool 治理手段，而 Profile 级的 Tool Policy（哪个 Agent 能用哪些 Tool）放在扩展阶段。核心阶段 Profile 的 `tools` 字段已经能限定 Agent 可用 Tool 子集，算是 Tool 治理的雏形，完整的 allow/deny 策略扩展阶段补。
+> **要点二：** 核心阶段的 Tool 治理分两层：`ToolRegistry` 是全局的（注册即对所有 Agent 可见，不存在 per-Agent 的 `tools` 白名单），资源访问由 Sandbox 白名单约束。Profile 级的 Tool Policy（哪个 Agent 能用哪些 Tool 的 allow/deny 策略）放在扩展阶段补。
 
 ### 6.8 通知推送（`NotifyTools`）
 
@@ -495,7 +495,7 @@ Web Service 是 IBIOS 的对外完整门面，业务系统通过 REST API 接入
 
 **`AgentLoader` 模块。** 扫 `.ibios/agents/` 各子目录，`deriveProfile` 把每个 `AGENT.md` 的 frontmatter 派生成一个 `Profile`，注册到 `ProfileRegistry`。启动时做合法性校验：Provider 是否存在、Tool 是否注册、Channel 是否支持、Bootstrap 文件是否存在。校验失败的 Agent 不阻断启动但记录错误日志。
 
-**`ProfileRegistry` 模块。** Agent 派生 `Profile` 的内存索引，按 name 提供快速查找。Channel 接收消息时通过它拿到具体 Profile。派生自 `AGENT.md` frontmatter 的字段：`name`、`description`、`identity`（`agent_name`、`prompt`）、`provider`（`name`、`model`、`temperature`）、`tools`、`mcp_servers`、`channels`、`schedules`、`bootstrap`、`settings`（`max_iterations`、`max_history_turns`）。`notify_channels` 不属于 Profile 或 frontmatter；通知渠道由 SQLite 全局注册表管理，Agent 只在正文中按名称引用。核心阶段支持多个 Agent 并存，同一实例上同时可用，这是"OS"在核心阶段的最小体现。
+**`ProfileRegistry` 模块。** Agent 派生 `Profile` 的内存索引，按 name 提供快速查找。Channel 接收消息时通过它拿到具体 Profile。派生自 `AGENT.md` frontmatter 的字段：`name`、`description`、`identity`（`agent_name`、`prompt`）、`provider`（`name`、`model`、`temperature`）、`mcp_servers`、`channels`、`schedules`、`bootstrap`、`settings`（`max_iterations`、`max_history_turns`）。工具是全局注册表，不在 Profile 里声明。`notify_channels` 不属于 Profile 或 frontmatter；通知渠道由 SQLite 全局注册表管理，Agent 只在正文中按名称引用。核心阶段支持多个 Agent 并存，同一实例上同时可用，这是"OS"在核心阶段的最小体现。
 
 ### 8.3 上下文加载（Bootstrap + AGENT.md 正文）
 
@@ -720,7 +720,7 @@ mvn clean package
 
 业务系统 / 运营要完全通过 API 或页面管理、不摸文件系统。对外只有**一类资源——Agent**（一个目录）。`AgentLifecycleService`（在 26 节已有的 `AgentApiController` 上扩展）：
 
-- `POST /api/v1/agents/generate`：一句话经 LLM 生成一份 **`AGENT.md` 草稿**原样返回（不落盘、不注册），供页面预览、修改（尤其 cron/tools 敏感项要人过一眼）
+- `POST /api/v1/agents/generate`：一句话经 LLM 生成一份 **`AGENT.md` 草稿**原样返回（不落盘、不注册），供页面预览、修改（尤其 cron 等敏感项要人过一眼）
 - `POST /api/v1/agents`：写 Agent 目录（`AGENT.md`[+ 脚本 / 子指令]）→ `deriveProfile` → 注册
 - `GET /api/v1/agents` / `GET /{name}`：查询已定义的 Agent
 - `PUT /api/v1/agents/{name}`：更新正文（包括其中按名引用的通知渠道）/ provider（覆写即时生效）和/或 `schedules`（变则先注销旧句柄再注册新的）；通知渠道实体通过管理台或 `/api/v1/notify-channels` 独立管理
@@ -784,7 +784,7 @@ mvn clean package
 
 **场景：** 每天早上 9:30，Agent 自动抓 GitHub 今日与本月热门项目、专挑 AI 相关做总结并推送。这个 Demo 演一个 Agent 目录里**捆绑一个脚本**：Agent 跑脚本拿确定性数据。
 
-1. 业务方**写一个带脚本的 Agent 目录** `.ibios/agents/github-daily/`：`AGENT.md`（frontmatter：`tools:[github_daily, notify]` + 每天 09:30 的 `schedules`；正文"获取数据 → 组三段日报 → notify"）+ `scripts/github_trending.py`（免 token 用 GitHub Search API 按日期区间 + stars 近似 trending）；该脚本由 `github_daily` MCP 或专用 Tool 封装，而非交给通用 `shell`。
+1. 业务方**写一个带脚本的 Agent 目录** `.ibios/agents/github-daily/`：`AGENT.md`（frontmatter 带每天 09:30 的 `schedules`；正文"获取数据 → 组三段日报 → notify"，工具走全局注册表无需声明）+ `scripts/github_trending.py`（免 token 用 GitHub Search API 按日期区间 + stars 近似 trending）；该脚本由 `github_daily` MCP 或专用 Tool 封装，而非交给通用 `shell`。
 2. 到点触发，`PromptBuilder` 注入 `AGENT.md` 正文
 3. LLM 按正文调 `github_daily` 获取 JSON；该 MCP 或专用 Tool 自己定义输入、脚本访问范围和网络策略，并通过 `ToolExecutor` 写 `tool_invocations`。**脚本产出的 JSON 进上下文、脚本代码不进**。
 4. LLM 用 JSON + 记忆偏好组织三段日报（今日 / 本月 / AI 重点），调 `notify` 推送

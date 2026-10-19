@@ -2,6 +2,7 @@ package com.ibios.core.react;
 
 import com.ibios.core.memory.MemoryService;
 import com.ibios.core.port.ChatPort.Prompt;
+import com.ibios.core.port.ToolRegistry;
 import com.ibios.core.profile.Profile;
 import com.ibios.core.session.Message;
 import com.ibios.core.session.Session;
@@ -15,21 +16,35 @@ import java.util.List;
 public class PromptBuilder {
   private final ContextLoader contextLoader;
   private final MemoryService memoryService;
+  private final ToolRegistry toolRegistry;
 
   public PromptBuilder(ContextLoader contextLoader) {
-    this(contextLoader, null);
+    this(contextLoader, null, null);
   }
 
   public PromptBuilder(ContextLoader contextLoader, MemoryService memoryService) {
+    this(contextLoader, memoryService, null);
+  }
+
+  public PromptBuilder(
+      ContextLoader contextLoader, MemoryService memoryService, ToolRegistry toolRegistry) {
     this.contextLoader = contextLoader;
     this.memoryService = memoryService;
+    this.toolRegistry = toolRegistry;
   }
 
   public Prompt build(Session session, Profile profile) {
     String systemPrompt = buildSystemPrompt(session, profile);
     List<Message> messages = truncateHistory(session.messages(), profile.maxHistoryTurns());
-    List<IbiosTool> tools = Collections.emptyList();
+    List<IbiosTool> tools = resolveTools();
     return new Prompt(systemPrompt, messages, tools);
+  }
+
+  private List<IbiosTool> resolveTools() {
+    if (toolRegistry == null) {
+      return Collections.emptyList();
+    }
+    return toolRegistry.listAll();
   }
 
   private String buildSystemPrompt(Session session, Profile profile) {

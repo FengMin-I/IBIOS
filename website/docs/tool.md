@@ -30,7 +30,7 @@ When `retryable` is `true`, `ToolExecutor` appends the error to the conversation
 
 ## Built-in tools
 
-About two dozen tools ship with IBIOS core — a set of **universal primitives** chosen to cover the vast majority of agent needs without domain lock-in. All are registered automatically at startup. Which ones an agent can use depends on its Profile's `tools` list.
+About two dozen tools ship with IBIOS core — a set of **universal primitives** chosen to cover the vast majority of agent needs without domain lock-in. All are registered automatically at startup and are available to every agent: tool access is global, and the sandbox whitelist constrains what each tool may touch.
 
 | Tool | Class | Description | Sandbox check |
 | --- | --- | --- | --- |
@@ -209,20 +209,7 @@ The three whitelists are also **manageable at runtime** via the `/api/v1/sandbox
 
 ### Enabling web search for IM / business agents
 
-`web_search`, `http_get`, and `fetch_webpage` are registered globally at runtime, but **only tools listed in that agent’s `AGENT.md` `tools:` frontmatter are exposed to the model** (see “Tool registry” filtering below). A common pitfall: the channel is `CONNECTED`, the user asks to “search the web”, and no tool is ever called — usually because the profile only lists `read_file` / `shell` / `notify`.
-
-The Admin / API **create-agent scaffold** now includes the tools below by default; existing agents still need a manual update:
-
-```yaml
-tools:
-  - read_file
-  - shell
-  - notify
-  - web_search
-  - http_get
-  - fetch_webpage
-```
-
+`web_search`, `http_get`, and `fetch_webpage` are registered globally, so every agent’s model can call them — there is no per-agent `tools:` list to update. A common pitfall: the channel is `CONNECTED`, the user asks to “search the web”, and no tool is ever called — usually because the agent body never tells the model to search. Spell out in the body when to call `web_search`.
 In the agent body, require calling `web_search` first for live facts. The core-stage provider is DuckDuckGo: **when Instant Answer JSON is empty (common for Chinese / time-sensitive queries), it automatically retries the HTML lite results page**. If still empty, fall back to `fetch_webpage` or `http_get` against a public API (e.g. weather via `api.open-meteo.com`).
 
 If a tool call fails the sandbox check, `ToolExecutor` returns a non-retryable `ToolResult` with a clear error message describing which whitelist was violated. The call is still recorded in `tool_invocations` with `success = false`.
@@ -231,15 +218,15 @@ If a tool call fails the sandbox check, `ToolExecutor` returns a non-retryable `
 
 ## Tool registry
 
-`ToolRegistry` is the central catalog of all available tools — built-in and MCP. It has two responsibilities:
+`ToolRegistry` is the global catalog of all available tools — built-in and MCP. It has two responsibilities:
 
 **Registration** — at startup, all `IbiosTool` beans are registered, then MCP server tools are discovered via JSON-RPC `tools/list` and wrapped as `McpProxyTool` instances.
 
-**Filtering** — when `PromptBuilder` asks for the tools an agent can use, `ToolRegistry.getToolsForProfile(profile)` returns only the tools listed in `profile.tools`. An agent cannot call a tool that is not in its Profile, even if the tool is registered globally.
+**Lookup** — when `PromptBuilder` assembles a prompt, it calls `listAll()` and passes the full catalog to the model. There is no per-agent filtering: every registered tool is visible to every agent. `lookup(name)` resolves a tool by name when executing a call.
 
 ```java
-// PromptBuilder uses this to build the Function Calling tool list for the LLM
-List<IbiosTool> tools = toolRegistry.getToolsForProfile(profile);
+// PromptBuilder passes the whole global catalog to the LLM
+List<IbiosTool> tools = toolRegistry.listAll();
 ```
 
 Tool names are globally unique. If an MCP server registers a tool with the same name as a built-in tool, startup fails with a clear error — there is no silent shadowing.

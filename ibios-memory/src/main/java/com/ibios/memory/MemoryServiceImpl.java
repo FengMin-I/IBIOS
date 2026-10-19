@@ -12,6 +12,8 @@ import java.util.List;
 
 public class MemoryServiceImpl implements MemoryService {
 
+  private static final Path AGENTS_DIR = Path.of(".ibios", "agents");
+
   private final LongTermMemoryStore store;
 
   public MemoryServiceImpl(LongTermMemoryStore store) {
@@ -24,12 +26,9 @@ public class MemoryServiceImpl implements MemoryService {
     if (agentName == null && session != null) {
       agentName = session.profileName();
     }
-    if (store instanceof MarkdownMemoryStore && agentName != null) {
-      Path agentMemoryPath = Path.of(".ibios/agents/" + agentName + "/MEMORY.md");
-      if (Files.exists(agentMemoryPath)) {
-        MarkdownMemoryStore agentStore = new MarkdownMemoryStore(agentMemoryPath);
-        return agentStore.load();
-      }
+    MarkdownMemoryStore agentStore = resolveAgentStore(agentName);
+    if (agentStore != null) {
+      return Files.exists(agentStore.getMemoryFilePath()) ? agentStore.load() : "";
     }
     return store.load();
   }
@@ -37,14 +36,14 @@ public class MemoryServiceImpl implements MemoryService {
   @Override
   public void remember(String content, MemoryScope scope) {
     String agentName = ToolExecutionContext.getAgentName();
-    if (agentName != null && store instanceof MarkdownMemoryStore) {
-      Path agentMemoryPath = Path.of(".ibios/agents/" + agentName + "/MEMORY.md");
+    MarkdownMemoryStore agentStore = resolveAgentStore(agentName);
+    if (agentStore != null) {
       try {
-        Files.createDirectories(agentMemoryPath.getParent());
+        Files.createDirectories(agentStore.getMemoryFilePath().getParent());
       } catch (IOException e) {
         throw new IllegalStateException("Failed to create agent memory dir", e);
       }
-      new MarkdownMemoryStore(agentMemoryPath).append(content, scope);
+      agentStore.append(content, scope);
       return;
     }
     store.append(content, scope);
@@ -53,12 +52,22 @@ public class MemoryServiceImpl implements MemoryService {
   @Override
   public List<String> recall(String keyword) {
     String agentName = ToolExecutionContext.getAgentName();
-    if (agentName != null && store instanceof MarkdownMemoryStore) {
-      Path agentMemoryPath = Path.of(".ibios/agents/" + agentName + "/MEMORY.md");
-      if (Files.exists(agentMemoryPath)) {
-        return new MarkdownMemoryStore(agentMemoryPath).recallByKeyword(keyword);
-      }
+    MarkdownMemoryStore agentStore = resolveAgentStore(agentName);
+    if (agentStore != null) {
+      return agentStore.recallByKeyword(keyword);
     }
     return store.recallByKeyword(keyword);
+  }
+
+  // 只有真实存在的 Agent 目录才使用独立记忆；普通 Profile 仍走全局存储
+  private MarkdownMemoryStore resolveAgentStore(String agentName) {
+    if (agentName == null || !(store instanceof MarkdownMemoryStore)) {
+      return null;
+    }
+    Path agentDir = AGENTS_DIR.resolve(agentName);
+    if (!Files.isDirectory(agentDir)) {
+      return null;
+    }
+    return new MarkdownMemoryStore(agentDir.resolve("MEMORY.md"));
   }
 }

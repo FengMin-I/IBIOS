@@ -50,7 +50,8 @@ class WebhookNotifyAdapterTest {
     RecordedRequest request = mockWebServer.takeRequest();
     assertEquals("POST", request.getMethod());
     String body = request.getBody().readUtf8();
-    assertTrue(body.contains("hello world"));
+    assertTrue(body.contains("\"msg_type\":\"text\""));
+    assertTrue(body.contains("\"text\":\"hello world\""));
   }
 
   @Test

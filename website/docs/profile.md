@@ -2,7 +2,7 @@
 
 In IBIOS, **one directory = one Agent**. An Agent is a directory at `.ibios/agents/<name>/` whose `AGENT.md` file defines it. That file is:
 
-- **YAML frontmatter** — the Agent's *Profile*: who it is, which provider/model it uses, which tools it can call, its schedules, and its runtime limits.
+- **YAML frontmatter** — the Agent's *Profile*: who it is, which provider/model it uses, its schedules, and its runtime limits.
 - **Markdown body** — the Agent's task instructions, injected into the system prompt.
 
 There is **no `.ibios/profiles/` directory**. The Profile *is* the frontmatter; it is not a separate file. Optional `skills/*.md`, `scripts/`, and `REFERENCE.md` can sit in the same directory and are loaded on demand from the body via `read_file` / `shell` — they are **not** declared in frontmatter.
@@ -31,14 +31,6 @@ provider:
   model: deepseek-chat
   temperature: 0.7
   api_key: ${DEEPSEEK_API_KEY}
-
-tools:
-  - read_file
-  - shell
-  - http_get
-  - save_memory
-  - recall_memory
-  - notify
 
 mcp_servers:
   - github-mcp
@@ -82,8 +74,7 @@ The text below the closing `---` is the **body**: it is injected into the system
 | `description` | string | no | Human-readable description shown in the admin console and `ibios profile list`. |
 | `identity` | object | yes | The agent's name and core prompt. See [Identity](#identity). |
 | `provider` | object | yes | LLM provider and model selection. See [Provider](#provider). |
-| `tools` | list of strings | no | Tool names to enable for this agent. Must be registered in `ToolRegistry`. Defaults to no tools. |
-| `mcp_servers` | list of strings | no | MCP server names from `mcp_servers.yaml` to connect. Tools they expose become available to the agent. |
+| `mcp_servers` | list of strings | no | MCP server names from `mcp_servers.yaml` to connect. Tools they expose are registered globally and become available to every agent. |
 | `channels` | list of objects | no | Channels this agent is active on. `cli` is supported in the core phase. |
 | `bootstrap` | list of strings | no | Bootstrap files to prepend to the system prompt, in order. Resolved from the workspace root. |
 | `schedules` | list of objects | no | Cron-triggered runs of this agent. See [Schedules](#schedules). |
@@ -135,7 +126,7 @@ If a Profile's `provider.name` has no matching provider in the registry, the age
 
 ## Tools
 
-The `tools` list controls which built-in and MCP-sourced tools are available to the agent during a ReAct Loop. Only tools listed here are passed to the LLM as callable functions.
+Tools are **global**: every tool registered in `ToolRegistry` — built-in and MCP-sourced alike — is available to every agent during a ReAct Loop. `AGENT.md` does not declare a `tools` list, and there is no per-agent filtering. What a tool may touch is still constrained by the sandbox whitelist (paths, commands, domains).
 
 Built-in tool names:
 
@@ -148,14 +139,12 @@ Built-in tool names:
 | `http_get` | HTTP GET request (default allow + SSRF blocklist) |
 | `http_post` | HTTP POST request (domain whitelist enforced) |
 | `fetch_webpage` | Fetch a page and extract readable text (default allow + SSRF) |
-| `web_search` | Web search (default allow + SSRF; must be listed in `tools:`) |
+| `web_search` | Web search (default allow + SSRF) |
 | `save_memory` | Append a note to `MEMORY.md` |
 | `recall_memory` | Keyword search over `MEMORY.md` |
 | `notify` | Push a message to a notify channel referenced by name |
 
-> For Feishu / WeCom / DingTalk inbound agents that should answer “search the web” / live facts, list `web_search` in `tools:` (and usually `http_get` + `fetch_webpage`). A `CONNECTED` channel is not enough — unlisted tools never reach the model. See [Tool system](/docs/tool) (“Enabling web search for IM / business agents”).
-
-MCP tools from configured `mcp_servers` are available by their server-declared names (e.g. `github_create_pr`). Run `ibios tool list` to see all registered names. See the [Tool system](/docs/tool) for details, including how the `notify` tool resolves a channel by name.
+Run `ibios tool list` to see all registered names. See the [Tool system](/docs/tool) for details, including how the `notify` tool resolves a channel by name.
 
 ### Sub-instructions and scripts (no frontmatter field)
 

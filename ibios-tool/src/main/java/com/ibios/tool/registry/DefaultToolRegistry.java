@@ -25,21 +25,6 @@ public class DefaultToolRegistry implements ToolRegistry {
   }
 
   @Override
-  public List<IbiosTool> filterForProfile(List<String> toolNames) {
-    if (toolNames == null || toolNames.isEmpty()) {
-      return listAll();
-    }
-    List<IbiosTool> filtered = new ArrayList<>();
-    for (String name : toolNames) {
-      IbiosTool tool = tools.get(name);
-      if (tool != null) {
-        filtered.add(tool);
-      }
-    }
-    return Collections.unmodifiableList(filtered);
-  }
-
-  @Override
   public void register(IbiosTool tool) {
     tools.put(tool.name(), tool);
   }

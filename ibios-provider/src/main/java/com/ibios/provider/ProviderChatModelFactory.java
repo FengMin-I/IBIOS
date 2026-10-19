@@ -37,7 +37,10 @@ public class ProviderChatModelFactory {
       }
       DashScopeApi api = DashScopeApi.builder().apiKey(entry.getApiKey()).build();
       DashScopeChatOptions options =
-          DashScopeChatOptions.builder().withModel(entry.getModel()).build();
+          DashScopeChatOptions.builder()
+              .withModel(entry.getModel())
+              .withEnableSearch(false)
+              .build();
       DashScopeChatModel chatModel =
           DashScopeChatModel.builder().dashScopeApi(api).defaultOptions(options).build();
       models.put(entry.getName(), chatModel);

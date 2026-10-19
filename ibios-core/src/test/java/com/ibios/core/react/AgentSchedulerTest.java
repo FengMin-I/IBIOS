@@ -121,8 +121,6 @@ class AgentSchedulerTest {
         List.of(),
         List.of(),
         List.of(),
-        List.of(),
-        List.of(),
         List.of(scheduleConfig),
         List.of(),
         Map.of(),

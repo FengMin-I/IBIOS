@@ -39,10 +39,6 @@
             <span class="info-value mono">{{ agentInfo.model }}</span>
           </div>
           <div class="info-item">
-            <span class="info-label">Tools</span>
-            <span class="info-value mono">{{ (agentInfo.tools || []).join(', ') || '–' }}</span>
-          </div>
-          <div class="info-item">
             <span class="info-label">定时任务</span>
             <span class="info-value mono">
               <template v-if="agentInfo.schedules && agentInfo.schedules.length">

@@ -3,6 +3,7 @@ package com.ibios.core.react;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -61,14 +62,14 @@ class ReActLoopTest {
     ChatResponse finalResponse = new ChatResponse("Final answer", Collections.emptyList());
 
     when(chatPort.chat(any(), any(), any())).thenReturn(responseWithTool).thenReturn(finalResponse);
-    when(toolExecutor.execute(any(), any(), any()))
+    when(toolExecutor.execute(any(), any(), any(), any()))
         .thenReturn(new ToolResult("test_tool", "{}", "tool output", true, null));
 
     String result = reActLoop.run(session, "Use tool", profile);
 
     assertEquals("Final answer", result);
     verify(chatPort, times(2)).chat(any(), any(), any());
-    verify(toolExecutor, times(1)).execute(any(), any(), any());
+    verify(toolExecutor, times(1)).execute(eq("s1"), eq("test"), eq("test_tool"), eq("{}"));
   }
 
   @Test
@@ -79,7 +80,7 @@ class ReActLoopTest {
     ChatResponse responseWithTool =
         new ChatResponse("Calling tool", List.of(new ToolCallResponse("test_tool", "{}")));
     when(chatPort.chat(any(), any(), any())).thenReturn(responseWithTool);
-    when(toolExecutor.execute(any(), any(), any()))
+    when(toolExecutor.execute(any(), any(), any(), any()))
         .thenReturn(new ToolResult("test_tool", "{}", "output", true, null));
 
     String result = reActLoop.run(session, "Use tool", profile);
@@ -98,7 +99,7 @@ class ReActLoopTest {
     ChatResponse finalResponse = new ChatResponse("Final answer", Collections.emptyList());
 
     when(chatPort.chat(any(), any(), any())).thenReturn(responseWithTool).thenReturn(finalResponse);
-    when(toolExecutor.execute(any(), any(), any()))
+    when(toolExecutor.execute(any(), any(), any(), any()))
         .thenReturn(new ToolResult("test_tool", "{}", "tool output", true, null));
 
     reActLoop.run(session, "Hello", profile);
@@ -112,8 +113,6 @@ class ReActLoopTest {
         "test profile",
         new Profile.Identity("agent", "prompt"),
         new Profile.ProviderConfig("dashscope", "qwen-plus", null),
-        List.of(),
-        List.of(),
         List.of(),
         List.of(),
         List.of(),

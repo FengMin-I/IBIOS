@@ -1,6 +1,5 @@
 package com.ibios.core.agent;
 
-import com.ibios.core.profile.NotifyChannelConfig;
 import com.ibios.core.profile.Profile;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -85,12 +84,9 @@ public class AgentLoader {
     String description = (String) fm.getOrDefault("description", "");
     Profile.Identity identity = convertIdentity(asMap(fm.get("identity")));
     Profile.ProviderConfig provider = convertProviderConfig(asMap(fm.get("provider")));
-    List<String> tools = asStringList(fm.get("tools"));
     List<String> skills = asStringList(fm.get("skills"));
     List<String> mcpServers = asStringList(fm.get("mcp_servers"));
     List<String> channels = asStringList(fm.get("channels"));
-    List<NotifyChannelConfig> notifyChannels =
-        convertNotifyChannels(asList(fm.get("notify_channels")));
     List<Profile.ScheduleConfig> schedules = convertSchedules(asList(fm.get("schedules")));
     List<String> bootstrap = asStringList(fm.get("bootstrap"));
     Map<String, Object> settings = asObjectMap(fm.get("settings"));
@@ -102,11 +98,9 @@ public class AgentLoader {
         description,
         identity,
         provider,
-        tools,
         skills,
         mcpServers,
         channels,
-        notifyChannels,
         schedules,
         bootstrap,
         settings,
@@ -119,8 +113,7 @@ public class AgentLoader {
       Path agentsDir,
       com.ibios.core.profile.ProfileRegistry registry,
       com.ibios.core.react.AgentScheduler scheduler,
-      Set<String> validProviderNames,
-      Set<String> registeredToolNames) {
+      Set<String> validProviderNames) {
     if (!Files.isDirectory(agentsDir)) {
       LOG.info("Agents directory does not exist: " + agentsDir);
       return;
@@ -134,15 +127,6 @@ public class AgentLoader {
                   if (!validProviderNames.contains(profile.provider().name())) {
                     throw new IllegalArgumentException(
                         "Unknown provider: " + profile.provider().name());
-                  }
-                  for (String toolName : profile.tools()) {
-                    if (!registeredToolNames.contains(toolName)) {
-                      LOG.warning(
-                          "Agent '"
-                              + profile.name()
-                              + "' references unregistered tool: "
-                              + toolName);
-                    }
                   }
                   registry.register(profile);
                   if (scheduler != null) {
@@ -165,7 +149,7 @@ public class AgentLoader {
       String varName = matcher.group(1);
       String value = System.getenv(varName);
       if (value == null) {
-        throw new IllegalStateException("Environment variable not set: " + varName);
+        value = "";
       }
       matcher.appendReplacement(sb, Matcher.quoteReplacement(value));
     }
@@ -222,21 +206,6 @@ public class AgentLoader {
               (String) item.getOrDefault("cron", ""),
               (String) item.getOrDefault("zone", ""),
               (String) item.getOrDefault("message", "")));
-    }
-    return result;
-  }
-
-  private List<NotifyChannelConfig> convertNotifyChannels(List<Map<String, Object>> list) {
-    if (list == null) {
-      return Collections.emptyList();
-    }
-    List<NotifyChannelConfig> result = new ArrayList<>();
-    for (Map<String, Object> item : list) {
-      result.add(
-          new NotifyChannelConfig(
-              (String) item.getOrDefault("name", ""),
-              (String) item.getOrDefault("type", ""),
-              (String) item.getOrDefault("url", "")));
     }
     return result;
   }

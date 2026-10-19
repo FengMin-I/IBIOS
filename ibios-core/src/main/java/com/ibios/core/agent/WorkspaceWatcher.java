@@ -26,7 +26,6 @@ public class WorkspaceWatcher {
   private final ProfileRegistry profileRegistry;
   private final AgentScheduler agentScheduler;
   private final Set<String> validProviderNames;
-  private final Set<String> registeredToolNames;
   private volatile boolean running;
 
   public WorkspaceWatcher(
@@ -34,14 +33,12 @@ public class WorkspaceWatcher {
       AgentLoader agentLoader,
       ProfileRegistry profileRegistry,
       AgentScheduler agentScheduler,
-      Set<String> validProviderNames,
-      Set<String> registeredToolNames) {
+      Set<String> validProviderNames) {
     this.agentsDir = agentsDir;
     this.agentLoader = agentLoader;
     this.profileRegistry = profileRegistry;
     this.agentScheduler = agentScheduler;
     this.validProviderNames = validProviderNames;
-    this.registeredToolNames = registeredToolNames;
   }
 
   public void start() {
@@ -134,11 +131,6 @@ public class WorkspaceWatcher {
       if (!validProviderNames.contains(profile.provider().name())) {
         LOG.warning("Unknown provider for agent at " + agentDir + ": " + profile.provider().name());
         return;
-      }
-      for (String toolName : profile.tools()) {
-        if (!registeredToolNames.contains(toolName)) {
-          LOG.warning("Agent '" + profile.name() + "' references unregistered tool: " + toolName);
-        }
       }
       profileRegistry.register(profile);
       if (!profile.schedules().isEmpty()) {

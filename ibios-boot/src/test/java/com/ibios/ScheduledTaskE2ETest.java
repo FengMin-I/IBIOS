@@ -65,8 +65,6 @@ class ScheduledTaskE2ETest {
               "Scheduled task E2E test agent",
               new Profile.Identity("scheduled-bot", "You are a test assistant."),
               new Profile.ProviderConfig("mock", "mock", null),
-              List.of("save_memory"),
-              List.of(),
               List.of(),
               List.of(),
               List.of(),

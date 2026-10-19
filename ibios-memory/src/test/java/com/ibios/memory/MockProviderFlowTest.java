@@ -50,8 +50,6 @@ class MockProviderFlowTest {
             "test profile",
             new Profile.Identity("agent", "You are a helpful assistant."),
             new Profile.ProviderConfig("mock", "mock-model", null),
-            List.of("save_memory"),
-            List.of(),
             List.of(),
             List.of(),
             List.of(),
@@ -139,21 +137,6 @@ class MockProviderFlowTest {
     @Override
     public List<IbiosTool> listAll() {
       return new ArrayList<>(tools.values());
-    }
-
-    @Override
-    public List<IbiosTool> filterForProfile(List<String> toolNames) {
-      if (toolNames == null || toolNames.isEmpty()) {
-        return listAll();
-      }
-      List<IbiosTool> filtered = new ArrayList<>();
-      for (String name : toolNames) {
-        IbiosTool tool = tools.get(name);
-        if (tool != null) {
-          filtered.add(tool);
-        }
-      }
-      return filtered;
     }
 
     @Override

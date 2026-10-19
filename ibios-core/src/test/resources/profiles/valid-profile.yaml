@@ -7,19 +7,12 @@ provider:
   name: dashscope
   model: qwen-plus
   temperature: 0.7
-tools:
-  - web_search
-  - calculator
 skills:
   - coding
 mcp_servers:
   - fs-server
 channels:
   - cli
-notify_channels:
-  - name: log
-    type: webhook
-    url: http://localhost:8080/webhook
 schedules:
   - id: morning-greeting
     cron: "0 9 * * *"

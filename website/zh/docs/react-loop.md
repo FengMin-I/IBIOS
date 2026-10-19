@@ -39,7 +39,7 @@ IBIOS 从零实现了 ReAct（Reason + Act）算法——`ReActLoop.java` 里数
 | 1 | 系统提示词 — 该 Agent 的 `AGENT.md` 正文 + Bootstrap 文件（`AGENTS.md`、`SOUL.md`、`USER.md`） | 文件系统 | `ContextLoader` |
 | 2 | 长期记忆 — 该 Agent 的 `MEMORY.md` 全文（截断至 4000 字符） | `.ibios/agents/<name>/MEMORY.md`（回退到 `.ibios/memory/MEMORY.md`） | `MemoryService` |
 | 3 | 对话历史 — 最近 `max_history_turns` 轮，以结构化消息形式（包含此前 assistant 的工具调用和带 id 的工具结果） | SQLite `sessions.messages_json` | `SessionManager` |
-| 4 | 可用工具 — 该 Agent 暴露的每个工具的 JSON Schema | `ToolRegistry` | `ToolRegistry` |
+| 4 | 可用工具 — 全局注册表中每个工具的 JSON Schema | `ToolRegistry` | `ToolRegistry` |
 
 Agent 目录里的子指令（`skills/*.md`）和脚本（`scripts/`）**不会**被预先注入——正文会指引模型按需用 `read_file` / `shell` 读取。
 

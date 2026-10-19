@@ -54,8 +54,6 @@ class MockAgentE2ETest {
               "Mock agent for E2E testing",
               new Profile.Identity("mock-bot", "You are a helpful test assistant."),
               new Profile.ProviderConfig("mock", "mock", null),
-              List.of("save_memory", "recall_memory"),
-              List.of(),
               List.of(),
               List.of(),
               List.of(),

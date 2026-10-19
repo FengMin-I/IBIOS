@@ -71,8 +71,9 @@ public class IbiosConfiguration {
   }
 
   @Bean
-  public PromptBuilder promptBuilder(ContextLoader contextLoader, MemoryService memoryService) {
-    return new PromptBuilder(contextLoader, memoryService);
+  public PromptBuilder promptBuilder(
+      ContextLoader contextLoader, MemoryService memoryService, ToolRegistry toolRegistry) {
+    return new PromptBuilder(contextLoader, memoryService, toolRegistry);
   }
 
   @Bean
@@ -165,23 +166,13 @@ public class IbiosConfiguration {
       AgentLoader agentLoader,
       ProfileRegistry profileRegistry,
       AgentScheduler agentScheduler,
-      ProvidersProperties providersProperties,
-      ToolRegistry toolRegistry) {
+      ProvidersProperties providersProperties) {
     Set<String> validProviderNames =
         providersProperties.getProviders().stream()
             .map(ProvidersProperties.ProviderEntry::getName)
             .collect(Collectors.toSet());
-    Set<String> registeredToolNames =
-        toolRegistry.listAll().stream()
-            .map(com.ibios.core.tool.IbiosTool::name)
-            .collect(Collectors.toSet());
     return new WorkspaceWatcher(
-        agentStore.agentsDir(),
-        agentLoader,
-        profileRegistry,
-        agentScheduler,
-        validProviderNames,
-        registeredToolNames);
+        agentStore.agentsDir(), agentLoader, profileRegistry, agentScheduler, validProviderNames);
   }
 
   private String loadAgentAuthorPrompt() {

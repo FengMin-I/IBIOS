@@ -23,7 +23,7 @@ public class WebhookNotifyAdapter implements NotifyChannelAdapter {
         .post()
         .uri(url)
         .contentType(MediaType.APPLICATION_JSON)
-        .body(Map.of("content", content))
+        .body(Map.of("msg_type", "text", "content", Map.of("text", content)))
         .retrieve()
         .toBodilessEntity();
   }

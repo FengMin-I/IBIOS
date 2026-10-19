@@ -104,7 +104,6 @@ ibios serve --port 8080
   "description": "运维助手",
   "provider": "deepseek",
   "model": "deepseek-chat",
-  "tools": ["read_file", "shell", "http_get"],
   "schedules": []
 }
 ```
@@ -121,7 +120,6 @@ ibios serve --port 8080
     "description": "运维助手",
     "provider": "deepseek",
     "model": "deepseek-chat",
-    "tools": ["read_file", "shell", "http_get"],
     "schedules": []
   }
 ]
@@ -138,7 +136,6 @@ ibios serve --port 8080
   "description": "每天把天气和穿衣建议推送到飞书",
   "provider": "deepseek",
   "model": "deepseek-chat",
-  "tools": ["http_get", "notify"],
   "schedules": [
     { "id": "morning", "cron": "0 0 8 * * *", "zone": "Asia/Shanghai", "message": "推送今天的天气和穿衣建议" }
   ]
@@ -165,7 +162,6 @@ ibios serve --port 8080
   "description": "运维助手",
   "provider": "deepseek",
   "model": "deepseek-chat",
-  "tools": ["read_file", "shell", "http_get"],
   "schedules": []
 }
 ```
@@ -288,7 +284,6 @@ null
   "description": "每天把 GitHub trending 推送到飞书",
   "provider": "deepseek",
   "model": "deepseek-chat",
-  "tools": ["shell", "notify"],
   "schedules": []
 }
 ```
@@ -669,8 +664,7 @@ curl -N -H "Accept: text/event-stream" -H "Content-Type: application/json" \
     "name": "ops-agent",
     "description": "运维助手",
     "provider": "deepseek",
-    "model": "deepseek-chat",
-    "tools": ["read_file", "shell", "http_get", "save_memory", "recall_memory"]
+    "model": "deepseek-chat"
   }
 ]
 ```
@@ -756,7 +750,7 @@ Sandbox 白名单分三类——`FILE`（允许路径）、`SHELL`（允许命�
 
 ## 工具策略
 
-平台管理员的治理层（020）:全局 + Agent 级工具 allow/deny,与 `AGENT.md` 的 `tools:`（作者自选集）分离。策略只做减法——有效工具集恒 ⊆ 声明集;与沙箱白名单正交（策略管"能不能用这个工具",沙箱管"工具能碰什么资源"）。零规则 = 现状零破坏;规则增删即刻热更新生效。
+平台管理员的治理层（规划中）:在全局注册表之上叠加全局 + Agent 级工具 allow/deny。策略只做减法——有效工具集恒 ⊆ 全局注册集;与沙箱白名单正交（策略管"能不能用这个工具",沙箱管"工具能碰什么资源"）。零规则 = 现状零破坏;规则增删即刻热更新生效。
 
 规则三类:`GLOBAL_DENY`（全局禁用,不带 agentName）、`AGENT_EXEMPT`（指定 Agent 豁免全局禁用）、`AGENT_DENY`（指定 Agent 定向收紧,例外救不回）。`pattern` 为工具精确名或 MCP server 通配（`github-mcp:*`,按工具注册归属判定）。三道保险:被禁工具不进模型清单（事前）、执行层按最新策略拒绝（事中,防幻觉调用）、`tool_invocations.blocked_by='policy'` 留痕（事后可筛）。
 

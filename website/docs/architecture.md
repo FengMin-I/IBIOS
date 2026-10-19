@@ -24,7 +24,7 @@ The reasoning engine is a self-implemented ReAct loop. Spring AI's OpenAI connec
 
 Every Agent is a single directory: `.ibios/agents/<name>/`. There is no separate `.ibios/profiles/` — the Profile *is* the agent.
 
-- `AGENT.md` = YAML frontmatter (the Agent's Profile: `name`, `description`, `identity`, `provider`/`model`, `tools`, `mcp_servers`, `channels`, `bootstrap`, `settings`, `schedules`) + a body of task instructions injected into the system prompt. `AgentLoader.deriveProfile(agentDir)` turns the frontmatter into the `Profile` the runtime understands.
+- `AGENT.md` = YAML frontmatter (the Agent's Profile: `name`, `description`, `identity`, `provider`/`model`, `mcp_servers`, `channels`, `bootstrap`, `settings`, `schedules`) + a body of task instructions injected into the system prompt. `AgentLoader.deriveProfile(agentDir)` turns the frontmatter into the `Profile` the runtime understands. Tools are not declared per agent — `ToolRegistry` is global.
 - Optional `skills/*.md` sub-instructions, `scripts/`, and `REFERENCE.md` sit in the same directory and are loaded **on demand** through the ordinary `read_file` / `shell` tools — no global skill index, no `use_skill`.
 - Long-term memory is **per-agent**: `.ibios/agents/<name>/MEMORY.md` (falling back to the global `.ibios/memory/MEMORY.md` when there is no agent context). Memory lines are timestamped, and every trigger of an agent is auto-recorded to that agent's archival memory.
 

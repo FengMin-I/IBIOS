@@ -5,7 +5,8 @@ import com.ibios.core.memory.MemoryScope;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 
@@ -14,6 +15,8 @@ public class MarkdownMemoryStore implements LongTermMemoryStore {
   private static final String CORE_HEADER = "## 核心记忆";
   private static final String ARCHIVE_HEADER = "## 归档记忆";
   private static final int MAX_ARCHIVE_CHARS = 4000;
+  private static final DateTimeFormatter TIMESTAMP_FORMAT =
+      DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
   private final Path memoryFilePath;
 
@@ -28,7 +31,7 @@ public class MarkdownMemoryStore implements LongTermMemoryStore {
   @Override
   public void append(String content, MemoryScope scope) {
     String header = scope == MemoryScope.CORE ? CORE_HEADER : ARCHIVE_HEADER;
-    String entry = "\n- [" + LocalDate.now() + "] " + content;
+    String entry = "\n- [" + LocalDateTime.now().format(TIMESTAMP_FORMAT) + "] " + content;
     writeIntoSection(header, entry);
   }
 

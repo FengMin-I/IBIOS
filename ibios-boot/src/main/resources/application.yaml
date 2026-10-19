@@ -36,6 +36,7 @@ shell:
     - ls
     - cat
     - echo
+    - python3
 
 http:
   allowed-domains:
@@ -47,11 +48,13 @@ ibios:
     model: ${IBIOS_AUTHOR_MODEL:qwen-plus}
   providers:
     - name: dashscope
-      api-key: sk-f8476cad880849338c4f3748ee570dc9
+      api-key: ${DASHSCOPE_API_KEY:}
       model: qwen-plus
     - name: deepseek
-      api-key: sk-abf9db7368ce44108cfc67061d348366
+      api-key: ${DEEPSEEK_API_KEY:}
       model: deepseek-chat
+  notify:
+    team-webhook-url: ${TEAM_WEBHOOK_URL:}
 
 management:
   endpoints:

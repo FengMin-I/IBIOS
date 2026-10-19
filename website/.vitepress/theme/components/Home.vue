@@ -142,7 +142,7 @@ const scenarios = computed(() => [
   {
     num: '08',
     title: t('多 Agent 协作', 'Multi-Agent Collaboration'),
-    desc: t('多个 Agent 共享同一个 IBIOS 实例，各自拥有独立的 Profile、工具和记忆。', 'Multiple agents share one IBIOS instance, each with its own profile, tools, and memory.'),
+    desc: t('多个 Agent 共享同一个 IBIOS 实例，各自拥有独立的 Profile 和记忆，工具能力全局共享。', 'Multiple agents share one IBIOS instance, each with its own profile and memory, on a shared global tool registry.'),
   },
 ])
 

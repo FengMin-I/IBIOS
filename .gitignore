@@ -48,3 +48,15 @@ ibios.yaml
 ### Runtime ###
 bin/ibios.log
 bin/ibios.pid
+
+### Agent runtime data ###
+my-agent/
+ibios-boot/.ibios/
+ibios-boot/src/test/resources/.ibios/
+.ibios/memory/
+.ibios/profiles/
+.ibios/mcp_servers.yaml
+.ibios/archive/*
+!.ibios/archive/.gitkeep
+.ibios/agents/*/MEMORY.md
+ibios-storage/mem:*

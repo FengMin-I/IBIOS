@@ -117,7 +117,7 @@ ibios gateway
 
 ## Agent（Profile）管理
 
-每个 Agent 是 `<工作区>/agents/<name>/` 下的一个目录，内含 `AGENT.md`（YAML frontmatter = 这个 Agent 的 profile：identity/provider/tools/settings；正文 = 任务指令），外加可选的 `skills/`、`scripts/`、`REFERENCE.md`。一个目录 = 一个 Agent——**不再有 `.ibios/profiles/` 目录**。`profile` 子命令都是轻命令（不启动 Spring），直接读写这些 `AGENT.md`，认 `IBIOS_ROOT` / `-Dibios.root`。
+每个 Agent 是 `<工作区>/agents/<name>/` 下的一个目录，内含 `AGENT.md`（YAML frontmatter = 这个 Agent 的 profile：identity/provider/schedules/settings；正文 = 任务指令），外加可选的 `skills/`、`scripts/`、`REFERENCE.md`。工具是全局的——所有已注册工具对所有 Agent 可见——因此 profile 里没有 `tools:` 列表。一个目录 = 一个 Agent——**不再有 `.ibios/profiles/` 目录**。`profile` 子命令都是轻命令（不启动 Spring），直接读写这些 `AGENT.md`，认 `IBIOS_ROOT` / `-Dibios.root`。
 
 ### ibios profile list
 

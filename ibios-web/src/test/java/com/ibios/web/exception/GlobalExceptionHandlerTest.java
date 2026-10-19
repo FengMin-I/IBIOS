@@ -9,12 +9,14 @@ import com.ibios.web.model.ApiResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 class GlobalExceptionHandlerTest {
 
@@ -63,6 +65,16 @@ class GlobalExceptionHandlerTest {
         .perform(get("/test/agent-not-found").accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.code").value(404));
+  }
+
+  @Test
+  @DisplayName("未匹配的路径返回 404 而不是 500")
+  void noResourceFoundException_returns404() throws Exception {
+    mockMvc
+        .perform(get("/test/no-resource").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.code").value(404))
+        .andExpect(jsonPath("$.message").value("Resource not found: api/v1/providers"));
   }
 
   @Test
@@ -135,6 +147,11 @@ class GlobalExceptionHandlerTest {
     @GetMapping("/timeout")
     public ApiResponse<Void> timeout() {
       throw new AgentTimeoutException("Agent call timed out");
+    }
+
+    @GetMapping("/no-resource")
+    public ApiResponse<Void> noResource() throws NoResourceFoundException {
+      throw new NoResourceFoundException(HttpMethod.GET, "api/v1/providers");
     }
 
     @GetMapping("/service-unavailable")

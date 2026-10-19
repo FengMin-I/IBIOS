@@ -30,7 +30,7 @@ record ToolResult(
 
 ## 内置工具
 
-IBIOS 核心内置约两打工具——一组精心挑选的**通用原语**，覆盖绝大多数 Agent 需求而不锁死任何领域。启动时自动注册。Agent 能用哪些工具，取决于其 Profile 的 `tools` 列表。
+IBIOS 核心内置约两打工具——一组精心挑选的**通用原语**，覆盖绝大多数 Agent 需求而不锁死任何领域。启动时自动注册，且对所有 Agent 可用：工具访问是全局的，具体能碰什么资源由沙箱白名单约束。
 
 | 工具 | 类 | 说明 | 沙箱校验 |
 | --- | --- | --- | --- |
@@ -209,20 +209,7 @@ http:
 
 ### 给 IM / 业务 Agent 开联网检索
 
-`web_search` / `http_get` / `fetch_webpage` 虽已在运行时全局注册，但 **只有写进该 Agent `AGENT.md` 的 `tools:` 才会出现在模型可调用列表**（见下方「工具注册表」过滤）。常见踩坑：渠道已 `CONNECTED`，用户说「搜一下」却从不调工具——多半是 frontmatter 里只有 `read_file` / `shell` / `notify`。
-
-管理台 / API **新建 Agent** 的脚手架默认已包含下列工具；存量 Agent 仍需手工补上：
-
-```yaml
-tools:
-  - read_file
-  - shell
-  - notify
-  - web_search
-  - http_get
-  - fetch_webpage
-```
-
+`web_search` / `http_get` / `fetch_webpage` 全局注册，对所有 Agent 的模型可见——不再需要维护 per-Agent 的 `tools:` 列表。常见踩坑：渠道已 `CONNECTED`，用户说「搜一下」却从不调工具——多半是正文从未告诉模型要搜索。请在 Agent 正文里写明何时调用 `web_search`。
 建议在正文里写明：需要实时信息时先调 `web_search`。核心阶段搜索走 DuckDuckGo：**Instant Answer JSON 为空时（中文/时效查询常见）会自动再请求 HTML 轻量结果页**；若仍为空，再用 `fetch_webpage` 或对公开 API 使用 `http_get`（例如天气用 `api.open-meteo.com`）。
 
 工具调用未通过沙箱校验时，`ToolExecutor` 返回不可重试的 `ToolResult`，并带有清晰的错误信息说明违反了哪条白名单。该调用仍会记录在 `tool_invocations` 里，`success = false`。
@@ -231,15 +218,15 @@ tools:
 
 ## 工具注册表
 
-`ToolRegistry` 是所有工具——内置工具和 MCP 工具——的集中目录，承担两项职责：
+`ToolRegistry` 是所有工具——内置工具和 MCP 工具——的全局目录，承担两项职责：
 
 **注册** — 启动时，所有 `IbiosTool` Bean 完成注册，随后通过 JSON-RPC `tools/list` 发现 MCP server 提供的工具，并将其包装为 `McpProxyTool` 实例。
 
-**过滤** — `PromptBuilder` 请求某个 Agent 可用的工具时，`ToolRegistry.getToolsForProfile(profile)` 只返回 `profile.tools` 列表中包含的工具。即使工具已全局注册，Agent 也无法调用不在其 Profile 里的工具。
+**查找** — `PromptBuilder` 组装 Prompt 时调用 `listAll()`，把全量目录交给模型。没有 per-Agent 过滤：注册进来的工具对所有 Agent 一视同仁；执行调用时用 `lookup(name)` 按名解析。
 
 ```java
-// PromptBuilder 用这个来为 LLM 构建 Function Calling 工具列表
-List<IbiosTool> tools = toolRegistry.getToolsForProfile(profile);
+// PromptBuilder 把全局目录整体交给 LLM
+List<IbiosTool> tools = toolRegistry.listAll();
 ```
 
 工具名称全局唯一。如果 MCP server 注册的工具与内置工具同名，启动会直接报错——不存在静默覆盖的情况。

@@ -89,8 +89,6 @@ class AgentServiceTest {
         List.of(),
         List.of(),
         List.of(),
-        List.of(),
-        List.of(),
         Map.of(),
         10,
         20,

@@ -46,7 +46,7 @@ class WorkspaceWatcherTest {
     }
     watcher =
         new WorkspaceWatcher(
-            agentsDir, agentLoader, profileRegistry, agentScheduler, Set.of("dashscope"), Set.of());
+            agentsDir, agentLoader, profileRegistry, agentScheduler, Set.of("dashscope"));
   }
 
   private Profile buildProfile(String name) {
@@ -55,8 +55,6 @@ class WorkspaceWatcherTest {
         "desc",
         new Profile.Identity("agent", "prompt"),
         new Profile.ProviderConfig("dashscope", "qwen-plus", null),
-        List.of(),
-        List.of(),
         List.of(),
         List.of(),
         List.of(),
