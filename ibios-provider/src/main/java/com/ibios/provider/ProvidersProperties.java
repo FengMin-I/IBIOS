@@ -24,6 +24,7 @@ public class ProvidersProperties {
     private String name;
     private String apiKey;
     private String model;
+    private String baseUrl;
 
     public String getName() {
       return name;
@@ -47,6 +48,14 @@ public class ProvidersProperties {
 
     public void setModel(String model) {
       this.model = model;
+    }
+
+    public String getBaseUrl() {
+      return baseUrl;
+    }
+
+    public void setBaseUrl(String baseUrl) {
+      this.baseUrl = baseUrl;
     }
   }
 }

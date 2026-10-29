@@ -9,6 +9,8 @@
 ```bash
 export DASHSCOPE_API_KEY=your_dashscope_key
 export DEEPSEEK_API_KEY=your_deepseek_key
+# 可选：接入任意 OpenAI 兼容端点时使用
+export OPENAI_COMPAT_API_KEY=your_endpoint_key
 ```
 
 只需使用某个 Provider 时，设置对应的变量即可；只用 `mock` Provider 时可都不设，应用照常启动。
@@ -53,7 +55,14 @@ ibios:
     - name: dashscope
       api-key: ${DASHSCOPE_API_KEY:}
       model: qwen-plus
+    # 任意 OpenAI 兼容端点（OpenAI / OpenRouter / vLLM / Ollama / 企业网关）
+    - name: openai-compatible
+      base-url: https://api.example.com/v1
+      api-key: ${OPENAI_COMPAT_API_KEY:}
+      model: your-model-id
 ```
+
+`base-url` 存在时按 OpenAI 兼容协议构建（自动去掉末尾 `/v1`，避免拼出 `/v1/v1/chat/completions`）；`deepseek` 不填 `base-url` 时使用默认地址；其余未配置 `base-url` 的自定义 Provider 会被跳过。
 
 ## 注意事项
 

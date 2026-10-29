@@ -69,6 +69,11 @@ function toggleGroup(group) {
   padding: 24px 0;
   display: flex;
   flex-direction: column;
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .logo {
@@ -89,6 +94,9 @@ function toggleGroup(group) {
   list-style: none;
   margin: 0;
   padding: 0;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .nav-list > li {

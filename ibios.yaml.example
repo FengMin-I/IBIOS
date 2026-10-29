@@ -1,6 +1,7 @@
 # IBIOS 配置文件
 # 复制此文件为 ibios.yaml，仅用于覆盖非敏感配置（端口、白名单等）。
-# 凭证一律通过环境变量提供（DASHSCOPE_API_KEY / DEEPSEEK_API_KEY），不得写进本文件。
+# 凭证一律通过环境变量提供（DASHSCOPE_API_KEY / DEEPSEEK_API_KEY / OPENAI_COMPAT_API_KEY），
+# 不得写进本文件。
 
 ibios:
   providers:
@@ -11,3 +12,9 @@ ibios:
     # - name: mock
     #   api-key: ""
     #   model: mock
+    # 任意 OpenAI 兼容端点（OpenAI / OpenRouter / vLLM / Ollama / 企业网关）
+    # base-url 末尾的 /v1 会自动归一化；未配置 base-url 的自定义 Provider 会被跳过
+    # - name: openai-compatible
+    #   base-url: https://api.example.com/v1
+    #   api-key: ${OPENAI_COMPAT_API_KEY:}
+    #   model: your-model-id
