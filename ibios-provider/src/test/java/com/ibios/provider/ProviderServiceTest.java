@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -43,11 +44,8 @@ class ProviderServiceTest {
     openaiModel = mock(ChatModel.class);
 
     ProviderChatModelFactory factory = mock(ProviderChatModelFactory.class);
-    Map<String, ChatModel> models =
-        Map.of(
-            "dashscope", dashscopeModel,
-            "openai", openaiModel);
-    when(factory.getModels()).thenReturn(models);
+    lenient().when(factory.getModel("dashscope")).thenReturn(dashscopeModel);
+    lenient().when(factory.getModel("openai")).thenReturn(openaiModel);
 
     providerService = new ProviderService(factory, toolSchemaAdapter, audit);
   }

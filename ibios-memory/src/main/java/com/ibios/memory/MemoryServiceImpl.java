@@ -5,6 +5,7 @@ import com.ibios.core.memory.LongTermMemoryStore;
 import com.ibios.core.memory.MemoryScope;
 import com.ibios.core.memory.MemoryService;
 import com.ibios.core.session.Session;
+import com.ibios.core.workspace.WorkspaceRoot;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -12,12 +13,16 @@ import java.util.List;
 
 public class MemoryServiceImpl implements MemoryService {
 
-  private static final Path AGENTS_DIR = Path.of(".ibios", "agents");
-
   private final LongTermMemoryStore store;
+  private final Path agentsDir;
 
   public MemoryServiceImpl(LongTermMemoryStore store) {
+    this(store, Path.of(WorkspaceRoot.DEFAULT_ROOT).resolve("agents"));
+  }
+
+  public MemoryServiceImpl(LongTermMemoryStore store, Path agentsDir) {
     this.store = store;
+    this.agentsDir = agentsDir;
   }
 
   @Override
@@ -64,7 +69,7 @@ public class MemoryServiceImpl implements MemoryService {
     if (agentName == null || !(store instanceof MarkdownMemoryStore)) {
       return null;
     }
-    Path agentDir = AGENTS_DIR.resolve(agentName);
+    Path agentDir = agentsDir.resolve(agentName);
     if (!Files.isDirectory(agentDir)) {
       return null;
     }

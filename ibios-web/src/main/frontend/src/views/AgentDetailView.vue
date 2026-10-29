@@ -93,26 +93,12 @@
             <template v-else>
               <div class="file-header">
                 <div class="file-breadcrumb mono">{{ selectedPath }}</div>
-                <button class="btn-edit-file" @click="toggleEdit">
-                  {{ editing ? '取消编辑' : '编辑' }}
-                </button>
+                <button class="btn-edit-file" @click="openFileEditModal">编辑</button>
               </div>
               <div class="file-content-wrapper card">
-                <textarea
-                  v-if="editing"
-                  v-model="editContent"
-                  class="file-editor mono"
-                  placeholder="编辑文件内容..."
-                ></textarea>
-                <pre v-else-if="fileContent !== null" class="file-content mono">{{ fileContent }}</pre>
+                <pre v-if="fileContent !== null" class="file-content mono">{{ fileContent }}</pre>
                 <div v-else-if="fileLoading" class="loading">加载中...</div>
                 <div v-else class="error">加载失败</div>
-              </div>
-              <div v-if="editing" class="editor-actions">
-                <button class="btn-cancel" @click="toggleEdit">取消</button>
-                <button class="btn-save" :disabled="saving" @click="saveFile">
-                  {{ saving ? '保存中...' : '保存' }}
-                </button>
               </div>
             </template>
           </div>
@@ -126,6 +112,13 @@
           <p class="section-desc">
             描述你希望这个 Agent 做什么，大模型会按照 AGENT.md 格式规范生成内容。
           </p>
+          <button class="btn-generate" @click="showEditModal = true">打开编辑器</button>
+        </div>
+      </div>
+
+      <!-- 编辑 Agent Modal -->
+      <ModalComponent v-model="showEditModal" title="编辑 Agent" width="640px">
+        <div class="edit-section">
           <textarea
             v-model="editDescription"
             class="edit-textarea"
@@ -151,7 +144,7 @@
             </button>
           </div>
         </div>
-      </div>
+      </ModalComponent>
 
       <!-- 记忆 Tab -->
       <div v-if="activeTab === 'memory'" class="memory-panel card">
@@ -160,22 +153,11 @@
           <p class="section-desc">
             此记忆仅属于 {{ agentName }}，其他 Agent 不可见。
           </p>
+          <button class="btn-generate" @click="openMemoryModal">编辑记忆</button>
         </div>
         <div v-if="memoryLoading" class="loading">加载中...</div>
         <template v-else>
-          <textarea
-            v-model="memoryContent"
-            class="memory-editor mono"
-            placeholder="在此编辑 Agent 的专属记忆内容..."
-            rows="20"
-          ></textarea>
-          <div v-if="memoryError" class="error-msg">{{ memoryError }}</div>
-          <div v-if="memorySaved" class="success-msg">记忆已保存</div>
-          <div class="memory-actions">
-            <button class="btn-save" :disabled="savingMemory" @click="saveMemory">
-              {{ savingMemory ? '保存中...' : '保存记忆' }}
-            </button>
-          </div>
+          <pre class="memory-preview mono">{{ memoryContent || '（暂无记忆内容）' }}</pre>
         </template>
       </div>
 
@@ -207,6 +189,46 @@
         </div>
       </div>
     </div>
+
+    <!-- 文件编辑 Modal -->
+    <ModalComponent v-model="showFileEditModal" :title="'编辑文件：' + (selectedPath || '')" width="720px">
+      <textarea
+        v-model="editContent"
+        class="file-editor mono"
+        placeholder="编辑文件内容..."
+        rows="20"
+      ></textarea>
+      <div class="modal-footer">
+        <button class="btn-cancel" @click="showFileEditModal = false">取消</button>
+        <button class="btn-save" :disabled="saving" @click="saveFile">
+          {{ saving ? '保存中...' : '保存' }}
+        </button>
+      </div>
+    </ModalComponent>
+
+    <!-- 记忆编辑 Modal -->
+    <ModalComponent v-model="showMemoryModal" title="编辑 Agent 记忆" width="640px">
+      <p class="section-desc">
+        此记忆仅属于 {{ agentName }}，其他 Agent 不可见。
+      </p>
+      <div v-if="memoryLoading" class="loading">加载中...</div>
+      <template v-else>
+        <textarea
+          v-model="memoryContent"
+          class="memory-editor mono"
+          placeholder="在此编辑 Agent 的专属记忆内容..."
+          rows="16"
+        ></textarea>
+        <div v-if="memoryError" class="error-msg">{{ memoryError }}</div>
+        <div v-if="memorySaved" class="success-msg">记忆已保存</div>
+        <div class="modal-footer">
+          <button class="btn-cancel" @click="showMemoryModal = false">取消</button>
+          <button class="btn-save" :disabled="savingMemory" @click="saveMemory">
+            {{ savingMemory ? '保存中...' : '保存记忆' }}
+          </button>
+        </div>
+      </template>
+    </ModalComponent>
   </div>
 </template>
 
@@ -214,6 +236,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import TreeNode from '../components/TreeNode.vue'
+import ModalComponent from '../components/ModalComponent.vue'
 
 const route = useRoute()
 const agentName = ref(route.params.name)
@@ -240,6 +263,7 @@ const fileLoading = ref(false)
 const editing = ref(false)
 const editContent = ref('')
 const saving = ref(false)
+const showFileEditModal = ref(false)
 
 // Edit Agent
 const editDescription = ref('')
@@ -247,6 +271,7 @@ const generating = ref(false)
 const editError = ref(null)
 const generatedContent = ref(null)
 const applying = ref(false)
+const showEditModal = ref(false)
 
 // Memory
 const memoryContent = ref('')
@@ -254,6 +279,7 @@ const memoryLoading = ref(true)
 const savingMemory = ref(false)
 const memoryError = ref(null)
 const memorySaved = ref(false)
+const showMemoryModal = ref(false)
 
 // Sessions
 const sessions = ref([])
@@ -320,14 +346,13 @@ async function loadFile(path) {
   }
 }
 
-function toggleEdit() {
-  if (editing.value) {
-    editContent.value = ''
-    editing.value = false
-  } else {
-    editContent.value = fileContent.value || ''
-    editing.value = true
-  }
+function openFileEditModal() {
+  editContent.value = fileContent.value || ''
+  showFileEditModal.value = true
+}
+
+function openMemoryModal() {
+  showMemoryModal.value = true
 }
 
 async function saveFile() {
@@ -340,7 +365,7 @@ async function saveFile() {
     })
     if (res.ok) {
       fileContent.value = editContent.value
-      editing.value = false
+      showFileEditModal.value = false
       editContent.value = ''
       await loadTree()
     }
@@ -390,6 +415,7 @@ async function applyGenerated() {
     if (res.ok) {
       generatedContent.value = null
       editDescription.value = ''
+      showEditModal.value = false
       await loadAgentInfo()
       await loadTree()
       activeTab.value = 'files'
@@ -430,7 +456,10 @@ async function saveMemory() {
     })
     if (res.ok) {
       memorySaved.value = true
-      setTimeout(() => { memorySaved.value = false }, 3000)
+      setTimeout(() => {
+        memorySaved.value = false
+        showMemoryModal.value = false
+      }, 1000)
     } else {
       const data = await res.json()
       memoryError.value = data.message || '保存失败'
@@ -804,9 +833,36 @@ onMounted(() => {
   margin-top: 16px;
 }
 
+.memory-preview {
+  padding: 16px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+  min-height: 200px;
+  max-height: 500px;
+  overflow-y: auto;
+  margin-top: 16px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 16px;
+}
+
 /* Sessions Panel */
 .sessions-panel {
   padding: 20px;
+  /* 155px = 内容区上边距 32 + 页头 + 页签，留 35px 呼吸；会话多时面板内部滚动，页面不跟着变长 */
+  max-height: calc(100vh - 190px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .sessions-list {

@@ -1,7 +1,13 @@
 package com.ibios.web.controller;
 
+import com.ibios.core.sandbox.WhitelistEntryView;
+import com.ibios.core.sandbox.WhitelistType;
 import com.ibios.tool.sandbox.WhitelistManager;
+import com.ibios.web.exception.InvalidRequestException;
+import com.ibios.web.exception.ResourceNotFoundException;
 import com.ibios.web.model.ApiResponse;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,57 +28,43 @@ public class SandboxAdminController {
   }
 
   @GetMapping
-  public ApiResponse<WhitelistManager.WhitelistSnapshot> query() {
-    return ApiResponse.ok(whitelistManager.snapshot());
+  public ApiResponse<List<WhitelistEntryView>> list() {
+    return ApiResponse.ok(whitelistManager.entries());
   }
 
-  @PostMapping("/{type}")
-  public ApiResponse<WhitelistManager.WhitelistSnapshot> add(
-      @PathVariable String type, @RequestBody Map<String, String> body) {
+  @PostMapping
+  public ApiResponse<List<WhitelistEntryView>> add(@RequestBody Map<String, String> body) {
+    WhitelistType type = parseType(body.get("type"));
     String value = body.get("value");
     if (value == null || value.isBlank()) {
-      return ApiResponse.error(400, "value is required");
+      throw new InvalidRequestException("value is required");
     }
-    switch (type) {
-      case "file":
-        whitelistManager.addFilePath(value);
-        break;
-      case "shell":
-        whitelistManager.addShellCommand(value);
-        break;
-      case "http":
-        whitelistManager.addHttpDomain(value);
-        break;
-      default:
-        return ApiResponse.error(400, "type must be file, shell, or http");
+    if (!whitelistManager.addEntry(type, value)) {
+      throw new InvalidRequestException("entry already exists: " + value);
     }
-    return ApiResponse.ok(whitelistManager.snapshot());
+    return ApiResponse.ok(whitelistManager.entries());
   }
 
-  @DeleteMapping("/{type}")
-  public ApiResponse<WhitelistManager.WhitelistSnapshot> remove(
-      @PathVariable String type, @RequestBody Map<String, String> body) {
-    String value = body.get("value");
-    if (value == null || value.isBlank()) {
-      return ApiResponse.error(400, "value is required");
-    }
-    boolean removed;
-    switch (type) {
-      case "file":
-        removed = whitelistManager.removeFilePath(value);
-        break;
-      case "shell":
-        removed = whitelistManager.removeShellCommand(value);
-        break;
-      case "http":
-        removed = whitelistManager.removeHttpDomain(value);
-        break;
+  @DeleteMapping("/{id}")
+  public ApiResponse<List<WhitelistEntryView>> remove(@PathVariable Long id) {
+    switch (whitelistManager.removeById(id)) {
+      case DELETED:
+        return ApiResponse.ok(whitelistManager.entries());
+      case PROTECTED:
+        throw new InvalidRequestException("工作区根不可删除");
       default:
-        return ApiResponse.error(400, "type must be file, shell, or http");
+        throw new ResourceNotFoundException("whitelist entry not found: " + id);
     }
-    if (!removed) {
-      return ApiResponse.error(404, "entry not found: " + value);
+  }
+
+  private static WhitelistType parseType(String raw) {
+    if (raw == null || raw.isBlank()) {
+      throw new InvalidRequestException("type is required");
     }
-    return ApiResponse.ok(whitelistManager.snapshot());
+    try {
+      return WhitelistType.valueOf(raw.trim().toUpperCase(Locale.ROOT));
+    } catch (IllegalArgumentException e) {
+      throw new InvalidRequestException("type must be FILE, SHELL, or HTTP");
+    }
   }
 }

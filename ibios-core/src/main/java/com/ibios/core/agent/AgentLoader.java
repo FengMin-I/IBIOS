@@ -9,7 +9,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -113,7 +113,7 @@ public class AgentLoader {
       Path agentsDir,
       com.ibios.core.profile.ProfileRegistry registry,
       com.ibios.core.react.AgentScheduler scheduler,
-      Set<String> validProviderNames) {
+      Predicate<String> providerExists) {
     if (!Files.isDirectory(agentsDir)) {
       LOG.info("Agents directory does not exist: " + agentsDir);
       return;
@@ -124,7 +124,7 @@ public class AgentLoader {
               dir -> {
                 try {
                   Profile profile = deriveProfile(dir);
-                  if (!validProviderNames.contains(profile.provider().name())) {
+                  if (!providerExists.test(profile.provider().name())) {
                     throw new IllegalArgumentException(
                         "Unknown provider: " + profile.provider().name());
                   }

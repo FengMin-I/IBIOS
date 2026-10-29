@@ -91,7 +91,8 @@ class AgentApiControllerTest {
         false,
         false,
         false,
-        false);
+        false,
+        Collections.emptyList());
   }
 
   @Test

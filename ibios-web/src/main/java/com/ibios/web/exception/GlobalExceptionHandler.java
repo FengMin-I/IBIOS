@@ -1,5 +1,6 @@
 package com.ibios.web.exception;
 
+import com.ibios.provider.ProviderInUseException;
 import com.ibios.web.model.ApiResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +36,11 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ApiResponse<Void>> handleNoResource(NoResourceFoundException ex) {
     return ResponseEntity.status(HttpStatus.NOT_FOUND)
         .body(ApiResponse.error(404, "Resource not found: " + ex.getResourcePath()));
+  }
+
+  @ExceptionHandler(ProviderInUseException.class)
+  public ResponseEntity<ApiResponse<Void>> handleProviderInUse(ProviderInUseException ex) {
+    return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiResponse.error(409, ex.getMessage()));
   }
 
   @ExceptionHandler({ServiceUnavailableException.class, IllegalStateException.class})

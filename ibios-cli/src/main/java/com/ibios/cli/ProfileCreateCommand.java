@@ -1,5 +1,6 @@
 package com.ibios.cli;
 
+import com.ibios.core.workspace.WorkspaceRoot;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -14,7 +15,7 @@ public class ProfileCreateCommand implements Runnable {
 
   @Override
   public void run() {
-    Path profilesDir = Path.of(".ibios/profiles");
+    Path profilesDir = WorkspaceRoot.resolve().profilesDir();
     try {
       Files.createDirectories(profilesDir);
       Path file = profilesDir.resolve(name + ".yaml");

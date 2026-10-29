@@ -6,6 +6,7 @@ import com.ibios.core.tool.IbiosTool;
 import com.ibios.core.tool.Sandbox;
 import com.ibios.tool.sandbox.FileSandboxProperties;
 import com.ibios.tool.sandbox.HttpSandboxProperties;
+import com.ibios.tool.sandbox.InMemorySandboxWhitelistStore;
 import com.ibios.tool.sandbox.ShellSandboxProperties;
 import com.ibios.tool.sandbox.WhitelistManager;
 import com.ibios.tool.sandbox.WhitelistSandbox;
@@ -18,12 +19,14 @@ import org.springframework.web.client.RestClient;
 class IbiosToolContractTest {
 
   static Stream<IbiosTool> allRegisteredTools() {
-    Sandbox sandbox =
-        new WhitelistSandbox(
-            new WhitelistManager(
-                new FileSandboxProperties(List.of("/")),
-                new ShellSandboxProperties(List.of("ls", "cat", "echo", "sh")),
-                new HttpSandboxProperties(List.of("*"))));
+    WhitelistManager manager =
+        new WhitelistManager(
+            new FileSandboxProperties(List.of("/")),
+            new ShellSandboxProperties(List.of("ls", "cat", "echo", "sh")),
+            new HttpSandboxProperties(List.of("*")),
+            new InMemorySandboxWhitelistStore());
+    manager.initialize();
+    Sandbox sandbox = new WhitelistSandbox(manager);
     FileTools fileTools = new FileTools(sandbox);
     ShellTools shellTools = new ShellTools(sandbox);
     HttpTools httpTools = new HttpTools(sandbox, RestClient.builder());

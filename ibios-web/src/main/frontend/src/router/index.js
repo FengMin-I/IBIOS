@@ -9,6 +9,8 @@ import NotifyChannelsView from '../views/NotifyChannelsView.vue'
 import InfoView from '../views/InfoView.vue'
 import SessionsView from '../views/SessionsView.vue'
 import SchedulesView from '../views/SchedulesView.vue'
+import SkillsView from '../views/SkillsView.vue'
+import KnowledgeView from '../views/KnowledgeView.vue'
 import SessionDetailView from '../views/SessionDetailView.vue'
 
 const routes = [
@@ -20,6 +22,8 @@ const routes = [
   { path: '/sandbox', component: SandboxView },
   { path: '/notify-channels', component: NotifyChannelsView },
   { path: '/schedules', component: SchedulesView },
+  { path: '/skills', component: SkillsView },
+  { path: '/knowledge', component: KnowledgeView },
   { path: '/info', component: InfoView },
   { path: '/sessions', component: SessionsView },
   { path: '/sessions/:id', component: SessionDetailView }

@@ -8,7 +8,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -22,11 +22,11 @@ public class ProfileLoader {
   private static final Pattern ENV_PATTERN = Pattern.compile("\\$\\{([^}]+)}");
 
   private final ProfileRegistry registry;
-  private final Set<String> validProviderNames;
+  private final Predicate<String> providerExists;
 
-  public ProfileLoader(ProfileRegistry registry, Set<String> validProviderNames) {
+  public ProfileLoader(ProfileRegistry registry, Predicate<String> providerExists) {
     this.registry = registry;
-    this.validProviderNames = validProviderNames;
+    this.providerExists = providerExists;
   }
 
   public void loadAll(Path profilesDir) {
@@ -58,7 +58,7 @@ public class ProfileLoader {
         return;
       }
       Profile profile = convertToProfile(data);
-      if (!validProviderNames.contains(profile.provider().name())) {
+      if (!providerExists.test(profile.provider().name())) {
         throw new ProviderNotFoundException(profile.provider().name());
       }
       registry.register(profile);

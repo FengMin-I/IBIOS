@@ -57,7 +57,8 @@ class AgentLifecycleServiceTest {
             agentScheduler,
             chatPort,
             sessionManager,
-            Set.of("dashscope", "openai"),
+            () -> Map.of(),
+            Set.of("dashscope", "openai")::contains,
             "dashscope",
             "qwen-plus",
             "You are an agent author.");
@@ -201,6 +202,42 @@ class AgentLifecycleServiceTest {
     InOrder order = inOrder(agentScheduler, agentLoader);
     order.verify(agentScheduler).unregisterProfile(existing);
     order.verify(agentLoader).deriveProfile(agentDir);
+  }
+
+  @Test
+  @DisplayName("list 为每个 Agent 带出历史实际调用过的工具")
+  void list_fillsUsedTools() {
+    when(profileRegistry.getAll()).thenReturn(List.of(createProfileNoSchedule(tempDir)));
+
+    List<AgentView> views =
+        serviceWithUsage(Map.of("test-agent", List.of("http_get", "notify"))).list();
+
+    assertEquals(List.of("http_get", "notify"), views.get(0).usedTools());
+  }
+
+  @Test
+  @DisplayName("list 对没有历史记录的 Agent 返回空工具列表")
+  void list_withoutHistory_returnsEmptyTools() {
+    when(profileRegistry.getAll()).thenReturn(List.of(createProfileNoSchedule(tempDir)));
+
+    List<AgentView> views = serviceWithUsage(Map.of()).list();
+
+    assertTrue(views.get(0).usedTools().isEmpty());
+  }
+
+  private AgentLifecycleService serviceWithUsage(Map<String, List<String>> usage) {
+    return new AgentLifecycleService(
+        agentStore,
+        agentLoader,
+        profileRegistry,
+        agentScheduler,
+        chatPort,
+        sessionManager,
+        () -> usage,
+        Set.of("dashscope", "openai")::contains,
+        "dashscope",
+        "qwen-plus",
+        "You are an agent author.");
   }
 
   @Test

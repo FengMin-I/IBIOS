@@ -1,6 +1,6 @@
 # IBIOS 需求文档
 
-> 本文档定义 IBIOS 项目的功能需求和非功能需求，作为后续技术方案设计、研发实施、测试验收的依据。本文档回答 **What**，不回答 **How**，How 在后续的技术方案中展开。前置阅读《项目篇 IBIOS 业界调研》，本文档基于调研得出的领域判断，不重复论证企业 Agent OS 领域的现状。
+> 本文档定义 IBIOS 项目的功能需求和非功能需求，作为后续技术方案设计、研发实施、测试验收的依据。本文档回答 **What**，不回答 **How**，How 在后续的技术方案中展开。前置阅读《项目篇 IBIOS 业界调研》，本文档基于调研得出的领域判断，不重复论证企业 Agent Harness OS 领域的现状。
 
 ---
 
@@ -8,27 +8,28 @@
 
 ### 1.1 IBIOS 是什么
 
-IBIOS 是基于 Java 实现的面向企业场景的 **Agent OS**。它装在企业自己的 K8s 或服务器上，作为统一底座，在底座上跑各种业务 Agent（运维助手、客服助手、HR 助手、销售助手、知识管理助手等），共享一套渠道接入、模型路由、工具调用、记忆系统、沙箱执行能力。数据完全留在企业自己的基础设施，不锁任何云生态。
+IBIOS 是基于 Java 实现的面向企业场景的 **Agent Harness OS**。它装在企业自己的 K8s 或服务器上，作为统一底座，在底座上跑各种业务 Agent（运维助手、客服助手、HR 助手、销售助手、知识管理助手等），共享同一套 Agent Harness——循环、工具调用与沙箱、上下文与记忆组装、审计——以及统一的渠道接入、模型路由和调度。数据完全留在企业自己的基础设施，不锁任何云生态。
 
-业界已经有开源 Agent 项目把这套设计验证过（OpenClaw 用 Node.js，Hermes Agent 用 Python），但 Java 生态没有任何项目把"Agent OS"作为定位。Java 是大量企业现有后端的事实标准技术栈，Spring AI Alibaba 已经把底层 LLM 调用解决了，缺的就是上面那一层"Agent OS"。IBIOS 填这个位置。
+业界已经有开源 Agent 项目把这套设计验证过（OpenClaw 用 Node.js，Hermes Agent 用 Python），但 Java 生态没有任何项目把"Agent Harness OS"作为定位。Java 是大量企业现有后端的事实标准技术栈，Spring AI Alibaba 已经把底层 LLM 调用解决了，缺的就是上面那一层"Agent Harness OS"。IBIOS 填这个位置。
 
-#### Agent OS vs Agent Runtime 的分层
+#### Agent Harness、Runtime 与 Agent Harness OS 的分层
 
-**Agent OS** 跟 **agent runtime**（Agent 运行时）不是一回事：
+**Agent Harness**、**agent runtime**（Agent 运行时）和 **Agent Harness OS** 是三个层次，不能混着说：
 
 - **agent runtime**：让单个 Agent 跑起来的执行内核，负责 LLM 调用、工具执行、上下文管理、循环控制
-- **Agent OS**：内核包含一个 agent runtime，但在 runtime 之上还要管多个 Agent 的生命周期、统一的对外对内接入、统一记忆、多租户、审计这些 OS 级治理能力
+- **Agent Harness**：模型外面那层脚手架——驱动 reason → act → observe 循环、把工具结果喂回上下文、每次调用前组装 prompt 与记忆、给工具执行划沙箱边界、把调用写进审计。它决定一个模型能不能变成一个可靠的 Agent
+- **Agent Harness OS**：内核里包含一个 agent runtime 和一套 Agent Harness，但在其之上还要管多个 Agent 的生命周期、统一的对外对内接入、统一记忆、多租户、审计这些 OS 级治理能力
 
-借操作系统类比，runtime 像单个进程的执行环境，Agent OS 像管理一群进程、调度资源、提供共享服务和治理的那层。一句话：runtime 让一个 Agent 跑起来，**Agent OS 让一群 Agent 在企业里被管起来**。
+借操作系统类比，runtime 与 harness 像单个进程及其运行时，Agent Harness OS 像管理一群进程、调度资源、提供共享服务和治理的那层。一句话：harness 让一个 Agent 把活干可靠，**Agent Harness OS 让一群 Agent 在企业里被管起来**。
 
 #### 交付分两段
 
 理解这个分层，才能看懂 IBIOS 的交付节奏：
 
-1. **核心阶段**：先把 Agent OS 的运行时内核用 Java 做扎实，这一层在能力上对齐业界开源 Agent OS 的基础层
+1. **核心阶段**：先把 Agent Harness OS 的运行时内核用 Java 做扎实，这一层在能力上对齐业界开源 Agent Harness OS 的基础层
 2. **扩展阶段**：IBIOS 真正的差异化治理层（多租户、SSO、完整审计、Tool 治理），在核心内核之上由扩展阶段和社区共建陆续补齐
 
-核心阶段交付的是 Agent OS 的**内核底座**，而不是一个治理能力完备的企业级 Agent OS，后者是终局，核心阶段是地基。
+核心阶段交付的是 Agent Harness OS 的**内核底座**，而不是一个治理能力完备的企业级 Agent Harness OS，后者是终局，核心阶段是地基。
 
 ---
 
@@ -127,7 +128,7 @@ API 覆盖六类操作：
 
 本文档按三档分级定义 IBIOS 的功能需求：
 
-1. **核心功能**：最短链路，跑通"配置一个 Agent、跟它对话、它能调用工具"这件事，对应 Agent OS 的运行时内核
+1. **核心功能**：最短链路，跑通"配置一个 Agent、跟它对话、它能调用工具"这件事，对应 Agent Harness OS 的运行时内核
 2. **扩展功能**：生产级使用必需但不在核心链路上的能力，包含企业级治理层（多租户、SSO、审计、Tool Policy）
 3. **社区共建功能**：长期方向，开放给社区贡献
 
@@ -137,11 +138,12 @@ API 覆盖六类操作：
 
 ## 2. 术语和概念
 
-为避免歧义，统一核心术语定义（对齐业界开源 Agent OS 事实标准）：
+为避免歧义，统一核心术语定义（对齐业界开源 Agent Harness OS 事实标准）：
 
 | 术语 | 定义 |
 |------|------|
 | **Agent（智能体）** | 一个具象的业务智能体，定义本体是一个目录 `.ibios/agents/<name>/`：`AGENT.md`（frontmatter 是运行配置、正文是任务指令）加可选 `skills/` 公共 Skill 软连接、`scripts/` 脚本、`REFERENCE.md` 参考。一个目录就是一个完整可用的业务 Agent，不是写代码写出来的 |
+| **Agent Harness（Agent 骨架）** | 模型外面那层脚手架：驱动 ReAct 循环、执行工具并施加沙箱约束、组装上下文与记忆、记录审计。IBIOS 里它由 ReActLoop、PromptBuilder、ToolExecutor、Sandbox 与两张审计表共同构成，多个 Agent 共享同一套 |
 | **Profile（配置）** | 底座内部的运行时宿主配置对象，决定一个 Agent"怎么跑"：绑定的 LLM Provider、可用 Tool 列表、Channel、Tool Policy 和定时规则。它不再是一份单独手写的 YAML——`AgentLoader.deriveProfile()` 把 `AGENT.md` 的 frontmatter 派生成 `Profile`；Skill 绑定由 Agent 本地 `skills/` 软连接集合独立表达 |
 | **Provider（供应商）** | LLM API 服务的抽象，实现统一接口让 Agent 不感知具体调的是哪家模型 |
 | **ReAct 循环** | Agent 的核心工作机制，Reason + Act。LLM 思考是否调用工具，调用后看结果，再决定下一步，直到给出最终响应 |
@@ -197,7 +199,7 @@ IBIOS 的核心目标可以用四个词概括：**统一、私有、易接入、
 
 ## 5. 核心功能
 
-> 核心功能是核心阶段 4 周（合计 12 小时）内必须完成的最短链路，对应 Agent OS 的运行时内核。目标是跑通一个完整链路：用 Profile 配置一个 Agent，通过 CLI 跟它对话，它能调用 LLM 和工具完成任务，并能通过 REST API 对外暴露。
+> 核心功能是核心阶段 4 周（合计 12 小时）内必须完成的最短链路，对应 Agent Harness OS 的运行时内核。目标是跑通一个完整链路：用 Profile 配置一个 Agent，通过 CLI 跟它对话，它能调用 LLM 和工具完成任务，并能通过 REST API 对外暴露。
 
 ### 5.1 工作区初始化
 
@@ -341,7 +343,7 @@ ReAct 循环是 Agent 的核心工作机制，也是 IBIOS 最关键的一段代
 
 **核心阶段不做**：自动从对话中抽取事实、语义检索（用关键词匹配）、情景记忆、Memory Wiki、矛盾检测。
 
-**用户核心体验**：用 IBIOS 一段时间后，Agent 自然会记住用户的偏好、项目信息、关键决策，下一次对话不需要重新解释。这是 Agent OS 区别于 chatbot 的核心体验。
+**用户核心体验**：用 IBIOS 一段时间后，Agent 自然会记住用户的偏好、项目信息、关键决策，下一次对话不需要重新解释。这是 Agent Harness OS 区别于 chatbot 的核心体验。
 
 ---
 
@@ -518,13 +520,13 @@ IBIOS 作为开源项目，需要一个独立的主页作为对外门面，讲�
 ### 6.3 工具和安全层
 
 - **MCP Server 暴露**：IBIOS 自己作为 MCP server，把内部 Agent 能力暴露给其他系统
-- **Tool Policy**：Profile 级别的 Tool 允许或拒绝规则，这是 Agent OS 治理能力里最轻、最能体现 OS 管控的一项，扩展阶段优先做
+- **Tool Policy**：Profile 级别的 Tool 允许或拒绝规则，这是 Agent Harness OS 治理能力里最轻、最能体现 OS 管控的一项，扩展阶段优先做
 - **Tool LRU 加载**：工具数量多时，动态加载，避免把所有工具塞进 LLM context
 - **完整 Sandbox 隔离**：Docker 容器和 K8s pod 两种 sandbox 实现，WebAssembly Sandbox 作为高性能选项
 
 ### 6.4 治理和运维层
 
-> 这一层是 IBIOS 区别于个人级 Agent OS 的核心差异化所在
+> 这一层是 IBIOS 区别于个人级 Agent Harness OS 的核心差异化所在
 
 - **Web 仪表板**：提供 Web 仪表板做 Profile 管理、Session 查看、监控看板、审计日志查询
 - **SSO 和多租户**：SAML/OIDC 接入，对接企业 AD/Okta/Entra ID/阿里云 IDaaS。三级租户模型（组织、部门、项目），RBAC 权限粒度到 Agent、Tool、Skill 级别
@@ -768,7 +770,7 @@ IBIOS 核心功能的实施按 **4 周节奏**组织，每周 3 小时，合计 
 | **Tool 执行安全风险** | 应用层白名单不是完整 Sandbox，可能影响 IBIOS 进程 | 严格限制内置 Tool 能力范围，核心阶段不建议在生产环境跑高敏感场景 |
 | **Java 启动速度和内存占用** | Java 应用启动慢、内存占用大，影响体验 | 核心阶段先验证功能完整，扩展阶段引入 GraalVM Native Image |
 | **社区接力的不确定性** | 扩展功能依赖社区贡献者，可能某些功能长期没人推进 | 项目维护方对核心扩展功能保持基本投入，社区共建功能靠社区 |
-| **定位被误读的风险** | 社区可能问"核心阶段跟 OpenClaw、Hermes 有什么区别" | 文档明确说明核心阶段是地基，差异化是终局，不包装成完整企业级 Agent OS |
+| **定位被误读的风险** | 社区可能问"核心阶段跟 OpenClaw、Hermes 有什么区别" | 文档明确说明核心阶段是地基，差异化是终局，不包装成完整企业级 Agent Harness OS |
 | **生态关系风险** | IBIOS 和 OpenClaw、Hermes 的关系 | 通过 markdown + frontmatter 的目录形态互通，生态互补不竞争；OpenClaw 偏个人、Hermes 偏小团队、IBIOS 定位企业 |
 
 ### 未决事项
@@ -831,11 +833,11 @@ IBIOS 核心功能的实施按 **4 周节奏**组织，每周 3 小时，合计 
 
 ## 14. 总结
 
-IBIOS 是基于 Java 实现的面向企业场景的 Agent OS，装在企业自己的 K8s 或服务器上，作为统一底座跑各种业务 Agent，共享一套渠道接入、模型路由、工具调用、记忆系统、沙箱执行能力。
+IBIOS 是基于 Java 实现的面向企业场景的 Agent Harness OS，装在企业自己的 K8s 或服务器上，作为统一底座跑各种业务 Agent，共享一套渠道接入、模型路由、工具调用、记忆系统、沙箱执行能力。
 
 **IBIOS 的交付分两段：**
 
-1. 核心阶段先用 Java 把 Agent OS 的运行时内核做扎实，这一层在能力上对齐业界开源 Agent OS 的基础层
+1. 核心阶段先用 Java 把 Agent Harness OS 的运行时内核做扎实，这一层在能力上对齐业界开源 Agent Harness OS 的基础层
 2. IBIOS 真正的差异化治理层（多租户、SSO、完整审计、Tool 治理），在核心内核之上由扩展阶段和社区共建陆续补齐。**核心阶段是地基，企业级治理是终局。**
 
 **核心阶段五大核心能力：**

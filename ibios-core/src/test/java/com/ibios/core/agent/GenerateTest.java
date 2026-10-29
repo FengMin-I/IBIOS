@@ -54,7 +54,8 @@ class GenerateTest {
             agentScheduler,
             chatPort,
             sessionManager,
-            Set.of("dashscope"),
+            () -> Map.of(),
+            Set.of("dashscope")::contains,
             "dashscope",
             "qwen-plus",
             "You are an agent author.");

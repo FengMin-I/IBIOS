@@ -28,14 +28,14 @@ public class ProviderService implements ChatPort {
 
   private static final Logger log = LoggerFactory.getLogger(ProviderService.class);
 
-  private final Map<String, ChatModel> models;
+  private final ProviderChatModelFactory modelFactory;
   private final ToolSchemaAdapter toolSchemaAdapter;
   private final LlmCallAudit audit;
   private final ObjectMapper objectMapper;
 
   public ProviderService(
       ProviderChatModelFactory factory, ToolSchemaAdapter toolSchemaAdapter, LlmCallAudit audit) {
-    this.models = factory.getModels();
+    this.modelFactory = factory;
     this.toolSchemaAdapter = toolSchemaAdapter;
     this.audit = audit;
     this.objectMapper = new ObjectMapper();
@@ -44,7 +44,7 @@ public class ProviderService implements ChatPort {
   @Override
   public ChatResponse chat(String sessionId, Profile profile, Prompt prompt) {
     String providerName = profile.provider().name();
-    ChatModel chatModel = models.get(providerName);
+    ChatModel chatModel = modelFactory.getModel(providerName);
     if (chatModel == null) {
       throw new com.ibios.core.profile.ProviderNotFoundException(providerName);
     }

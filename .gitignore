@@ -41,6 +41,8 @@ build/
 
 ### Secrets ###
 ibios.yaml
+# 真实配置（可能含 token）不提交；模板见 config/application.yml.example
+config/application.yml
 
 ### Frontend ###
 **/node_modules/
@@ -48,6 +50,7 @@ ibios.yaml
 ### Runtime ###
 bin/ibios.log
 bin/ibios.pid
+dist/
 
 ### Agent runtime data ###
 my-agent/

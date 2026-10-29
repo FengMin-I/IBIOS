@@ -1,5 +1,6 @@
 package com.ibios.cli;
 
+import com.ibios.core.workspace.WorkspaceRoot;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -11,7 +12,7 @@ public class ProfileListCommand implements Runnable {
 
   @Override
   public void run() {
-    Path profilesDir = Path.of(".ibios/profiles");
+    Path profilesDir = WorkspaceRoot.resolve().profilesDir();
     if (!Files.isDirectory(profilesDir)) {
       System.out.println("暂无 Profile，请先运行 ibios init");
       return;

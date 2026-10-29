@@ -45,3 +45,22 @@ CREATE TABLE IF NOT EXISTS llm_calls (
     error_message     TEXT,
     called_at         TEXT    NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS providers (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    name        VARCHAR(255)  NOT NULL UNIQUE,
+    type        VARCHAR(64)   NOT NULL,
+    api_key     VARCHAR(1024),
+    base_url    VARCHAR(1024),
+    model       VARCHAR(255),
+    created_at  TIMESTAMP     NOT NULL,
+    updated_at  TIMESTAMP     NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS sandbox_whitelist (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    type        VARCHAR(16)   NOT NULL,
+    value       VARCHAR(1024) NOT NULL,
+    created_at  TIMESTAMP     NOT NULL,
+    UNIQUE (type, value)
+);

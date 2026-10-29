@@ -22,6 +22,7 @@ public class ProvidersProperties {
   public static class ProviderEntry {
 
     private String name;
+    private String type;
     private String apiKey;
     private String model;
     private String baseUrl;
@@ -32,6 +33,14 @@ public class ProvidersProperties {
 
     public void setName(String name) {
       this.name = name;
+    }
+
+    public String getType() {
+      return type;
+    }
+
+    public void setType(String type) {
+      this.type = type;
     }
 
     public String getApiKey() {

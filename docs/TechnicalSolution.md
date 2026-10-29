@@ -2,13 +2,13 @@
 
 本文档定义 IBIOS 的技术方案，回答 How 的问题。前置阅读《项目篇 IBIOS 业界调研》和《IBIOS 需求文档》。本文档以需求文档定义的五大核心能力（对接 LLM、ReAct 循环、Memory 记忆、Plugin Tool、Web Service）为骨架展开，每个模块只给职责和功能说明，不展开代码细节。代码层面的实现细节在研发阶段补充。
 
-> 承接需求文档的定位判断：核心阶段交付的是 Agent OS 的运行时内核，能力上对齐业界开源 Agent OS 的基础层；让 IBIOS 成为真正企业级 Agent OS 的治理层（多租户、SSO、完整审计、Tool 治理）在扩展和社区阶段补齐。本技术方案只覆盖核心阶段的运行时内核，并在架构上为治理层预留扩展点。
+> 承接需求文档的定位判断：核心阶段交付的是 Agent Harness OS 的运行时内核，能力上对齐业界开源 Agent Harness OS 的基础层；让 IBIOS 成为真正企业级 Agent Harness OS 的治理层（多租户、SSO、完整审计、Tool 治理）在扩展和社区阶段补齐。本技术方案只覆盖核心阶段的运行时内核，并在架构上为治理层预留扩展点。
 
 > **文档结构提示：** 全文分三部分。第一部分（第 1-10 章）是**底座**——让任意 Agent 都能可靠运行的引擎、能力和支撑设施，本身不是某个具体的业务 Agent。第二部分（第 11 章）讲底座之上怎么真正**定义一个业务 Agent**（Skill 定义做什么，Profile 绑定怎么跑，Web Service 是对外的定义入口）。第三部分（第 12-15 章）是两部分放到一起之后的整合验证、实施节奏和收尾。
 
 ---
 
-# 第一部分：底座（Agent OS 内核）
+# 第一部分：底座（Agent Harness OS 内核）
 
 ## 1. 方案概述
 
@@ -69,7 +69,7 @@ IBIOS 的完整技术栈：
 
 ## 2. 整体架构
 
-IBIOS 的整体架构按"五大核心能力加支撑模块"组织。五大核心能力是 Agent OS 运行时内核的主体，支撑模块是让这些能力跑起来需要的工程基础设施。
+IBIOS 的整体架构按"五大核心能力加支撑模块"组织。五大核心能力是 Agent Harness OS 运行时内核的主体，支撑模块是让这些能力跑起来需要的工程基础设施。
 
 整体上，IBIOS 是一个 Spring Boot 单体应用，对外有两个人工触发入口，加一个内部自动触发入口：
 
@@ -188,7 +188,7 @@ ReAct 是 **Reason** 加 **Act** 的简称。算法步骤：
 
 ## 5. 核心能力三：Memory 三层记忆
 
-Memory 是 Agent OS 区别于普通 chatbot 的核心能力。三层记忆是完整设计，核心阶段做会话和长期两层，情景记忆放扩展。
+Memory 是 Agent Harness OS 区别于普通 chatbot 的核心能力。三层记忆是完整设计，核心阶段做会话和长期两层，情景记忆放扩展。
 
 > **架构调整说明：** Memory 做成三层记忆的统一门面，对 ReAct 循环只暴露一个 `MemoryService` 接口，内部再分会话记忆和长期记忆。这样对外叙述的"三层记忆"和内部实现一致，ReAct 循环不需要分别去问 Session 和 `MEMORY.md` 两个地方。
 
@@ -573,7 +573,7 @@ session list
 
 **为什么核心阶段不用向量数据库：** LanceDB 在向量加全文检索上做得好，是 Memory 自然的升级方向，但它的 Java 本地嵌入式支持还在开发中，当前 Java SDK 只支持远程的 Cloud 或 Enterprise，不符合 IBIOS 单二进制部署的定位。其他向量库（Qdrant、Chroma、Milvus）都需要外部进程，pgvector 要外部 PostgreSQL。JVector 这种纯 Java 嵌入式向量库是另一条路但成熟度待验证。
 
-核心阶段的判断是先用 SQLite 加 `MEMORY.md` 跑通最短链路，让实现者先掌握 Agent OS 的核心机制，向量检索这种检索体验优化放扩展阶段。
+核心阶段的判断是先用 SQLite 加 `MEMORY.md` 跑通最短链路，让实现者先掌握 Agent Harness OS 的核心机制，向量检索这种检索体验优化放扩展阶段。
 
 **扩展阶段升级路径：**
 
@@ -838,7 +838,7 @@ mvn clean package
 
 ---
 
-核心阶段结束后 IBIOS 1.0 是一个可演示的最小完整 Agent OS 运行时内核，五大核心能力全部跑通。之后转入开源社区维护，扩展功能（多 Channel、Memory 向量检索、情景记忆、Skill 体系、MCP Server 暴露、Tool Policy、完整 Sandbox、Web Service 剩余端点、Web 仪表板、SSO 和多租户、完整审计、集群高可用）以及让 IBIOS 成为真正企业级 Agent OS 的治理层由社区陆续推进。
+核心阶段结束后 IBIOS 1.0 是一个可演示的最小完整 Agent Harness OS 运行时内核，五大核心能力全部跑通。之后转入开源社区维护，扩展功能（多 Channel、Memory 向量检索、情景记忆、Skill 体系、MCP Server 暴露、Tool Policy、完整 Sandbox、Web Service 剩余端点、Web 仪表板、SSO 和多租户、完整审计、集群高可用）以及让 IBIOS 成为真正企业级 Agent Harness OS 的治理层由社区陆续推进。
 
 ---
 
@@ -874,6 +874,6 @@ IBIOS 技术方案核心：**JDK 21 + Spring Boot 3.x** 单体应用，自实现
 
 **存储选型：** 核心阶段 SQLite + `MEMORY.md` + 关键词检索跑通最短链路，向量检索放扩展（LanceDB Java GA、pgvector、JVector 三选一），`MemoryService` 接口预留升级空间。
 
-**承接定位：** 核心阶段交付运行时内核，能力上对齐业界开源 Agent OS 基础层，企业级治理差异化在扩展阶段补齐。架构上为治理层预留扩展点（Tool Policy、多租户、审计查询、SSO 都有对应的预留位置）。
+**承接定位：** 核心阶段交付运行时内核，能力上对齐业界开源 Agent Harness OS 基础层，企业级治理差异化在扩展阶段补齐。架构上为治理层预留扩展点（Tool Policy、多租户、审计查询、SSO 都有对应的预留位置）。
 
 **核心理念不变：** IBIOS 五大能力扎实落地，业务方写一个 `AGENT.md` 目录 加 MCP server 就能解决业务问题，通过 Web Service 接入已有系统，不需要写 Agent 后端代码。

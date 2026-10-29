@@ -183,6 +183,55 @@ const roadmapPhases = computed(() => [
   },
 ])
 
+const layers = computed(() => [
+  {
+    num: '01',
+    tag: 'MODEL',
+    title: t('裸模型', 'Bare Model'),
+    scope: t('单次 LLM 调用', 'One LLM call'),
+    desc: t(
+      '只做一件事：生成文本。它不知道工具、记忆、沙箱是什么，也管不了多个 Agent。',
+      'It does one thing: generate text. No tools, no memory, no sandbox — and no notion of multiple agents.'
+    ),
+    points: [
+      t('文本生成', 'Text generation'),
+      t('无状态、无工具、无审计', 'Stateless, tool-less, unaudited'),
+    ],
+    analogy: t('一条 CPU 指令', 'A CPU instruction'),
+  },
+  {
+    num: '02',
+    tag: 'HARNESS',
+    title: t('Agent Harness', 'Agent Harness'),
+    scope: t('单个可靠的 Agent', 'One reliable agent'),
+    desc: t(
+      '套在模型外面的运行骨架：驱动 reason → act → observe，把工具、上下文、记忆、沙箱和审计装配成一个能可靠干活的 Agent。',
+      'The scaffolding around a model: it drives reason → act → observe and wires tools, context, memory, sandbox, and audit into one agent that works reliably.'
+    ),
+    points: [
+      t('ReAct 循环 + 工具执行', 'ReAct loop + tool execution'),
+      t('上下文组装 · 记忆 · 沙箱 · 审计', 'Context assembly · memory · sandbox · audit'),
+    ],
+    analogy: t('一个带运行时的进程', 'A process with a runtime'),
+    highlight: true,
+  },
+  {
+    num: '03',
+    tag: 'HARNESS OS',
+    title: t('Agent Harness OS', 'Agent Harness OS'),
+    scope: t('一整队 Agent', 'A whole fleet'),
+    desc: t(
+      '给每个 Agent 同一套生产级 harness，再像操作系统调度进程一样运行整支队伍：生命周期、路由、共享注册表、调度、治理、管理台与 API。',
+      'Gives every agent the same production-grade harness, then runs the fleet like an OS schedules processes: lifecycle, routing, shared registries, scheduling, governance, console, and API.'
+    ),
+    points: [
+      t('生命周期 · 渠道 · 调度 · 治理', 'Lifecycle · channels · scheduling · governance'),
+      t('共享注册表 · 管理台 + REST API', 'Shared registries · console + REST API'),
+    ],
+    analogy: t('运行一群进程的操作系统', 'An OS running many processes'),
+  },
+])
+
 const flowColumns = computed(() => [
   {
     id: 'channels',
@@ -222,15 +271,15 @@ const flowColumns = computed(() => [
         </p>
 
         <h1 class="hero-headline">
-          <span class="headline-tag">{{ t('企业 Agent 操作系统', 'The Enterprise Agent OS') }}</span><br>
+          <span class="headline-tag">{{ t('企业 Agent Harness OS', 'The Enterprise Agent Harness OS') }}</span><br>
           <span class="headline-white">{{ t('说一句话，', 'Say it in plain language.') }}</span><br>
           <span class="headline-amber">{{ t('一支 Agent 团队替你交付', 'A team of agents delivers.') }}</span>
         </h1>
 
         <p class="hero-sub">
           {{ t(
-            '你用一句自然语言发布任务 → IBIOS 把它拆解 → 组织一支 Agent 团队 → 分工协作 → 交付结果。今天：一句话定义一个 Agent，带记忆、24 个内置工具、MCP、Skill、定时与全链路审计，立刻上线。私有部署在你自己的 K8s 或服务器上，数据不出域——让每一家公司，都能用自然语言跑起来自己的 Agent。',
-            'Describe a task in one sentence → IBIOS decomposes it → assembles a team of agents → they collaborate → the result is delivered. Today: define an agent in one sentence — memory, 24 built-in tools, MCP, skills, scheduling, and a full audit trail included — and it goes live instantly. Self-hosted on your own K8s or servers, data stays home. So every company can run its own agents, in plain language.'
+            '裸模型只会生成文本。IBIOS 给每个 Agent 一套生产级 harness——循环、工具、上下文、记忆、沙箱、审计——再像操作系统调度进程一样运行一整支队伍。今天：一句话定义一个 Agent，带记忆、24 个内置工具、MCP、Skill、定时与全链路审计，立刻上线；私有部署在你自己的 K8s 或服务器上，数据不出域。',
+            'A bare model only generates text. IBIOS gives every agent a production-grade harness — loop, tools, context, memory, sandbox, audit — then runs the whole fleet like an OS schedules processes. Today: define an agent in one sentence — memory, 24 built-in tools, MCP, skills, scheduling, and a full audit trail included — and it goes live instantly. Self-hosted on your own K8s or servers, data stays home.'
           ) }}
         </p>
 
@@ -321,12 +370,39 @@ const flowColumns = computed(() => [
       </div>
     </div>
 
-    <!-- ── HOW IT WORKS ── -->
+    <!-- ── THREE LAYERS ── -->
     <section class="section section-dark">
       <div class="section-inner">
         <div class="section-header">
-          <span class="section-label">{{ t('运行原理', 'HOW IT WORKS') }}</span>
-          <h2 class="section-h2">{{ t('Runtime 跑一个，OS 管一群。', 'Runtime for one. OS for many.') }}</h2>
+          <span class="section-label">{{ t('三层结构', 'THREE LAYERS') }}</span>
+          <h2 class="section-h2">{{ t('模型 → Harness → OS。', 'Model → Harness → OS.') }}</h2>
+          <p class="section-sub">
+            {{ t(
+              '模型生成文本；Harness 把模型变成能干活的 Agent；Harness OS 把同一套 harness 交给每个 Agent，运行整支队伍——也只有在这一层，Agent 团队才成为可能。',
+              'A model generates text. A harness turns it into an agent that actually works. A Harness OS gives every agent the same harness and runs the fleet — the only layer where an agent team becomes possible.'
+            ) }}
+          </p>
+        </div>
+
+        <div class="layers-grid">
+          <div
+            v-for="layer in layers"
+            :key="layer.num"
+            class="layer-card"
+            :class="{ 'layer-card--highlight': layer.highlight }"
+          >
+            <div class="layer-top">
+              <span class="layer-tag">{{ layer.tag }}</span>
+              <span class="layer-num">{{ layer.num }}</span>
+            </div>
+            <h3 class="layer-title">{{ layer.title }}</h3>
+            <p class="layer-scope">{{ layer.scope }}</p>
+            <p class="layer-desc">{{ layer.desc }}</p>
+            <ul class="layer-points">
+              <li v-for="point in layer.points" :key="point">{{ point }}</li>
+            </ul>
+            <div class="layer-analogy"><span>≈</span>{{ layer.analogy }}</div>
+          </div>
         </div>
 
         <div class="arch-diagram">
@@ -340,7 +416,7 @@ const flowColumns = computed(() => [
       <div class="section-inner">
         <div class="section-header">
           <span class="section-label">{{ t('核心能力', 'CORE CAPABILITIES') }}</span>
-          <h2 class="section-h2">{{ t('一个目录，无限 Agent。', 'One directory. Unlimited agents.') }}</h2>
+          <h2 class="section-h2">{{ t('同一套 Harness，交给每个 Agent。', 'One harness. Every agent.') }}</h2>
         </div>
 
         <div class="caps-grid">
@@ -403,7 +479,7 @@ const flowColumns = computed(() => [
         <div class="cta-grid">
           <div class="cta-left">
             <span class="section-label label-dark">{{ t('立即开始', 'GET STARTED') }}</span>
-            <h2 class="cta-h2">{{ t('从一个 Agent 到一群 Agent 的运行底座。', 'From one agent to a fleet.') }}</h2>
+            <h2 class="cta-h2">{{ t('把模型变成 Agent，把 Agent 跑成一支队伍。', 'Turn models into agents. Then run the fleet.') }}</h2>
             <p class="cta-sub">{{ t('初始化工作区、配置 LLM Provider、开始对话。5 分钟搭起你的第一个 Agent，随时扩展到一群。', 'Initialize the workspace, configure an LLM provider, and start chatting. Your first agent in under 5 minutes — scale to a fleet whenever you\'re ready.') }}</p>
             <div class="cta-btns">
               <a class="btn-dark" :href="t('/zh/docs/what', '/docs/what')">{{ t('查看文档', 'Read the Docs') }}</a>
@@ -439,7 +515,7 @@ const flowColumns = computed(() => [
       <div class="footer-inner">
         <div class="footer-brand">
           <span class="footer-logo">IBIOS<strong>OS</strong></span>
-          <span class="footer-tagline">{{ t('分布式 Agent Harness OS · 私有部署', 'Distributed Agent Harness OS · Self-hosted') }}</span>
+          <span class="footer-tagline">{{ t('Agent Harness OS · 私有部署', 'Agent Harness OS · Self-hosted') }}</span>
         </div>
         <div class="footer-links">
           <a :href="t('/zh/docs/what', '/docs/what')" class="footer-link">{{ t('文档', 'Docs') }}</a>
@@ -1005,6 +1081,15 @@ a { text-decoration: none; }
   .caps-grid { grid-template-columns: 1fr; }
   .cases-grid { grid-template-columns: repeat(2, 1fr); }
   .cta-grid { grid-template-columns: 1fr; gap: 40px; }
+  .layers-grid { grid-template-columns: 1fr; gap: 34px; }
+  .layer-card:not(:last-child)::after {
+    content: '↓';
+    right: auto;
+    left: 50%;
+    top: auto;
+    bottom: -26px;
+    transform: translateX(-50%);
+  }
 }
 
 @media (max-width: 768px) {
@@ -1029,16 +1114,136 @@ a { text-decoration: none; }
 }
 
 /* ────────────────────────────────────────────────
-   HOW IT WORKS — SUB PARAGRAPH
+   THREE LAYERS — MODEL → HARNESS → OS
 ──────────────────────────────────────────────── */
-.how-sub {
+.section-sub {
+  max-width: 720px;
+  margin: 18px auto 0;
   font-size: 14px;
   line-height: 1.75;
   color: #666666;
   text-align: center;
-  max-width: 680px;
-  margin: -32px auto 48px;
 }
+
+.layers-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+  margin: 48px 0 56px;
+}
+
+.layer-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 28px 26px;
+  border: 1px solid #1e1e1e;
+  border-radius: 10px;
+  background: #0d0d0d;
+}
+
+.layer-card--highlight {
+  border-color: #f97316;
+  background: #141414;
+  box-shadow: 0 0 0 1px rgba(249, 115, 22, 0.25);
+}
+
+.layer-card:not(:last-child)::after {
+  content: '→';
+  position: absolute;
+  right: -18px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #f97316;
+  font-size: 16px;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+.layer-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.layer-tag {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: #f97316;
+}
+
+.layer-num {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: #444444;
+}
+
+.layer-title {
+  font-size: 19px;
+  font-weight: 800;
+  color: #fafafa;
+  margin: 0;
+  line-height: 1.25;
+}
+
+.layer-scope {
+  font-size: 12px;
+  color: #888888;
+  margin: 0;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+.layer-desc {
+  font-size: 13px;
+  line-height: 1.7;
+  color: #888888;
+  margin: 0;
+}
+
+.layer-points {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.layer-points li {
+  position: relative;
+  padding-left: 16px;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: #a3a3a3;
+}
+
+.layer-points li::before {
+  content: '—';
+  position: absolute;
+  left: 0;
+  color: #f97316;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+.layer-analogy {
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px dashed #222222;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #666666;
+}
+
+.layer-analogy span {
+  color: #f97316;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
 .arch-diagram {
   width: 100%;
   margin-top: 8px;

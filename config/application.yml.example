@@ -1,0 +1,116 @@
+# IBIOS 外部配置模板
+#
+# 用法一（源码开发）：复制为 config/application.yml 后按需修改；该文件已 gitignore。
+# 用法二（发布包）：make release 会把本模板原样安装为解压目录下的 config/application.yml，
+#   解压即用，按需再改。
+#
+# 优先级：命令行参数 > ibios.yaml（额外接入时）> 本文件 > jar 内 application.yaml。
+# 本文件与 ibios.db、.ibios/ 都相对启动目录解析，请在发布根目录下启动。
+# 密钥一律用 ${ENV_VAR:} 占位符 —— 不要把真实 Key 写进来，也不要提交本文件。
+#
+# 本文件只铺「运行期可调项」：端口、数据目录、沙箱白名单、Provider 播种、
+# 记忆后端、MCP 配置、监控端点、日志级别。
+# 框架内部管道——自动配置排除、虚拟线程、JPA 方言/DDL 策略、JDBC driver、
+# SQL 初始化——仍由 jar 内 application.yaml 提供，此处不重复，升级 jar 时自动继承新默认。
+#
+# ⚠️ 列表整体替换不合并
+#    file.allowed-paths / shell.allowed-commands / http.allowed-domains / ibios.providers
+#    只要在本文件出现，就整段替换 jar 里的默认列表，不做逐项合并。
+#    只想加一项时，也必须把原有项一起列全（例如加一条命令，仍要写上 ls、cat、echo）。
+
+server:
+  port: 8080
+
+spring:
+  datasource:
+    # 数据目录：库文件默认落在启动目录（发布根）下的 ibios.db。
+    # 设 IBIOS_DATA_DIR=/data 可整体挪到指定目录（该目录需已存在）。
+    # 注意：.ibios/ 工作区（agents / memory / archive / mcp_servers.yaml）固定相对启动目录，不随此项迁移。
+    url: "jdbc:sqlite:${IBIOS_DATA_DIR:.}/ibios.db"
+    # 切 PostgreSQL（PG 14+）：注释掉上面 sqlite url，启用下面三行；
+    # 驱动与方言随 url 自动切换，其余项不用改
+    # url: jdbc:postgresql://localhost:5432/ibios
+    # username: ibios
+    # password: ${IBIOS_DB_PASSWORD:}
+    # SQLite 单写者：高并发写入报 "database is locked" 时，把连接池收到 1
+    # hikari:
+    #   maximum-pool-size: 1
+
+memory:
+  # markdown（默认，落 .ibios/memory/MEMORY.md）| sqlite（memory_entries 表）| mem0（外部服务）
+  backend: markdown
+  # 仅 backend=mem0 时生效，缺省值即下面这个
+  # mem0:
+  #   base-url: http://localhost:8080
+
+# 沙箱白名单：三个列表均为必填，缺任意一个启动即失败；管理页可运行时增删
+# 覆盖时整体替换 jar 默认值，必须列全要保留的项
+file:
+  allowed-paths:
+    # 跟随 ibios.root，工作区搬家时白名单一起走
+    - ${ibios.root:.ibios}
+
+shell:
+  # 覆盖时整体替换 jar 默认列表
+  allowed-commands:
+    - ls
+    - cat
+    - echo
+    # 解释器 = 任意代码执行，且子进程网络绕过 http.allowed-domains。
+    # 仅 github-daily / daily-reconcile 两个演示 Agent 需要；非可信场景请删掉。
+    - python3
+
+http:
+  # 覆盖时整体替换 jar 默认列表；"*" 放行任意域名，生产环境按需收窄为具体域名
+  allowed-domains:
+    - "*"
+
+ibios:
+  # 工作区根：环境变量 IBIOS_ROOT 经 relaxed binding 同样会绑定到 ibios.root
+  root: ${IBIOS_ROOT:.ibios}
+  # Agent 生成（/api/v1/agents/generate）使用的 Provider 与模型
+  author:
+    provider: ${IBIOS_AUTHOR_PROVIDER:dashscope}
+    model: ${IBIOS_AUTHOR_MODEL:qwen-plus}
+
+  # 仅首次启动（providers 表为空时）播种进 SQLite，之后以库中配置为准。
+  # 列表整体替换而非合并：覆盖时必须列全所有要保留的 Provider。
+  # type 可省略：dashscope / mock / deepseek 按名字识别，其余默认 openai（需配 base-url）。
+  providers:
+    - name: dashscope
+      api-key: ${DASHSCOPE_API_KEY:}
+      model: qwen-plus
+    - name: deepseek
+      api-key: ${DEEPSEEK_API_KEY:}
+      model: deepseek-chat
+    # 任意 OpenAI 兼容端点（OpenAI / OpenRouter / vLLM / Ollama / 企业网关）
+    # - name: openai-compatible
+    #   base-url: https://api.example.com/v1
+    #   api-key: ${OPENAI_COMPAT_API_KEY:}
+    #   model: your-model-id
+    # 内置 mock（无需 key，用于全链路冒烟）
+    # - name: mock
+    #   api-key: ""
+    #   model: mock
+
+  mcp:
+    # 相对启动目录；也可写 classpath:mcp_servers.yaml 或绝对路径
+    config-location: .ibios/mcp_servers.yaml
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  metrics:
+    tags:
+      application: ibios
+
+logging:
+  level:
+    root: INFO
+    com.ibios: INFO

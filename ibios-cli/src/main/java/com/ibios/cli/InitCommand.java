@@ -1,5 +1,6 @@
 package com.ibios.cli;
 
+import com.ibios.core.workspace.WorkspaceRoot;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -10,12 +11,13 @@ public class InitCommand implements Runnable {
 
   @Override
   public void run() {
-    Path workDir = Path.of(".ibios");
+    WorkspaceRoot workspaceRoot = WorkspaceRoot.resolve();
+    Path workDir = workspaceRoot.path();
     try {
-      Files.createDirectories(workDir.resolve("agents"));
-      Files.createDirectories(workDir.resolve("skills"));
-      Files.createDirectories(workDir.resolve("profiles"));
-      Path mcpConfig = workDir.resolve("mcp_servers.yaml");
+      Files.createDirectories(workspaceRoot.agentsDir());
+      Files.createDirectories(workspaceRoot.skillsDir());
+      Files.createDirectories(workspaceRoot.profilesDir());
+      Path mcpConfig = workspaceRoot.mcpConfigFile();
       if (!Files.exists(mcpConfig)) {
         Files.writeString(mcpConfig, "# MCP server 配置\nservers: []\n");
       }

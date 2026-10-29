@@ -1,7 +1,7 @@
 ---
 layout: home
-title: IBIOS — Enterprise Agent OS
-description: Enterprise Agent OS built on Java — run multiple AI agents on your own infrastructure
+title: IBIOS — Enterprise Agent Harness OS
+description: A Java-native Agent Harness OS — turn models into agents and run a whole fleet on your own infrastructure
 ---
 
 <Home />

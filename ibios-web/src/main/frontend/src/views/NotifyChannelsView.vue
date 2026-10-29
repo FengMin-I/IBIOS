@@ -48,41 +48,39 @@
 
     <div v-if="errorMessage" class="error-banner">{{ errorMessage }}</div>
 
-    <div v-if="showDialog" class="dialog-overlay" @click.self="closeDialog">
-      <div class="dialog card">
-        <h2 class="dialog-title">{{ editing ? '编辑 Notify 渠道' : '新建 Notify 渠道' }}</h2>
-        <div class="form-group">
-          <label>名称</label>
-          <input v-model="form.name" class="form-input" placeholder="如：team-webhook" />
-        </div>
-        <div class="form-group">
-          <label>类型</label>
-          <select v-model="form.type" class="form-input">
-            <option v-for="type in channelTypes" :key="type" :value="type">{{ type }}</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Webhook URL</label>
-          <input v-model="form.url" class="form-input" placeholder="https://..." />
-        </div>
-        <div class="form-group">
-          <label>描述</label>
-          <input v-model="form.description" class="form-input" placeholder="可选，说明渠道用途" />
-        </div>
-        <div v-if="dialogError" class="error-msg">{{ dialogError }}</div>
-        <div class="dialog-actions">
-          <button class="btn" @click="closeDialog">取消</button>
-          <button class="btn btn-primary" :disabled="saving" @click="saveChannel">
-            {{ saving ? '保存中...' : '保存' }}
-          </button>
-        </div>
+    <ModalComponent v-model="showDialog" :title="editing ? '编辑 Notify 渠道' : '新建 Notify 渠道'">
+      <div class="form-group">
+        <label>名称</label>
+        <input v-model="form.name" class="form-input" placeholder="如：team-webhook" />
       </div>
-    </div>
+      <div class="form-group">
+        <label>类型</label>
+        <select v-model="form.type" class="form-input">
+          <option v-for="type in channelTypes" :key="type" :value="type">{{ type }}</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Webhook URL</label>
+        <input v-model="form.url" class="form-input" placeholder="https://..." />
+      </div>
+      <div class="form-group">
+        <label>描述</label>
+        <input v-model="form.description" class="form-input" placeholder="可选，说明渠道用途" />
+      </div>
+      <div v-if="dialogError" class="error-msg">{{ dialogError }}</div>
+      <div class="dialog-actions">
+        <button class="btn" @click="closeDialog">取消</button>
+        <button class="btn btn-primary" :disabled="saving" @click="saveChannel">
+          {{ saving ? '保存中...' : '保存' }}
+        </button>
+      </div>
+    </ModalComponent>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import ModalComponent from '../components/ModalComponent.vue'
 
 const channelTypes = ['feishu', 'wecom', 'dingtalk', 'webhook']
 const channels = ref([])
@@ -376,28 +374,6 @@ onMounted(fetchChannels)
 .btn-danger {
   color: #ef4444;
   border-color: #ef4444;
-}
-
-.dialog-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 100;
-}
-
-.dialog {
-  width: 480px;
-  max-width: calc(100vw - 32px);
-}
-
-.dialog-title {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 20px;
 }
 
 .form-group {

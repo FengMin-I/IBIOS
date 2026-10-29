@@ -1,0 +1,178 @@
+#!/usr/bin/env bash
+# IBIOS 发布包进程管理：bin/ibi-server start | stop
+#
+# 约定：本脚本位于 <发布根>/bin/，工作目录固定为发布根 ——
+# config/application.yml、ibios.db、.ibios/ 都相对它解析。
+# 运行期文件集中在 <发布根>/run/：ibi-server.pid、ibi-server.log。
+
+set -uo pipefail
+
+BIN_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(dirname "$BIN_DIR")"
+RUN_DIR="$ROOT_DIR/run"
+PID_FILE="$RUN_DIR/ibi-server.pid"
+LOG_FILE="$RUN_DIR/ibi-server.log"
+CONFIG_FILE="$ROOT_DIR/config/application.yml"
+MIN_JAVA_MAJOR=21
+
+JAVA_BIN=""
+
+die() {
+  echo "❌ $*" >&2
+  exit 1
+}
+
+usage() {
+  cat <<'EOF'
+用法: ibi-server <start|stop>
+
+  start   后台启动 IBIOS（serve 模式），pid 与日志写入 run/
+  stop    停止服务：先 SIGTERM，10 秒未退出再 SIGKILL
+
+密钥用环境变量注入，例如 DASHSCOPE_API_KEY / DEEPSEEK_API_KEY；
+只跑 mock 时可都不设。启动前请确认 JDK 21+（JAVA_HOME 优先）。
+EOF
+}
+
+find_java() {
+  if [ -n "${JAVA_HOME:-}" ] && [ -x "${JAVA_HOME}/bin/java" ]; then
+    printf '%s\n' "${JAVA_HOME}/bin/java"
+    return 0
+  fi
+  command -v java 2>/dev/null
+}
+
+check_java() {
+  JAVA_BIN="$(find_java)" || true
+  [ -n "$JAVA_BIN" ] || die "找不到 java：请安装 JDK ${MIN_JAVA_MAJOR}+，或设置 JAVA_HOME"
+
+  local raw major
+  raw="$("$JAVA_BIN" -version 2>&1 | awk -F'"' '/version/ {print $2; exit}')"
+  [ -n "$raw" ] || die "无法识别 java 版本：$JAVA_BIN"
+  major="${raw%%.*}"
+  case "$major" in
+    ''|*[!0-9]*) die "无法识别 java 版本：$raw" ;;
+    1)           die "Java 版本过低：$raw，需要 ${MIN_JAVA_MAJOR}+" ;;
+  esac
+  [ "$major" -ge "$MIN_JAVA_MAJOR" ] || die "Java 版本过低：$raw，需要 ${MIN_JAVA_MAJOR}+"
+}
+
+find_jar() {
+  local jars
+  jars=("$ROOT_DIR"/libs/*.jar)
+  [ -f "${jars[0]}" ] || die "libs/ 下没有 jar，发布包不完整"
+  [ "${#jars[@]}" -eq 1 ] || die "libs/ 下有多个 jar，无法确定启动哪个"
+  printf '%s\n' "${jars[0]}"
+}
+
+resolve_port() {
+  local port
+  port="$(awk '/^server:[[:space:]]*$/{s=1;next} s&&/^[^[:space:]#]/{s=0} \
+              s&&/^[[:space:]]+port:/{gsub(/[^0-9]/,"");print;exit}' "$CONFIG_FILE" 2>/dev/null)"
+  printf '%s\n' "${port:-8080}"
+}
+
+running_pid() {
+  [ -f "$PID_FILE" ] || return 1
+  local pid
+  pid="$(cat "$PID_FILE" 2>/dev/null)"
+  [ -n "$pid" ] || return 1
+  ps -p "$pid" >/dev/null 2>&1 || return 1
+  printf '%s\n' "$pid"
+}
+
+do_start() {
+  check_java
+
+  local jar pid port i ready
+  jar="$(find_jar)" || exit 1
+
+  if pid="$(running_pid)"; then
+    die "已经在运行 (PID: $pid)，如确认已退出请先删除 $PID_FILE"
+  fi
+  if [ -f "$PID_FILE" ]; then
+    echo "🧹 清理陈旧的 pid 文件"
+    rm -f "$PID_FILE"
+  fi
+
+  [ -f "$CONFIG_FILE" ] || die "缺少配置文件：$CONFIG_FILE"
+
+  mkdir -p "$RUN_DIR"
+  cd "$ROOT_DIR" || die "无法进入发布根目录：$ROOT_DIR"
+
+  port="$(resolve_port)"
+  echo "🚀 启动 IBIOS：$(basename "$jar")"
+  nohup "$JAVA_BIN" -jar "$jar" serve \
+    --spring.config.additional-location="file:$CONFIG_FILE" \
+    > "$LOG_FILE" 2>&1 &
+  pid=$!
+  echo "$pid" > "$PID_FILE"
+
+  if command -v curl >/dev/null 2>&1; then
+    ready=0
+    for i in $(seq 1 60); do
+      if ! ps -p "$pid" >/dev/null 2>&1; then
+        rm -f "$PID_FILE"
+        echo "❌ 启动失败，最后 20 行日志：" >&2
+        tail -20 "$LOG_FILE" >&2
+        exit 1
+      fi
+      if curl -fsS "http://127.0.0.1:$port/actuator/health" >/dev/null 2>&1; then
+        ready=1
+        break
+      fi
+      sleep 0.5
+    done
+    if [ "$ready" -ne 1 ]; then
+      echo "⚠️  30 秒内健康检查未通过，进程仍在运行，请查看 $LOG_FILE"
+    fi
+  else
+    sleep 3
+    if ! ps -p "$pid" >/dev/null 2>&1; then
+      rm -f "$PID_FILE"
+      echo "❌ 启动失败，最后 20 行日志：" >&2
+      tail -20 "$LOG_FILE" >&2
+      exit 1
+    fi
+  fi
+
+  echo "✅ 已启动 (PID: $pid)"
+  echo "   管理平台：http://localhost:$port/admin"
+  echo "   健康检查：http://localhost:$port/actuator/health"
+  echo "   日志：$LOG_FILE"
+}
+
+do_stop() {
+  local pid i
+  if ! pid="$(running_pid)"; then
+    if [ -f "$PID_FILE" ]; then
+      echo "🧹 进程已不存在，清理陈旧的 pid 文件"
+      rm -f "$PID_FILE"
+    fi
+    echo "ℹ️  IBIOS 未在运行"
+    return 0
+  fi
+
+  echo "🛑 停止 IBIOS (PID: $pid)..."
+  kill "$pid" 2>/dev/null
+
+  for i in $(seq 1 10); do
+    ps -p "$pid" >/dev/null 2>&1 || break
+    sleep 1
+  done
+
+  if ps -p "$pid" >/dev/null 2>&1; then
+    echo "⚠️  10 秒内未退出，强制终止"
+    kill -9 "$pid" 2>/dev/null
+  fi
+
+  rm -f "$PID_FILE"
+  echo "✅ 已停止"
+}
+
+case "${1:-}" in
+  start) do_start ;;
+  stop) do_stop ;;
+  -h|--help|help) usage ;;
+  *) usage; exit 1 ;;
+esac

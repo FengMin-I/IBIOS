@@ -1,3 +1,15 @@
+# IBIOS 打包默认配置（JAR 内置，随 JAR 分发）
+#
+# 这里是"不覆盖也能跑"的完整默认值：框架管道（虚拟线程、自动配置排除、JPA/SQLite）、
+# 沙箱白名单、Provider 播种列表、MCP 路径、日志与 Actuator，全部给到可用状态。
+# 本机要改的项写在外部 config/application.yml（bin/start.sh 以
+# --spring.config.additional-location 引入，优先级高于本文件）。
+# 密钥一律用 ${ENV_VAR:} 占位符，不要写明文。
+#
+# ⚠️ 列表整体替换不合并：外部配置一旦写了下面任一列表键，就整段替换本文件的默认列表，
+#    而不是逐项合并 —— 覆盖时必须列全所有要保留的项。
+#    file.allowed-paths / shell.allowed-commands / http.allowed-domains / ibios.providers
+
 server:
   port: 8080
 
@@ -16,7 +28,8 @@ spring:
       - com.alibaba.cloud.ai.autoconfigure.dashscope.DashScopeAudioTranscriptionAutoConfiguration
       - org.springframework.ai.autoconfigure.openai.OpenAiAutoConfiguration
   datasource:
-    url: jdbc:sqlite:ibios.db
+    # 与外部 config/application.yml 保持一致：默认落在启动目录，设 IBIOS_DATA_DIR 可整体挪走
+    url: "jdbc:sqlite:${IBIOS_DATA_DIR:.}/ibios.db"
     driver-class-name: org.sqlite.JDBC
   jpa:
     database-platform: org.hibernate.community.dialect.SQLiteDialect
@@ -29,13 +42,15 @@ memory:
 
 file:
   allowed-paths:
-    - .ibios
+    - ${ibios.root:.ibios}
 
 shell:
   allowed-commands:
     - ls
     - cat
     - echo
+    # 解释器 = 任意代码执行，且子进程网络绕过 http.allowed-domains。
+    # 仅 github-daily / daily-reconcile 两个演示 Agent 需要；非可信场景请删掉。
     - python3
 
 http:
@@ -43,9 +58,12 @@ http:
     - "*"
 
 ibios:
+  # 工作区根：环境变量 IBIOS_ROOT 经 relaxed binding 同样会绑定到 ibios.root
+  root: ${IBIOS_ROOT:.ibios}
   author:
     provider: ${IBIOS_AUTHOR_PROVIDER:dashscope}
     model: ${IBIOS_AUTHOR_MODEL:qwen-plus}
+  # 首次启动播种进 SQLite，之后以库中配置为准，运行时改这里不再生效
   providers:
     - name: dashscope
       api-key: ${DASHSCOPE_API_KEY:}
@@ -53,8 +71,9 @@ ibios:
     - name: deepseek
       api-key: ${DEEPSEEK_API_KEY:}
       model: deepseek-chat
-  notify:
-    team-webhook-url: ${TEAM_WEBHOOK_URL:}
+  mcp:
+    # 相对启动目录；也可写 classpath:mcp_servers.yaml 或绝对路径
+    config-location: .ibios/mcp_servers.yaml
 
 management:
   endpoints:
@@ -68,3 +87,8 @@ management:
   metrics:
     tags:
       application: ibios
+
+logging:
+  level:
+    root: INFO
+    com.ibios: INFO

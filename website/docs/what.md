@@ -1,6 +1,6 @@
 # What is IBIOS
 
-***IBIOS is the self-hosted Agent Operating System for the enterprise. Describe a task in plain language — IBIOS breaks it down, assembles a team of agents, and they collaborate to deliver the result. So every company can run its own agents, in plain language.***
+***IBIOS is the self-hosted Agent Harness OS for the enterprise. Describe a task in plain language — IBIOS breaks it down, assembles a team of agents, and they collaborate to deliver the result. So every company can run its own agents, in plain language.***
 
 ![one sentence → decompose → assemble an agent team → collaborate → deliver the result](/images/pipeline-en.svg)
 

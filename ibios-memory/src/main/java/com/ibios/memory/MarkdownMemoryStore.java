@@ -2,6 +2,7 @@ package com.ibios.memory;
 
 import com.ibios.core.memory.LongTermMemoryStore;
 import com.ibios.core.memory.MemoryScope;
+import com.ibios.core.workspace.WorkspaceRoot;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -21,7 +22,7 @@ public class MarkdownMemoryStore implements LongTermMemoryStore {
   private final Path memoryFilePath;
 
   public MarkdownMemoryStore() {
-    this(Path.of(".ibios", "memory", "MEMORY.md"));
+    this(WorkspaceRoot.resolve().memoryFile());
   }
 
   public MarkdownMemoryStore(Path memoryFilePath) {

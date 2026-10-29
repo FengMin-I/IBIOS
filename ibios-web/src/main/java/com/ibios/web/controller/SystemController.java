@@ -1,6 +1,6 @@
 package com.ibios.web.controller;
 
-import com.ibios.provider.ProvidersProperties;
+import com.ibios.core.provider.ProviderStore;
 import com.ibios.web.model.ApiResponse;
 import com.ibios.web.model.HealthResponse;
 import com.ibios.web.model.InfoResponse;
@@ -14,10 +14,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1")
 public class SystemController {
 
-  private final ProvidersProperties providersProperties;
+  private final ProviderStore providerStore;
 
-  public SystemController(ProvidersProperties providersProperties) {
-    this.providersProperties = providersProperties;
+  public SystemController(ProviderStore providerStore) {
+    this.providerStore = providerStore;
   }
 
   @GetMapping("/health")
@@ -28,11 +28,8 @@ public class SystemController {
   @GetMapping("/info")
   public ApiResponse<InfoResponse> info() {
     List<ProviderStatus> providers =
-        providersProperties.getProviders().stream()
-            .map(
-                p ->
-                    new ProviderStatus(
-                        p.getName(), p.getApiKey() != null && !p.getApiKey().isEmpty()))
+        providerStore.listAll().stream()
+            .map(p -> new ProviderStatus(p.name(), p.apiKey() != null && !p.apiKey().isEmpty()))
             .toList();
     return ApiResponse.ok(new InfoResponse("0.0.1-SNAPSHOT", providers));
   }

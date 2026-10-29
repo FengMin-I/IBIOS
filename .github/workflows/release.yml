@@ -1,0 +1,56 @@
+name: Release
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: >-
+      github.event.pull_request.merged == true &&
+      startsWith(github.event.pull_request.title, 'release:')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Read version from pom
+        id: version
+        run: |
+          VERSION=$(awk -F'[<>]' '/<artifactId>ibios<\/artifactId>/{found=1;next} found && /<version>/{print $3;exit}' pom.xml)
+          test -n "$VERSION" || { echo "无法从 pom.xml 读取版本号" >&2; exit 1; }
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "版本：$VERSION"
+
+      - name: Build distribution
+        run: make release MAVEN="mvn -B"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          gh release create "v$VERSION" \
+            "dist/ibi-server-$VERSION.tar.gz" \
+            --target main \
+            --title "IBIOS $VERSION" \
+            --generate-notes \
+            --latest

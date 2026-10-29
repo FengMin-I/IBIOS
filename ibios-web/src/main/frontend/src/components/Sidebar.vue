@@ -39,6 +39,8 @@ const navItems = [
   { path: '/', label: '概览' },
   { path: '/agents', label: 'Agent 列表' },
   { path: '/schedules', label: '定时任务' },
+  { path: '/skills', label: 'Skill 列表' },
+  { path: '/knowledge', label: '知识库' },
   {
     group: 'os-runtime',
     label: 'OS 运行时',

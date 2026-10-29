@@ -7,6 +7,7 @@ import com.ibios.core.tool.Sandbox;
 import com.ibios.core.tool.ToolExecutionResult;
 import com.ibios.tool.sandbox.FileSandboxProperties;
 import com.ibios.tool.sandbox.HttpSandboxProperties;
+import com.ibios.tool.sandbox.InMemorySandboxWhitelistStore;
 import com.ibios.tool.sandbox.ShellSandboxProperties;
 import com.ibios.tool.sandbox.WhitelistManager;
 import com.ibios.tool.sandbox.WhitelistSandbox;
@@ -18,12 +19,18 @@ import org.springframework.web.client.RestClient;
 @DisplayName("Sandbox 接线回归：四个 Tool 白名单外输入被拦、IO 未发生")
 class SandboxIntegrationTest {
 
-  private final Sandbox sandbox =
-      new WhitelistSandbox(
-          new WhitelistManager(
-              new FileSandboxProperties(List.of("/workspace")),
-              new ShellSandboxProperties(List.of("ls")),
-              new HttpSandboxProperties(List.of("api.weather.com"))));
+  private final Sandbox sandbox = buildSandbox();
+
+  private static Sandbox buildSandbox() {
+    WhitelistManager manager =
+        new WhitelistManager(
+            new FileSandboxProperties(List.of("/workspace")),
+            new ShellSandboxProperties(List.of("ls")),
+            new HttpSandboxProperties(List.of("api.weather.com")),
+            new InMemorySandboxWhitelistStore());
+    manager.initialize();
+    return new WhitelistSandbox(manager);
+  }
 
   @Test
   @DisplayName("FileTools: 白名单外路径被拦")

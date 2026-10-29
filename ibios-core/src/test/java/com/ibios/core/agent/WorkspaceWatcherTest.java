@@ -2,6 +2,7 @@ package com.ibios.core.agent;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -46,7 +47,7 @@ class WorkspaceWatcherTest {
     }
     watcher =
         new WorkspaceWatcher(
-            agentsDir, agentLoader, profileRegistry, agentScheduler, Set.of("dashscope"));
+            agentsDir, agentLoader, profileRegistry, agentScheduler, Set.of("dashscope")::contains);
   }
 
   private Profile buildProfile(String name) {
@@ -114,6 +115,31 @@ class WorkspaceWatcherTest {
 
     verify(agentScheduler).unregisterProfile(profile);
     verify(profileRegistry).remove("gone-agent");
+  }
+
+  @Test
+  @DisplayName("watchLoop 收到目录删除事件后注销 Agent（删除时目录已不存在，不能被 isDirectory 过滤掉）")
+  void watchLoop_unregistersOnDirDelete() throws Exception {
+    Path agentDir = agentsDir.resolve("temp-agent");
+    Files.createDirectories(agentDir);
+    Files.writeString(agentDir.resolve("AGENT.md"), VALID_AGENT_MD);
+    Profile profile = buildProfile("temp-agent");
+    when(agentLoader.deriveProfile(agentDir)).thenReturn(profile);
+    when(profileRegistry.get("temp-agent")).thenReturn(profile);
+
+    watcher.start();
+    try {
+      verify(profileRegistry, timeout(3000)).register(profile);
+
+      // watch 线程是异步起来的，等它把目录注册进 WatchService 再删，否则事件根本不会产生
+      Thread.sleep(300);
+      Files.delete(agentDir.resolve("AGENT.md"));
+      Files.delete(agentDir);
+
+      verify(profileRegistry, timeout(5000)).remove("temp-agent");
+    } finally {
+      watcher.stop();
+    }
   }
 
   @Test

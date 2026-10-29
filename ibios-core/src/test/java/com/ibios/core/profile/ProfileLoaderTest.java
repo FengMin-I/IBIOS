@@ -22,7 +22,7 @@ class ProfileLoaderTest {
 
   @Test
   void shouldParseFullFieldProfile() {
-    ProfileLoader loader = new ProfileLoader(registry, Set.of("dashscope"));
+    ProfileLoader loader = new ProfileLoader(registry, Set.of("dashscope")::contains);
     Path dir = testProfilesDir();
 
     loader.loadAll(dir);
@@ -51,7 +51,7 @@ class ProfileLoaderTest {
 
   @Test
   void shouldThrowForUnknownProvider() {
-    ProfileLoader loader = new ProfileLoader(registry, Set.of("dashscope"));
+    ProfileLoader loader = new ProfileLoader(registry, Set.of("dashscope")::contains);
     Path dir = testProfilesDir();
 
     loader.loadAll(dir);
@@ -61,7 +61,7 @@ class ProfileLoaderTest {
 
   @Test
   void shouldNotBlockOtherProfilesOnBadFile() {
-    ProfileLoader loader = new ProfileLoader(registry, Set.of("dashscope"));
+    ProfileLoader loader = new ProfileLoader(registry, Set.of("dashscope")::contains);
     Path dir = testProfilesDir();
 
     loader.loadAll(dir);

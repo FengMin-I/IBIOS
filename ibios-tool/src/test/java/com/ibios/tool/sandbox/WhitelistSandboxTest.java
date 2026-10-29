@@ -19,11 +19,23 @@ class WhitelistSandboxTest {
   @BeforeEach
   void setUp() {
     WhitelistManager manager =
-        new WhitelistManager(
-            new FileSandboxProperties(List.of("/workspace")),
-            new ShellSandboxProperties(List.of("ls", "cat", "echo")),
-            new HttpSandboxProperties(List.of("api.weather.com", "*.example.com")));
+        createManager(
+            List.of("/workspace"),
+            List.of("ls", "cat", "echo"),
+            List.of("api.weather.com", "*.example.com"));
     sandbox = new WhitelistSandbox(manager);
+  }
+
+  private static WhitelistManager createManager(
+      List<String> files, List<String> commands, List<String> domains) {
+    WhitelistManager manager =
+        new WhitelistManager(
+            new FileSandboxProperties(files),
+            new ShellSandboxProperties(commands),
+            new HttpSandboxProperties(domains),
+            new InMemorySandboxWhitelistStore());
+    manager.initialize();
+    return manager;
   }
 
   @Test
@@ -118,11 +130,7 @@ class WhitelistSandboxTest {
   @Test
   @DisplayName("空配置 = 全部拒绝：文件路径")
   void emptyConfigDeniesAllFile() {
-    WhitelistManager mgr =
-        new WhitelistManager(
-            new FileSandboxProperties(List.of()),
-            new ShellSandboxProperties(List.of("ls")),
-            new HttpSandboxProperties(List.of("*")));
+    WhitelistManager mgr = createManager(List.of(), List.of("ls"), List.of("*"));
     WhitelistSandbox empty = new WhitelistSandbox(mgr);
     assertThrows(
         SandboxViolationException.class,
@@ -132,11 +140,7 @@ class WhitelistSandboxTest {
   @Test
   @DisplayName("空配置 = 全部拒绝：Shell 命令")
   void emptyConfigDeniesAllShell() {
-    WhitelistManager mgr =
-        new WhitelistManager(
-            new FileSandboxProperties(List.of("/tmp")),
-            new ShellSandboxProperties(List.of()),
-            new HttpSandboxProperties(List.of("*")));
+    WhitelistManager mgr = createManager(List.of("/tmp"), List.of(), List.of("*"));
     WhitelistSandbox empty = new WhitelistSandbox(mgr);
     assertThrows(
         SandboxViolationException.class,
@@ -146,11 +150,7 @@ class WhitelistSandboxTest {
   @Test
   @DisplayName("通配符 * 允许所有域名")
   void wildcardStarAllowsAll() {
-    WhitelistManager mgr =
-        new WhitelistManager(
-            new FileSandboxProperties(List.of("/tmp")),
-            new ShellSandboxProperties(List.of("ls")),
-            new HttpSandboxProperties(List.of("*")));
+    WhitelistManager mgr = createManager(List.of("/tmp"), List.of("ls"), List.of("*"));
     WhitelistSandbox permissive = new WhitelistSandbox(mgr);
     assertDoesNotThrow(
         () ->

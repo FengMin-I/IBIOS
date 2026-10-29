@@ -3,6 +3,8 @@ package com.ibios.memory;
 import com.ibios.core.memory.LongTermMemoryStore;
 import com.ibios.core.memory.MemoryService;
 import com.ibios.core.tool.IbiosTool;
+import com.ibios.core.workspace.WorkspaceRoot;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,8 +15,8 @@ public class MemoryConfiguration {
 
   @Bean
   @ConditionalOnProperty(name = "memory.backend", havingValue = "markdown", matchIfMissing = true)
-  public LongTermMemoryStore markdownMemoryStore() {
-    return new MarkdownMemoryStore();
+  public LongTermMemoryStore markdownMemoryStore(@Value("${ibios.root:.ibios}") String ibiosRoot) {
+    return new MarkdownMemoryStore(new WorkspaceRoot(ibiosRoot).memoryFile());
   }
 
   @Bean
@@ -33,8 +35,9 @@ public class MemoryConfiguration {
   }
 
   @Bean
-  public MemoryService memoryService(LongTermMemoryStore store) {
-    return new MemoryServiceImpl(store);
+  public MemoryService memoryService(
+      LongTermMemoryStore store, @Value("${ibios.root:.ibios}") String ibiosRoot) {
+    return new MemoryServiceImpl(store, new WorkspaceRoot(ibiosRoot).agentsDir());
   }
 
   @Bean

@@ -6,6 +6,8 @@
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+# 固定工作目录：config/application.yml 与 ibios.db 都相对项目根解析
+cd "$PROJECT_DIR" || exit 1
 JAR_FILE="$PROJECT_DIR/ibios-boot/target/ibios-boot-0.0.1-SNAPSHOT.jar"
 PID_FILE="$SCRIPT_DIR/ibios.pid"
 LOG_FILE="$SCRIPT_DIR/ibios.log"

@@ -2,7 +2,7 @@
 
 > 本文档定义 IBIOS 的 AI 编程实施思路。主体思路是用 **Spec-Kit** 完成主体开发，把已有的需求文档和技术方案喂给 Spec-Kit，按五大核心能力拆成 5 个 user story 逐步实施；后续增量阶段切换到手动提示词配合 Claude Code。前置阅读《项目篇 IBIOS 业界调研》《IBIOS 需求文档》《IBIOS 技术方案》。本文档讲思路和拆解方法，不绑定具体时间安排，也不展开提示词细节。
 
-> 本文档以最新技术方案为准：核心阶段交付的是 Agent OS 的运行时内核，Maven 模块为 9 个（技术方案第 10 章），五大核心能力（对接 LLM、ReAct、Memory、Tool、Web Service）作为 5 个 user story 的骨架。
+> 本文档以最新技术方案为准：核心阶段交付的是 Agent Harness OS 的运行时内核，Maven 模块为 9 个（技术方案第 10 章），五大核心能力（对接 LLM、ReAct、Memory、Tool、Web Service）作为 5 个 user story 的骨架。
 
 ---
 
@@ -402,7 +402,7 @@ Spec-Kit 把代码拆成多个 task 后，AI agent 实施每个 task 时可能�
 
 ## 5. 项目交付物
 
-主体开发完成后 IBIOS 1.0 是一个可演示的最小完整 Agent OS 运行时内核，五大核心能力全部跑通。除了核心代码本身，还有几个交付物：
+主体开发完成后 IBIOS 1.0 是一个可演示的最小完整 Agent Harness OS 运行时内核，五大核心能力全部跑通。除了核心代码本身，还有几个交付物：
 
 ### 项目主页
 

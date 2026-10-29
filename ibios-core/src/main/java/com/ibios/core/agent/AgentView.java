@@ -16,11 +16,12 @@ public record AgentView(
     boolean hasScripts,
     boolean hasSkills,
     boolean hasReference,
-    boolean hasMemory) {
+    boolean hasMemory,
+    List<String> usedTools) {
 
   public record ScheduleSummary(String id, String cron, String zone, String message) {}
 
-  public static AgentView from(Profile profile) {
+  public static AgentView from(Profile profile, List<String> usedTools) {
     List<ScheduleSummary> scheduleSummaries = new ArrayList<>();
     for (Profile.ScheduleConfig sc : profile.schedules()) {
       scheduleSummaries.add(new ScheduleSummary(sc.id(), sc.cron(), sc.zone(), sc.message()));
@@ -46,6 +47,7 @@ public record AgentView(
         hasScripts,
         hasSkills,
         hasReference,
-        hasMemory);
+        hasMemory,
+        usedTools);
   }
 }

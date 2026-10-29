@@ -59,4 +59,4 @@ A framework gives you one harness inside your own code. IBIOS ships the harness 
 
 **Open standards just matured.** MCP has become the de facto standard for tool interoperability; A2A is emerging for cross-agent coordination. IBIOS builds on both from the start, so what plugs into IBIOS works in the broader ecosystem and vice versa.
 
-**The alternative is worse.** Without a purpose-built agent OS, teams bolt together controllers, hand-rolled prompt assembly, home-grown tool dispatch, log-only audit, and no shared memory. It works until it doesn't — and debugging it in production is archaeology. A runtime with clear contracts, persistent audit, and a defined extension model is the better foundation.
+**The alternative is worse.** Without a purpose-built agent harness OS, teams bolt together controllers, hand-rolled prompt assembly, home-grown tool dispatch, log-only audit, and no shared memory. It works until it doesn't — and debugging it in production is archaeology. A runtime with clear contracts, persistent audit, and a defined extension model is the better foundation.

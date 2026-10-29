@@ -12,7 +12,7 @@ import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
-import java.util.Set;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -25,7 +25,7 @@ public class WorkspaceWatcher {
   private final AgentLoader agentLoader;
   private final ProfileRegistry profileRegistry;
   private final AgentScheduler agentScheduler;
-  private final Set<String> validProviderNames;
+  private final Predicate<String> providerExists;
   private volatile boolean running;
 
   public WorkspaceWatcher(
@@ -33,12 +33,12 @@ public class WorkspaceWatcher {
       AgentLoader agentLoader,
       ProfileRegistry profileRegistry,
       AgentScheduler agentScheduler,
-      Set<String> validProviderNames) {
+      Predicate<String> providerExists) {
     this.agentsDir = agentsDir;
     this.agentLoader = agentLoader;
     this.profileRegistry = profileRegistry;
     this.agentScheduler = agentScheduler;
-    this.validProviderNames = validProviderNames;
+    this.providerExists = providerExists;
   }
 
   public void start() {
@@ -95,7 +95,8 @@ public class WorkspaceWatcher {
           WatchEvent<Path> pathEvent = (WatchEvent<Path>) event;
           Path childPath = agentsDir.resolve(pathEvent.context());
 
-          if (Files.isDirectory(childPath)) {
+          // 删除事件发生时目录已不存在，isDirectory 会为 false；删除路径必须照样进 onAgentDirChanged
+          if (kind == StandardWatchEventKinds.ENTRY_DELETE || Files.isDirectory(childPath)) {
             onAgentDirChanged(childPath, kind);
           }
         }
@@ -128,7 +129,7 @@ public class WorkspaceWatcher {
   void register(Path agentDir) {
     try {
       Profile profile = agentLoader.deriveProfile(agentDir);
-      if (!validProviderNames.contains(profile.provider().name())) {
+      if (!providerExists.test(profile.provider().name())) {
         LOG.warning("Unknown provider for agent at " + agentDir + ": " + profile.provider().name());
         return;
       }

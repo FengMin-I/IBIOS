@@ -2,16 +2,26 @@
   <div class="agent-management">
     <header class="page-header">
       <h1 class="page-title">Agent 管理</h1>
-      <button class="btn-create" @click="showCreateDialog = true">+ 创建 Agent</button>
+      <div class="header-actions">
+        <button class="btn-refresh" :disabled="loading" @click="loadAgents">刷新</button>
+        <button class="btn-create" @click="showCreateDialog = true">+ 创建 Agent</button>
+      </div>
     </header>
 
     <div v-if="loading" class="loading">加载中...</div>
+
+    <div v-else-if="agents.length === 0" class="empty">
+      <p>暂无 Agent</p>
+      <p class="empty-hint">点上面「+ 创建 Agent」，或往 .ibios/agents/ 丢一个目录</p>
+    </div>
+
     <table v-else>
       <thead>
         <tr>
           <th>name</th>
+          <th>description</th>
           <th>provider</th>
-          <th>model</th>
+          <th title="该 Agent 历史上实际调用过的工具；工具本身是全局注册表，完整清单见 Tool 列表">tools</th>
           <th>定时</th>
           <th>操作</th>
         </tr>
@@ -19,16 +29,14 @@
       <tbody>
         <tr v-for="agent in agents" :key="agent.name">
           <td class="mono name-cell">{{ agent.name }}</td>
-          <td>{{ agent.provider }}</td>
-          <td class="mono">{{ agent.model }}</td>
-          <td class="mono cron-cell">
-            <span v-if="agent.schedules && agent.schedules.length">
-              {{ agent.schedules.map(s => s.cron).join(' ') }}
-            </span>
-            <span v-else>–</span>
-          </td>
+          <td class="desc-cell">{{ agent.description || '—' }}</td>
+          <td class="provider-cell">{{ agent.provider }}</td>
+          <td>{{ (agent.usedTools || []).join(', ') || '未运行' }}</td>
+          <td class="mono cron-cell">{{ (agent.schedules || []).map(s => s.cron).join('; ') || '—' }}</td>
           <td class="actions-cell">
-            <button class="btn-trigger" @click="triggerAgent(agent.name)">立即触发</button>
+            <button class="btn-trigger" :disabled="triggering === agent.name" @click="triggerAgent(agent.name)">
+              {{ triggering === agent.name ? '触发中...' : '立即触发' }}
+            </button>
             <button class="btn-edit" @click="editAgent(agent.name)">详情</button>
             <button class="btn-delete" @click="deleteAgent(agent.name)">删除</button>
           </td>
@@ -36,32 +44,30 @@
       </tbody>
     </table>
 
-    <div v-if="showCreateDialog" class="dialog-overlay" @click.self="showCreateDialog = false">
-      <div class="dialog card">
-        <h2 class="dialog-title">创建 Agent</h2>
-        <div class="form-group">
-          <label>名称</label>
-          <input v-model="newAgent.name" class="form-input" placeholder="如：weather-daily" />
-        </div>
-        <div class="form-group">
-          <label>描述</label>
-          <textarea v-model="newAgent.description" class="form-textarea" placeholder="描述这个 Agent 的用途和功能" rows="4"></textarea>
-        </div>
-        <div v-if="createError" class="error-msg">{{ createError }}</div>
-        <div class="dialog-actions">
-          <button class="btn-cancel" @click="showCreateDialog = false">取消</button>
-          <button class="btn-confirm" :disabled="creating" @click="createAgent">
-            {{ creating ? '创建中...' : '创建' }}
-          </button>
-        </div>
+    <ModalComponent v-model="showCreateDialog" title="创建 Agent">
+      <div class="form-group">
+        <label>名称</label>
+        <input v-model="newAgent.name" class="form-input" placeholder="如：weather-daily" />
       </div>
-    </div>
+      <div class="form-group">
+        <label>描述</label>
+        <textarea v-model="newAgent.description" class="form-textarea" placeholder="描述这个 Agent 的用途和功能" rows="4"></textarea>
+      </div>
+      <div v-if="createError" class="error-msg">{{ createError }}</div>
+      <div class="dialog-actions">
+        <button class="btn-cancel" @click="showCreateDialog = false">取消</button>
+        <button class="btn-confirm" :disabled="creating" @click="createAgent">
+          {{ creating ? '创建中...' : '创建' }}
+        </button>
+      </div>
+    </ModalComponent>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import ModalComponent from '../components/ModalComponent.vue'
 
 const router = useRouter()
 const agents = ref([])
@@ -70,8 +76,10 @@ const showCreateDialog = ref(false)
 const creating = ref(false)
 const createError = ref(null)
 const newAgent = ref({ name: '', description: '' })
+const triggering = ref('')
 
 async function loadAgents() {
+  loading.value = true
   try {
     const res = await fetch('/api/v1/agents')
     if (res.ok) {
@@ -132,6 +140,7 @@ async function deleteAgent(name) {
 
 async function triggerAgent(name) {
   if (!confirm(`确认立即触发 Agent "${name}"？执行结果将发送到飞书。`)) return
+  triggering.value = name
   try {
     const res = await fetch(`/api/v1/agents/${name}/invoke`, {
       method: 'POST',
@@ -147,6 +156,8 @@ async function triggerAgent(name) {
     }
   } catch (e) {
     alert('触发失败：' + e.message)
+  } finally {
+    triggering.value = ''
   }
 }
 
@@ -169,6 +180,33 @@ onMounted(loadAgents)
   font-size: 22px;
   font-weight: 700;
   margin: 0;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-refresh {
+  padding: 8px 16px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-refresh:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.btn-refresh:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .btn-create {
@@ -218,9 +256,24 @@ td {
   color: var(--text-primary);
 }
 
+.provider-cell {
+  white-space: nowrap;
+}
+
+.desc-cell {
+  color: var(--text-secondary);
+  min-width: 200px;
+}
+
+.empty-hint {
+  font-size: 0.875rem;
+  margin-top: 8px;
+}
+
 .cron-cell {
   color: var(--text-secondary);
   font-size: 13px;
+  white-space: nowrap;
 }
 
 .actions-cell {
@@ -261,6 +314,11 @@ td {
   color: white;
 }
 
+.btn-trigger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .btn-delete {
   padding: 5px 14px;
   background: transparent;
@@ -285,30 +343,6 @@ td {
   text-align: center;
   padding: 40px;
   color: var(--text-secondary);
-}
-
-.dialog-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.dialog {
-  width: 480px;
-  padding: 24px;
-}
-
-.dialog-title {
-  font-size: 18px;
-  font-weight: 700;
-  margin: 0 0 20px;
 }
 
 .form-group {

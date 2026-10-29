@@ -1,5 +1,6 @@
 package com.ibios.cli;
 
+import com.ibios.core.workspace.WorkspaceRoot;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -14,7 +15,7 @@ public class ProfileShowCommand implements Runnable {
 
   @Override
   public void run() {
-    Path file = Path.of(".ibios/profiles/" + name + ".yaml");
+    Path file = WorkspaceRoot.resolve().profilesDir().resolve(name + ".yaml");
     if (!Files.exists(file)) {
       System.err.println("Profile 不存在: " + name);
       return;

@@ -1,6 +1,11 @@
 package com.ibios.tool.mcp;
 
 import com.ibios.core.port.ToolRegistry;
+import com.ibios.core.workspace.WorkspaceRoot;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -21,11 +26,15 @@ import org.yaml.snakeyaml.Yaml;
 public class McpClientService {
 
   private static final Logger log = LoggerFactory.getLogger(McpClientService.class);
+  private static final String DEFAULT_CONFIG_LOCATION =
+      WorkspaceRoot.DEFAULT_ROOT + "/mcp_servers.yaml";
+  private static final String CLASSPATH_PREFIX = "classpath:";
+  private static final String FILE_PREFIX = "file:";
 
   private final ToolRegistry toolRegistry;
 
-  @Value("${ibios.mcp.config-location:classpath:mcp_servers.yaml}")
-  private String configLocation;
+  @Value("${ibios.mcp.config-location:${ibios.root:.ibios}/mcp_servers.yaml}")
+  private String configLocation = DEFAULT_CONFIG_LOCATION;
 
   public McpClientService(ToolRegistry toolRegistry) {
     this.toolRegistry = toolRegistry;
@@ -65,21 +74,37 @@ public class McpClientService {
 
   @SuppressWarnings("unchecked")
   private List<Map<String, Object>> loadConfigs() {
-    try {
-      Yaml yaml = new Yaml();
-      var inputStream = getClass().getResourceAsStream("/mcp_servers.yaml");
+    String location = resolveLocation();
+    try (InputStream inputStream = openConfig(location)) {
       if (inputStream == null) {
-        log.debug("No mcp_servers.yaml found");
+        log.debug("MCP config not found: {}", location);
         return Collections.emptyList();
       }
-      Map<String, Object> config = yaml.load(inputStream);
+      Map<String, Object> config = new Yaml().load(inputStream);
       if (config == null || !config.containsKey("servers")) {
         return Collections.emptyList();
       }
       return (List<Map<String, Object>>) config.get("servers");
     } catch (Exception e) {
-      log.warn("Failed to load MCP server configs", e);
+      log.warn("Failed to load MCP server configs from {}", location, e);
       return Collections.emptyList();
     }
+  }
+
+  private String resolveLocation() {
+    return configLocation == null || configLocation.isBlank()
+        ? DEFAULT_CONFIG_LOCATION
+        : configLocation.trim();
+  }
+
+  private InputStream openConfig(String location) throws IOException {
+    if (location.startsWith(CLASSPATH_PREFIX)) {
+      String resource = location.substring(CLASSPATH_PREFIX.length());
+      return getClass().getResourceAsStream(resource.startsWith("/") ? resource : "/" + resource);
+    }
+    String path =
+        location.startsWith(FILE_PREFIX) ? location.substring(FILE_PREFIX.length()) : location;
+    Path configFile = Path.of(path);
+    return Files.isRegularFile(configFile) ? Files.newInputStream(configFile) : null;
   }
 }

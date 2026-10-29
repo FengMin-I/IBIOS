@@ -1,5 +1,6 @@
 package com.ibios.core.agent;
 
+import com.ibios.core.audit.ToolUsageQuery;
 import com.ibios.core.port.ChatPort;
 import com.ibios.core.profile.Profile;
 import com.ibios.core.profile.ProfileRegistry;
@@ -16,7 +17,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -30,7 +31,8 @@ public class AgentLifecycleService {
   private final AgentScheduler agentScheduler;
   private final ChatPort chatPort;
   private final SessionManager sessionManager;
-  private final Set<String> validProviderNames;
+  private final ToolUsageQuery toolUsageQuery;
+  private final Predicate<String> providerExists;
   private final String authorProvider;
   private final String authorModel;
   private final String agentAuthorPrompt;
@@ -42,7 +44,8 @@ public class AgentLifecycleService {
       AgentScheduler agentScheduler,
       ChatPort chatPort,
       SessionManager sessionManager,
-      Set<String> validProviderNames,
+      ToolUsageQuery toolUsageQuery,
+      Predicate<String> providerExists,
       String authorProvider,
       String authorModel,
       String agentAuthorPrompt) {
@@ -52,7 +55,8 @@ public class AgentLifecycleService {
     this.agentScheduler = agentScheduler;
     this.chatPort = chatPort;
     this.sessionManager = sessionManager;
-    this.validProviderNames = validProviderNames;
+    this.toolUsageQuery = toolUsageQuery;
+    this.providerExists = providerExists;
     this.authorProvider = authorProvider;
     this.authorModel = authorModel;
     this.agentAuthorPrompt = agentAuthorPrompt;
@@ -82,7 +86,7 @@ public class AgentLifecycleService {
       agentStore.writeAll(name, files);
 
       Profile profile = register(agentDir);
-      return AgentView.from(profile);
+      return viewOf(profile);
     } catch (Exception e) {
       LOG.log(Level.SEVERE, "Failed to create agent: " + name, e);
       agentStore.delete(agentDir);
@@ -92,7 +96,7 @@ public class AgentLifecycleService {
 
   Profile register(Path agentDir) {
     Profile profile = agentLoader.deriveProfile(agentDir);
-    if (!validProviderNames.contains(profile.provider().name())) {
+    if (!providerExists.test(profile.provider().name())) {
       throw new IllegalArgumentException("Unknown provider: " + profile.provider().name());
     }
     profileRegistry.register(profile);
@@ -108,15 +112,25 @@ public class AgentLifecycleService {
     if (profile == null) {
       throw new IllegalArgumentException("Agent not found: " + name);
     }
-    return AgentView.from(profile);
+    return viewOf(profile);
   }
 
   public List<AgentView> list() {
+    Map<String, List<String>> byProfile = toolUsageQuery.findUsedToolNamesByProfile();
     List<AgentView> views = new ArrayList<>();
     for (Profile profile : profileRegistry.getAll()) {
-      views.add(AgentView.from(profile));
+      views.add(AgentView.from(profile, toolsOf(byProfile, profile.name())));
     }
     return views;
+  }
+
+  private AgentView viewOf(Profile profile) {
+    return AgentView.from(
+        profile, toolsOf(toolUsageQuery.findUsedToolNamesByProfile(), profile.name()));
+  }
+
+  private static List<String> toolsOf(Map<String, List<String>> byProfile, String profileName) {
+    return byProfile.getOrDefault(profileName, Collections.emptyList());
   }
 
   public AgentView update(String name, String markdown) {
@@ -134,7 +148,7 @@ public class AgentLifecycleService {
       }
 
       Profile newProfile = register(agentDir);
-      return AgentView.from(newProfile);
+      return viewOf(newProfile);
     } catch (IOException e) {
       throw new IllegalStateException("Failed to update agent: " + name, e);
     }
@@ -337,7 +351,7 @@ public class AgentLifecycleService {
     agentStore.writeAll(name, files);
     Path agentDir = agentStore.agentsDir().resolve(name);
     Profile profile = register(agentDir);
-    return AgentView.from(profile);
+    return viewOf(profile);
   }
 
   private String loadTemplate(String resourcePath) {

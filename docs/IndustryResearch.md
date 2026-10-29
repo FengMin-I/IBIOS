@@ -1,53 +1,61 @@
-# Agent OS 行业调研：业界格局、Java 生态缺位与 IBIOS 定位
+# Agent Harness OS 行业调研：业界格局、Java 生态缺位与 IBIOS 定位
 
-这份调研聚焦"**Agent OS**"这件事本身。先把 Agent OS 是什么讲清楚，再看业界两个最具代表性的开源 Agent OS 项目（**OpenClaw** 和 **Hermes Agent**）分别做到了什么、企业用得怎么样、留下了什么空白，然后看 Java 生态在这件事上的位置，最后落到 **IBIOS** 的定位和愿景。IBIOS 想做的事是清晰的：一个企业能完全掌控的、Java 原生的、私有可审计的 Agent 统一底座。调研要回答的是，业界已经做了什么，这件事在 Java 生态里为什么还没人做，以及 IBIOS 想把它做成什么样子。
+这份调研聚焦"**Agent Harness OS**"这件事本身。先把 Agent Harness OS 是什么讲清楚，再看业界两个最具代表性的开源 Agent Harness OS 项目（**OpenClaw** 和 **Hermes Agent**）分别做到了什么、企业用得怎么样、留下了什么空白，然后看 Java 生态在这件事上的位置，最后落到 **IBIOS** 的定位和愿景。IBIOS 想做的事是清晰的：一个企业能完全掌控的、Java 原生的、私有可审计的 Agent 统一底座。调研要回答的是，业界已经做了什么，这件事在 Java 生态里为什么还没人做，以及 IBIOS 想把它做成什么样子。
 
 ---
 
-## 一、什么是 Agent OS
+## 一、什么是 Agent Harness OS
 
 ### 1.1 一个明确的定义
 
-**Agent OS** 是运行和管理 AI Agent 的底座系统。它装在用户（或企业）自己的机器上，向上为各类 Agent（运维助手、客服助手、HR 助手、销售助手等）提供统一的运行环境，向下接入模型、渠道、工具、记忆、身份和审计基础设施。
+**Agent Harness OS** 是运行和管理 AI Agent 的底座系统。它装在用户（或企业）自己的机器上，向上为各类 Agent（运维助手、客服助手、HR 助手、销售助手等）提供统一的运行环境，向下接入模型、渠道、工具、记忆、身份和审计基础设施。
 
-一个合格的 Agent OS 必须具备五件事：
+这个名字里有两层，缺一不可。
+
+**第一层是 Agent Harness。** 模型本身只会生成文本。要让它真正干活，必须在模型外面套一层脚手架：驱动 reason → act → observe 循环、把工具调用的结果喂回上下文、每次调用前组装 system prompt 与记忆、给工具执行划出沙箱边界、把每一次调用写进审计。没有这套脚手架，模型只是一次问答；有了它，模型才成为一个可靠、可解释、可追责的 Agent。
+
+**第二层是 OS。** 一个 harness 只能托管一个 Agent。当企业要同时跑运维、客服、HR、销售十几个 Agent 时，它们应该共享同一套 Provider 路由、工具注册表、记忆与渠道，由一层统一管理生命周期、调度与治理——这就是 OS 的部分。
+
+一个合格的 Agent Harness OS 必须具备五件事：
 
 1. **Agent 配置和生命周期管理**。能注册、启动、监控、销毁多个 Agent，每个 Agent 有独立的 prompt、模型、工具、渠道、记忆。Agent 在底座上配置出来，不是写代码写出来的。
 2. **统一对外渠道接入**。IM（企业微信、飞书、钉钉、Slack、Telegram、Discord 等）、邮件、Web、HTTP API，所有 Agent 共用一套渠道层。
 3. **统一对内系统接入**。LLM Provider、工具（MCP 或插件）、企业 IT 系统、知识库，所有 Agent 共享一套接入层。
 4. **统一记忆**。跨 Session 的长期记忆、可复用的 Skill 模板、跨 Agent 的知识沉淀。
-5. **Tool 调用和沙箱执行**。Agent 通过 LLM Function Calling 调用 Tool，Tool 在沙箱里执行，保证安全边界。
+5. **统一的 Agent Harness 与沙箱执行**。每个 Agent 都跑在同一套 harness 上——ReAct 循环、上下文与记忆组装、调用审计；Tool 通过 LLM Function Calling 调用并在沙箱里执行，保证安全边界。
 
-这里要把一个容易混的词辨清楚：**Agent OS** 跟 **agent runtime**（Agent 运行时）不是一回事。
+这里要把三个容易混的词辨清楚：**Agent Harness**、**agent runtime**（Agent 运行时）和 **Agent Harness OS**。
 
-**agent runtime** 指的是让单个 agent 跑起来的执行内核，负责 LLM 调用、工具执行、上下文管理、循环控制，上面五件事里的第五件大致属于这一层。Agent OS 的内核确实包含一个 agent runtime，但它在 runtime 之上还要管前四件事：多个 Agent 的生命周期、统一的对外对内接入、统一记忆、以及后面会讲的多租户和审计。
+**agent runtime** 指的是让单个 agent 跑起来的执行内核，负责 LLM 调用、工具执行、上下文管理、循环控制，上面五件事里的第五件大致属于这一层。**Agent Harness** 是这层内核呈现给模型的那套脚手架——循环怎么转、工具怎么执行、上下文和记忆怎么组装、执行边界怎么划、调用怎么记录。两者是同一层的两个视角：runtime 说"靠什么跑"，harness 说"模型看到和用到的是什么"。
 
-借操作系统的类比说，runtime 像是单个进程的执行环境，Agent OS 像是管理一群进程、调度资源、提供共享服务和治理的那层。一句话，**runtime 让一个 agent 跑起来，Agent OS 让一群 agent 在企业里被管起来**。
+**Agent Harness OS** 的内核包含一个 agent runtime，也就包含一套 Agent Harness，但它在 harness 之上还要管其余四件事：多个 Agent 的生命周期、统一的对外对内接入、统一记忆、以及后面会讲的多租户和审计。
 
-> Agent OS 解决的是"用户要同时跑 N 个 Agent 时，这些 Agent 共享的基础设施层应该长什么样"。
+借操作系统的类比说，runtime 与 harness 像是单个进程及其运行时，Agent Harness OS 像是管理一群进程、调度资源、提供共享服务和治理的那层。一句话，**harness 让一个 agent 把活干可靠，Agent Harness OS 让一群 agent 在企业里被管起来**。
 
-### 1.2 Agent OS 长什么样
+> Agent Harness OS 解决的是"用户要同时跑 N 个 Agent 时，这些 Agent 共享的基础设施层应该长什么样"。
+
+### 1.2 Agent Harness OS 长什么样
 
 部署形态：
 
-1. 用户部署一个 Agent OS 实例（单一服务），装在自己的机器、服务器或 K8s 上。
-2. Agent OS 自带 Web 管理台或 CLI 工具。
-3. 用户通过 Web 或 CLI 在 Agent OS 上创建 Agent、注册 Tool 和 Skill、配置渠道。
+1. 用户部署一个 Agent Harness OS 实例（单一服务），装在自己的机器、服务器或 K8s 上。
+2. Agent Harness OS 自带 Web 管理台或 CLI 工具。
+3. 用户通过 Web 或 CLI 在 Agent Harness OS 上创建 Agent、注册 Tool 和 Skill、配置渠道。
 4. Agent 跑起来后，最终用户通过 IM 或 Web 跟 Agent 对话。
-5. Agent OS 允许自动运行 Agent。
+5. Agent Harness OS 允许自动运行 Agent。
 
 业务方关心的事很简单：
 
 1. 写一个 Tool 实现某个具体功能（可以用任何语言）
-2. 然后在 Agent OS 上配置一个 Agent 把这个 Tool 用起来。
+2. 然后在 Agent Harness OS 上配置一个 Agent 把这个 Tool 用起来。
 
-业务方不需要写 Agent 后端代码，Agent 是配置出来的，不是写出来的。业务方不感知消息从哪来、LLM 怎么调、用户身份怎么管、审计怎么落、上下文怎么续，这些都是 Agent OS 的事。
+业务方不需要写 Agent 后端代码，Agent 是配置出来的，不是写出来的。业务方不感知消息从哪来、LLM 怎么调、用户身份怎么管、审计怎么落、上下文怎么续，这些都是 Agent Harness OS 的事。
 
-### 1.3 Agent OS 跟相邻概念的区别
+### 1.3 Agent Harness OS 跟相邻概念的区别
 
-把 Agent OS 跟最容易混的三类东西摆在一起看，区别就清楚了。
+把 Agent Harness OS 跟最容易混的三类东西摆在一起看，区别就清楚了。
 
-| 维度 | **Agent OS** | **编排平台** | **框架** | **大厂中台 / SaaS** |
+| 维度 | **Agent Harness OS** | **编排平台** | **框架** | **大厂中台 / SaaS** |
 |------|-------------|------------|--------|-------------------|
 | 产物 | 配置出来的常驻 Agent | 可执行的 workflow 流程 | 代码（库 / SDK） | 完整 SaaS 应用 |
 | 使用者 | 业务方（配置） + 开发者（写 Tool） | 业务人员 / 开发者（拖拽编排） | 开发者（写代码） | 业务人员 / 最终用户 |
@@ -55,41 +63,41 @@
 | 部署方式 | 私有部署，开源可自托管 | 云托管为主，部分可私有部署 | 不提供运行环境 | SaaS，绑定厂商云 |
 | 生态锁定 | 无，不锁任何云或协作平台 | 弱（部分绑定自家生态） | 无 | 强（绑云生态或协作平台） |
 
-- **编排平台**是 visual workflow builder，业务人员或开发者用拖拽方式把节点拼成一个 workflow，平台负责执行。它的产物是流程，适合做复杂业务流程编排；Agent OS 的产物是配置出来的、常驻服务的 Agent。两者层级不同，编排平台可以跑在 Agent OS 之上，把 Agent OS 当后端。
-- **框架**是一组库或 SDK，给开发者用代码写 Agent，产物是代码，运行环境要开发者自己搞定；Agent OS 的产物是一个装好就跑的服务，基础设施一应俱全。框架可以作为 Agent OS 的底层组件，比如 Agent OS 内部用 **Spring AI** 实现 LLM 调用。
-- **大厂中台和 SaaS 产品**是完整应用，绑各自的云生态或协作平台，产品形态是 SaaS，不是装在用户自己机器上的运行时。Agent OS 是开源、可私有部署的底座，不锁生态。
+- **编排平台**是 visual workflow builder，业务人员或开发者用拖拽方式把节点拼成一个 workflow，平台负责执行。它的产物是流程，适合做复杂业务流程编排；Agent Harness OS 的产物是配置出来的、常驻服务的 Agent。两者层级不同，编排平台可以跑在 Agent Harness OS 之上，把 Agent Harness OS 当后端。
+- **框架**是一组库或 SDK，给开发者用代码写 Agent，产物是代码，运行环境要开发者自己搞定；Agent Harness OS 的产物是一个装好就跑的服务，基础设施一应俱全。框架可以作为 Agent Harness OS 的底层组件，比如 Agent Harness OS 内部用 **Spring AI** 实现 LLM 调用。
+- **大厂中台和 SaaS 产品**是完整应用，绑各自的云生态或协作平台，产品形态是 SaaS，不是装在用户自己机器上的运行时。Agent Harness OS 是开源、可私有部署的底座，不锁生态。
 
-这三个边界划清楚之后，Agent OS 在整个生态里的位置就清楚了。
+这三个边界划清楚之后，Agent Harness OS 在整个生态里的位置就清楚了。
 
 ---
 
-## 二、业界两个最具代表性的开源 Agent OS
+## 二、业界两个最具代表性的开源 Agent Harness OS
 
-业界做开源 Agent 这件事，目前最具代表性的是两个项目：**OpenClaw** 和 **Hermes Agent**。这里不再展开具体架构细节，只从业界调研、Agent OS 格局的角度，把它们各自代表的取向和合起来呈现的格局讲清楚。
+业界做开源 Agent 这件事，目前最具代表性的是两个项目：**OpenClaw** 和 **Hermes Agent**。这里不再展开具体架构细节，只从业界调研、Agent Harness OS 格局的角度，把它们各自代表的取向和合起来呈现的格局讲清楚。
 
 ### 2.1 OpenClaw 和 Hermes Agent
 
-**OpenClaw** 由 PSPDFKit 创始人 Peter Steinberger 在 2025 年 11 月发布，**Node.js** 实现，MIT 协议。它代表的是消费者级、开发者优先的取向：二十多个渠道、上万个社区 skill、极强的可玩性，到 2026 年 4 月突破 30 万 GitHub stars，是 GitHub 历史上增速最快的开源项目。它的强项是社区活力和能力丰富度，软肋是企业级安全和治理，**CVE**、恶意 skill、凭证收割等结构性问题反复出现，企业部署要靠 **Tank OS** 这类二次加固才能勉强上生产。一句话，OpenClaw 是个人和小团队的 Agent OS。
+**OpenClaw** 由 PSPDFKit 创始人 Peter Steinberger 在 2025 年 11 月发布，**Node.js** 实现，MIT 协议。它代表的是消费者级、开发者优先的取向：二十多个渠道、上万个社区 skill、极强的可玩性，到 2026 年 4 月突破 30 万 GitHub stars，是 GitHub 历史上增速最快的开源项目。它的强项是社区活力和能力丰富度，软肋是企业级安全和治理，**CVE**、恶意 skill、凭证收割等结构性问题反复出现，企业部署要靠 **Tank OS** 这类二次加固才能勉强上生产。一句话，OpenClaw 是个人和小团队的 Agent Harness OS。
 
-**Hermes Agent** 由开源 AI 实验室 NousResearch 在 2026 年 2 月发布，**Python** 实现，MIT 协议。它代表的是工程级、健壮性优先的取向：三层记忆、自我进化的 skill 机制、安全扫描、**HERMES_HOME** 多用户隔离，企业级方向投入明显，有商业化样本和云厂商背书，到 2026 年 5 月约 15 万 stars，且在日活推理量上一度反超 OpenClaw。它比 OpenClaw 更接近企业，但企业级 OS 治理（多租户 RBAC、SSO、完整审计）仍是空白。一句话，Hermes 是更偏团队和企业的 Agent OS。
+**Hermes Agent** 由开源 AI 实验室 NousResearch 在 2026 年 2 月发布，**Python** 实现，MIT 协议。它代表的是工程级、健壮性优先的取向：三层记忆、自我进化的 skill 机制、安全扫描、**HERMES_HOME** 多用户隔离，企业级方向投入明显，有商业化样本和云厂商背书，到 2026 年 5 月约 15 万 stars，且在日活推理量上一度反超 OpenClaw。它比 OpenClaw 更接近企业，但企业级 OS 治理（多租户 RBAC、SSO、完整审计）仍是空白。一句话，Hermes 是更偏团队和企业的 Agent Harness OS。
 
-两个项目合起来，基本就勾勒出了当前开源 Agent OS 的格局：一个偏消费级可玩、一个偏工程级健壮，都从个人和小团队起步，产品形态都是"装在自己机器上、提供完整 Agent 运行环境的底座"。这个格局的意义不在于它们各自做了什么，而在于它们合起来留下了什么空白，而那个空白正是理解 IBIOS 定位的起点。
+两个项目合起来，基本就勾勒出了当前开源 Agent Harness OS 的格局：一个偏消费级可玩、一个偏工程级健壮，都从个人和小团队起步，产品形态都是"装在自己机器上、提供完整 Agent 运行环境的底座"。这个格局的意义不在于它们各自做了什么，而在于它们合起来留下了什么空白，而那个空白正是理解 IBIOS 定位的起点。
 
 ### 2.2 两者共同留下的空白
 
-落到空白上，开源 Agent OS 领域有几个真正没被填的位置：
+落到空白上，开源 Agent Harness OS 领域有几个真正没被填的位置：
 
 **第一，完整的企业级治理。** OpenClaw 和 Hermes 都偏个人到小团队定位，真正企业级的多租户 RBAC、SSO 接入、审计架构、合规留证还是空白。PTG 和 Tank OS 这种二次加固方案存在，但它们是补丁，不是 day one 设计。
 
 **第二，企业 IT 系统的深度集成。** 两个项目对企业 IM 渠道（飞书、企业微信、钉钉）都通过社区扩展支持，但企业现有 IT 系统（ERP、CRM、CMDB、监控系统）的深度对接还是空白，需要每家自己写适配。
 
-**第三，Java 生态的缺位。** OpenClaw 是 Node.js，Hermes 是 Python。Java 生态里没有任何一个项目把"Agent OS"作为定位。这一点后面单独讲，因为它对企业市场尤其重要。
+**第三，Java 生态的缺位。** OpenClaw 是 Node.js，Hermes 是 Python。Java 生态里没有任何一个项目把"Agent Harness OS"作为定位。这一点后面单独讲，因为它对企业市场尤其重要。
 
 ---
 
 ## 三、企业为什么需要一个私有可控的 Agent 底座
 
-这一章是整份调研论证的重心。这里要把一个判断讲清楚：企业真正的刚需，不是"Agent OS 这个品类"，而是"一个私有、可控、可审计的 Agent 统一底座"。这两者听起来像，但锚点完全不同。前者是一个可能演变的概念，后者是一个不会变的需求。
+这一章是整份调研论证的重心。这里要把一个判断讲清楚：企业真正的刚需，不是"Agent Harness OS 这个品类"，而是"一个私有、可控、可审计的 Agent 统一底座"。这两者听起来像，但锚点完全不同。前者是一个可能演变的概念，后者是一个不会变的需求。
 
 ### 3.1 大盘需求是真实的
 
@@ -114,7 +122,7 @@ Anthropic 报告里最硬的数据指向的正是这些工程问题：企业认�
 
 在这几条铁律下，他们的选择被极大地收窄了。他们不会把核心业务的 Agent 跑在 SaaS 上（数据出企业），不会跑在绑定某个公有云的产品上（锁生态），也很难直接把一个有 CVE 和凭证收割史的 Node.js 开源项目放进生产（过不了安全审查）。他们需要的是一个**私有部署、完全可审计、能纳入现有 IT 治理、跟现有技术栈对齐**的 Agent 底座。
 
-这个需求是确定的、刚性的、且当前无人满足的。而且关键在于：无论"Agent OS"这个词将来流行不流行、这个中间层最后是独立存在还是被某一层吸收，"严监管企业要一个自己能完全掌控的 Agent 底座"这件事都不会变。这是一个锚在企业本质约束上的需求，不是锚在一个技术概念上的需求。
+这个需求是确定的、刚性的、且当前无人满足的。而且关键在于：无论"Agent Harness OS"这个词将来流行不流行、这个中间层最后是独立存在还是被某一层吸收，"严监管企业要一个自己能完全掌控的 Agent 底座"这件事都不会变。这是一个锚在企业本质约束上的需求，不是锚在一个技术概念上的需求。
 
 ### 3.4 价值锚点
 
@@ -128,44 +136,44 @@ Anthropic 报告里最硬的数据指向的正是这些工程问题：企业认�
 
 ### 4.1 Java 生态现状：有框架，没有底座
 
-Java 在 AI 工程领域有项目，但没有任何一个是 Agent OS 这一层的底座。
+Java 在 AI 工程领域有项目，但没有任何一个是 Agent Harness OS 这一层的底座。
 
-**Spring AI**（Spring 官方推出）是 Java AI 应用开发框架，做 LLM 调用抽象、Prompt 模板、RAG 工具、Tool Calling 这一类能力。**Spring AI Alibaba** 是阿里推动的 Spring AI 扩展，一年内做出十余个主流 LLM（通义、文心、DeepSeek、Kimi、智谱、混元、豆包等）的 connector，真实企业部署案例已经出现。**LangChain4j** 是 LangChain 的 Java 移植，功能类似，也是框架。Java AI 推理生态（ONNX Runtime Java、DJL）解决模型推理问题，跟 Agent OS 不在同一层级。
+**Spring AI**（Spring 官方推出）是 Java AI 应用开发框架，做 LLM 调用抽象、Prompt 模板、RAG 工具、Tool Calling 这一类能力。**Spring AI Alibaba** 是阿里推动的 Spring AI 扩展，一年内做出十余个主流 LLM（通义、文心、DeepSeek、Kimi、智谱、混元、豆包等）的 connector，真实企业部署案例已经出现。**LangChain4j** 是 LangChain 的 Java 移植，功能类似，也是框架。Java AI 推理生态（ONNX Runtime Java、DJL）解决模型推理问题，跟 Agent Harness OS 不在同一层级。
 
-这些都是库或框架，产物是代码、需要开发者自己搞定运行环境。Java 写的、装好就跑的 Agent OS 底座，在业界几乎为零。OpenClaw 和 Hermes 都不是 Java，Java 生态在 Agent OS 这个层级是一块明显的缺位。
+这些都是库或框架，产物是代码、需要开发者自己搞定运行环境。Java 写的、装好就跑的 Agent Harness OS 底座，在业界几乎为零。OpenClaw 和 Hermes 都不是 Java，Java 生态在 Agent Harness OS 这个层级是一块明显的缺位。
 
 ### 4.2 为什么这个缺位值得补：生态完整性的角度
 
-这里换一个角度看"Java 没人做 Agent OS"这件事。它不是从"哪种语言的人更多"这种角度，而是从**生态完整性**的角度。
+这里换一个角度看"Java 没人做 Agent Harness OS"这件事。它不是从"哪种语言的人更多"这种角度，而是从**生态完整性**的角度。
 
 一个健康的技术生态，应该在每一个关键层级都有自己的实现。否则这个生态在那一层就有一道断裂，断裂处就要靠跨生态的胶水去填，而胶水是脆的、是成本。
 
 Java/Spring 生态在企业后端是极其完整的，从 Web 框架（**Spring Boot**）、微服务（**Spring Cloud**）、配置注册（**Nacos**）、限流熔断（**Sentinel**）、链路追踪（**SkyWalking**）、线上诊断（**Arthas**）到监控告警（**Prometheus + Grafana**），每一层都有成熟的、互相咬合的实现。企业的 ERP、CRM、CMDB、SSO、监控，大量是 Java 接口或 Java SDK。
 
-唯独在"**Agent OS**"这一层，Java 生态是空的。这意味着，一个 Java 体系的企业想要一个私有可控的 Agent 底座，今天只能去用 Node.js 的 OpenClaw 或 Python 的 Hermes，然后在两套技术栈的接缝处写大量胶水，去对接自己的 Java 服务、复用自己的 Java 运维工具链、走自己的 Java 审计流程。这道接缝，正是 OpenClaw 和 Hermes 的 Java 体系用户最痛的点。
+唯独在"**Agent Harness OS**"这一层，Java 生态是空的。这意味着，一个 Java 体系的企业想要一个私有可控的 Agent 底座，今天只能去用 Node.js 的 OpenClaw 或 Python 的 Hermes，然后在两套技术栈的接缝处写大量胶水，去对接自己的 Java 服务、复用自己的 Java 运维工具链、走自己的 Java 审计流程。这道接缝，正是 OpenClaw 和 Hermes 的 Java 体系用户最痛的点。
 
-补上这个缺位，让 Java 生态在 Agent OS 这一层也有一个原生的、跟整套 Java 基础设施咬合的实现，是一件让生态变完整的事。这跟 Spring AI 当年补上"Java 的 LLM 调用层"是同一个逻辑。不是因为 Java 比别的语言强，而是因为一个完整的生态不应该在关键层级留空。
+补上这个缺位，让 Java 生态在 Agent Harness OS 这一层也有一个原生的、跟整套 Java 基础设施咬合的实现，是一件让生态变完整的事。这跟 Spring AI 当年补上"Java 的 LLM 调用层"是同一个逻辑。不是因为 Java 比别的语言强，而是因为一个完整的生态不应该在关键层级留空。
 
 ### 4.3 Java 做这件事的几个具体支点
 
 这个缺位之所以现在值得、也能够被补上，有几个具体的技术支点：
 
-1. **Spring Boot 是企业后端的事实标准。** 一个 Java Agent OS 就是一个 Spring Boot 应用，运维体系无缝对接，IT 部门不需要学新东西，装上就能纳入现有体系。
-2. **Spring AI Alibaba 提供了现成的主流 LLM connector。** 十余个 LLM 的接入不需要重新造轮子，直接复用 Spring AI 的 `ChatClient` 抽象，让 Java Agent OS 的 LLM Provider 层站在巨人肩膀上。
-3. **JVM 成熟的运维工具链能直接复用。** Nacos、Sentinel、SkyWalking、Arthas、JFR、Prometheus + Grafana，跟 Java Agent OS 是无缝的，企业现有运维体系不需要为它单独搭一套。
+1. **Spring Boot 是企业后端的事实标准。** 一个 Java Agent Harness OS 就是一个 Spring Boot 应用，运维体系无缝对接，IT 部门不需要学新东西，装上就能纳入现有体系。
+2. **Spring AI Alibaba 提供了现成的主流 LLM connector。** 十余个 LLM 的接入不需要重新造轮子，直接复用 Spring AI 的 `ChatClient` 抽象，让 Java Agent Harness OS 的 LLM Provider 层站在巨人肩膀上。
+3. **JVM 成熟的运维工具链能直接复用。** Nacos、Sentinel、SkyWalking、Arthas、JFR、Prometheus + Grafana，跟 Java Agent Harness OS 是无缝的，企业现有运维体系不需要为它单独搭一套。
 4. **跟企业现有 Java 系统对接成本最低。** Tool 直接调企业现有 Java 服务，不需要写跨语言的胶水代码。
 5. **严监管行业的私有部署要求让 Java 成为确定性选择。** 这些行业的核心系统大量是 Java，私有部署、完全审计、合规过审是硬要求，用 Java 实现可以走企业现有的 Java 审计流程，不需要为新组件单独搭一套合规通道。
 6. **GraalVM Native Image 让 Java 的启动和内存不再是短板。** JDK 21 + Spring Boot 3.x + GraalVM 能做到接近 Node.js 和 Python 的启动速度和内存占用，单二进制部署可行。需要说明的是，Native Image 对 Spring AI 这类重反射、重动态代理的框架仍有编译期配置的工程代价，AOT 适配不是零成本，但这条路是通的，且在持续成熟。
 
 ### 4.4 Spring AI 的崛起是先行信号
 
-**Spring AI** 在 2024 年发布，Spring AI Alibaba 一年内做出十余个主流 LLM connector，这件事说明 Java 生态在 AI 工程上的追赶速度很快。Spring AI 已经解决了底层 LLM 调用的能力，缺的就是上面那一层"Agent OS"。阿里官方在 **Spring AI Alibaba Admin** 项目里做企业级 Agent 应用的最佳实践，已经形成了一定的 Java AI 工程社区认知。Java AI 工程基础设施层在 2025 年解决，自然走向 Agent OS 这一层级，这是技术栈演化的逻辑顺序。
+**Spring AI** 在 2024 年发布，Spring AI Alibaba 一年内做出十余个主流 LLM connector，这件事说明 Java 生态在 AI 工程上的追赶速度很快。Spring AI 已经解决了底层 LLM 调用的能力，缺的就是上面那一层"Agent Harness OS"。阿里官方在 **Spring AI Alibaba Admin** 项目里做企业级 Agent 应用的最佳实践，已经形成了一定的 Java AI 工程社区认知。Java AI 工程基础设施层在 2025 年解决，自然走向 Agent Harness OS 这一层级，这是技术栈演化的逻辑顺序。
 
 ---
 
 ## 五、IBIOS 的定位与愿景
 
-前面把 Agent OS 是什么、业界做到哪、Java 生态缺在哪都讲清楚了。这一章讲 IBIOS 自己想做什么、想做成什么样子。
+前面把 Agent Harness OS 是什么、业界做到哪、Java 生态缺在哪都讲清楚了。这一章讲 IBIOS 自己想做什么、想做成什么样子。
 
 ### 5.1 IBIOS 是什么
 
@@ -177,9 +185,9 @@ Java/Spring 生态在企业后端是极其完整的，从 Web 框架（**Spring 
 
 ### 5.2 IBIOS 把自己锚在哪里
 
-IBIOS 用"Agent OS"这个框架来理解和构建自己，但 IBIOS 不把自己锚在"Agent OS 这个概念"上，而是锚在它背后那个不会变的企业刚需上：**严监管企业需要一个自己能完全掌控的 Agent 底座，私有部署、完全可审计、跟 Java 体系对齐、数据不出企业、IT 能掌控**。
+IBIOS 用"Agent Harness OS"这个框架来理解和构建自己，但 IBIOS 不把自己锚在"Agent Harness OS 这个概念"上，而是锚在它背后那个不会变的企业刚需上：**严监管企业需要一个自己能完全掌控的 Agent 底座，私有部署、完全可审计、跟 Java 体系对齐、数据不出企业、IT 能掌控**。
 
-这个区别很重要。锚在概念上，意味着如果有一天"Agent OS"这个词被别的说法取代、这个中间层被上下层吸收，项目就失去了立足点。锚在需求上，意味着无论技术概念怎么演变，IBIOS 服务的那个需求都还在。IBIOS 把根扎在不变的东西上。
+这个区别很重要。锚在概念上，意味着如果有一天"Agent Harness OS"这个词被别的说法取代、这个中间层被上下层吸收，项目就失去了立足点。锚在需求上，意味着无论技术概念怎么演变，IBIOS 服务的那个需求都还在。IBIOS 把根扎在不变的东西上。
 
 ### 5.3 IBIOS 的愿景
 
@@ -237,9 +245,9 @@ IBIOS 既然是 Java/Spring 实现、跑在企业自己基础设施上，它就�
 
 ### 5.7 IBIOS 跟业界其他项目的关系
 
-IBIOS 借鉴了开源 Agent OS 领域已经被验证的设计哲学。Agent 配置和生命周期、Channel 抽象、三层记忆、目录形态的 Agent 定义（借 **Anthropic Agent Skills** 的目录 + 渐进式披露形态，在 IBIOS 里一个目录定义的是一个 Agent）、Tool 调用通过 **MCP** 协议、单二进制部署这些设计，在 OpenClaw 和 Hermes 上都验证过能撑住真实场景。IBIOS 把这套设计在 Java 生态里重新实现，并补齐企业级 Agent OS 必需的多租户、SSO、RBAC、审计、合规、Web 管理台、深度集成这些能力。
+IBIOS 借鉴了开源 Agent Harness OS 领域已经被验证的设计哲学。Agent 配置和生命周期、Channel 抽象、三层记忆、目录形态的 Agent 定义（借 **Anthropic Agent Skills** 的目录 + 渐进式披露形态，在 IBIOS 里一个目录定义的是一个 Agent）、Tool 调用通过 **MCP** 协议、单二进制部署这些设计，在 OpenClaw 和 Hermes 上都验证过能撑住真实场景。IBIOS 把这套设计在 Java 生态里重新实现，并补齐企业级 Agent Harness OS 必需的多租户、SSO、RBAC、审计、合规、Web 管理台、深度集成这些能力。
 
-- **IBIOS 跟 OpenClaw、Hermes 的关系**是同类不同定位。三者都是 Agent OS，OpenClaw 偏个人、Hermes 偏个人到小团队，IBIOS 直接定位严监管企业场景。三者都采用 markdown + frontmatter 的目录形态，社区的优质 Skill 经过企业审查后理论上可以导入 IBIOS 的全局 Skill 库（`.ibios/skills/`）。
+- **IBIOS 跟 OpenClaw、Hermes 的关系**是同类不同定位。三者都是 Agent Harness OS，OpenClaw 偏个人、Hermes 偏个人到小团队，IBIOS 直接定位严监管企业场景。三者都采用 markdown + frontmatter 的目录形态，社区的优质 Skill 经过企业审查后理论上可以导入 IBIOS 的全局 Skill 库（`.ibios/skills/`）。
 - **IBIOS 跟 Dify、Coze 这类编排平台的关系**是互补。两者甚至可以组合（Dify 作应用层，IBIOS 作基础设施层）。
 - **IBIOS 跟 Spring AI、Spring AI Alibaba、LangChain4j 这些 Java AI 框架的关系**是复用。IBIOS 的 LLM Provider 抽象直接基于 Spring AI Alibaba 的主流 LLM connector，不重复造轮子。
 
@@ -296,7 +304,7 @@ IBIOS 借鉴了开源 Agent OS 领域已经被验证的设计哲学。Agent 配�
 
 这件事现在还很早。业界关于 **multi-agent** 的探索，大多还停留在单机进程内的几个 Agent 互相 delegate，真正跨节点、跨组织的 Agent 协作，基础设施几乎还是空白。
 
-IBIOS 的远期图景：IBIOS 是单个节点上的 Agent 运行时，而连接多个 IBIOS 节点、让上面的 Agent 能跨节点可靠协作的，是一层专门的 **Agent 通信底座**。单节点的运行时和跨节点的通信底座是两件事，分开演进，最后合起来，才构成完整的"分布式 Agent OS"。
+IBIOS 的远期图景：IBIOS 是单个节点上的 Agent 运行时，而连接多个 IBIOS 节点、让上面的 Agent 能跨节点可靠协作的，是一层专门的 **Agent 通信底座**。单节点的运行时和跨节点的通信底座是两件事，分开演进，最后合起来，才构成完整的"分布式 Agent Harness OS"。
 
 三个阶段路线图，路标就清楚了：
 
@@ -304,25 +312,26 @@ IBIOS 的远期图景：IBIOS 是单个节点上的 Agent 运行时，而连接�
 |------|------|------|
 | **阶段一（当前）** | 单机私有部署 | 单 IBIOS 实例，完整运行时内核，把单机做扎实 |
 | **阶段二（中期）** | 底座分布式部署 | 多实例 + 外置状态，高可用，水平扩展，解决扛量和故障问题 |
-| **阶段三（远期）** | 分布式 Agent 协作 | 跨节点 / 跨组织 Agent 互发现、互委托，分布式 Agent OS |
+| **阶段三（远期）** | 分布式 Agent 协作 | 跨节点 / 跨组织 Agent 互发现、互委托，分布式 Agent Harness OS |
 
 ---
 
 ## 附录 A：关键术语
 
-1. **Agent OS**：Agent Operating System，运行和管理 AI Agent 的基础设施层，装在用户（或企业）自己的机器上，提供多渠道、多 LLM 路由、记忆、工具、隔离等完整运行环境。
-2. **Agent**：具象的智能体，有具体的工种、人格设定和任务范围。一个 Agent 由 prompt、Skills、Tools、Memory 几部分组合而成，在 Agent OS 上配置出来，不是写代码写出来的。
-3. **Skill**：可复用的 Agent 能力模板，用 `SKILL.md` 文件格式描述，兼容 agentskills.io 开放标准。OpenClaw 和 Hermes 都用这个格式。在 IBIOS 里 Skill 是**全局共享能力库**（`.ibios/skills/<name>/SKILL.md`），Agent 按名引用、正文注入 system prompt；Agent 本身的定义本体则是 `.ibios/agents/<name>/AGENT.md`。
-4. **Tool**：Agent 可以调用的外部能力，通常通过 MCP 协议暴露。业务方用任何语言写 Tool，注册到 Agent OS 供 Agent 使用。
-5. **Channel**：Agent 对外接入的渠道，包括企业微信、飞书、钉钉、Slack、邮件、HTTP API、Web 等。
-6. **LLM Provider**：大模型的提供方抽象，实现统一接口让 Agent 不感知具体调的是哪家模型。
-7. **MCP**：Model Context Protocol，Anthropic 2024 年 11 月提出的 LLM 与外部工具或数据源连接的开放协议，目前是 Agent 生态的事实标准。
-8. **Agent 编排平台**：visual workflow builder，用拖拽方式组合节点搭 AI 应用。Dify、Coze、扣子是代表。跟 Agent OS 是不同层级，Agent OS 是底层运行时，编排平台是上层应用工具。
-9. **Agent 框架**：给开发者用代码写 Agent 的库或 SDK。LangChain、Spring AI、LangChain4j 是代表。框架的产物是代码，运行需要开发者自己搞定。
-10. **多租户**：一个 Agent OS 实例同时服务多个组织、部门、项目，每个租户独立 memory、session、data，完全隔离。
-11. **Gateway**：Agent OS 里负责连接外部渠道（IM、邮件等）和路由消息的核心组件。OpenClaw 和 Hermes 都用这个术语。
-12. **Spring AI**：Spring 官方推出的 Java AI 应用开发框架，提供 LLM 调用抽象、Prompt 模板、RAG 工具等能力。
-13. **Spring AI Alibaba**：阿里推动的 Spring AI 扩展，提供十余个主流 LLM 的 connector。
+1. **Agent Harness OS**：运行和管理 AI Agent 的底座系统，装在用户（或企业）自己的机器上，分为两层。Agent Harness 层为每个 Agent 提供 reason → act → observe 循环、工具执行与沙箱、上下文与记忆组装、调用审计；OS 层负责多 Agent 生命周期、统一渠道与系统接入、共享工具与记忆、调度和治理。
+2. **Agent Harness**：模型外面那层脚手架——循环怎么转、工具怎么执行、上下文和记忆怎么组装、执行边界怎么划、每次调用怎么记录。模型负责生成，harness 负责让生成变成可靠、可解释、可追责的动作。
+3. **Agent**：具象的智能体，有具体的工种、人格设定和任务范围。一个 Agent 由 prompt、Skills、Tools、Memory 几部分组合而成，在 Agent Harness OS 上配置出来，不是写代码写出来的。
+4. **Skill**：可复用的 Agent 能力模板，用 `SKILL.md` 文件格式描述，兼容 agentskills.io 开放标准。OpenClaw 和 Hermes 都用这个格式。在 IBIOS 里 Skill 是**全局共享能力库**（`.ibios/skills/<name>/SKILL.md`），Agent 按名引用、正文注入 system prompt；Agent 本身的定义本体则是 `.ibios/agents/<name>/AGENT.md`。
+5. **Tool**：Agent 可以调用的外部能力，通常通过 MCP 协议暴露。业务方用任何语言写 Tool，注册到 Agent Harness OS 供 Agent 使用。
+6. **Channel**：Agent 对外接入的渠道，包括企业微信、飞书、钉钉、Slack、邮件、HTTP API、Web 等。
+7. **LLM Provider**：大模型的提供方抽象，实现统一接口让 Agent 不感知具体调的是哪家模型。
+8. **MCP**：Model Context Protocol，Anthropic 2024 年 11 月提出的 LLM 与外部工具或数据源连接的开放协议，目前是 Agent 生态的事实标准。
+9. **Agent 编排平台**：visual workflow builder，用拖拽方式组合节点搭 AI 应用。Dify、Coze、扣子是代表。跟 Agent Harness OS 是不同层级，Agent Harness OS 是底层运行时，编排平台是上层应用工具。
+10. **Agent 框架**：给开发者用代码写 Agent 的库或 SDK。LangChain、Spring AI、LangChain4j 是代表。框架的产物是代码，运行需要开发者自己搞定。
+11. **多租户**：一个 Agent Harness OS 实例同时服务多个组织、部门、项目，每个租户独立 memory、session、data，完全隔离。
+12. **Gateway**：Agent Harness OS 里负责连接外部渠道（IM、邮件等）和路由消息的核心组件。OpenClaw 和 Hermes 都用这个术语。
+13. **Spring AI**：Spring 官方推出的 Java AI 应用开发框架，提供 LLM 调用抽象、Prompt 模板、RAG 工具等能力。
+14. **Spring AI Alibaba**：阿里推动的 Spring AI 扩展，提供十余个主流 LLM 的 connector。
 
 ---
 

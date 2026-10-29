@@ -32,7 +32,8 @@ class AgentScanRegisterTest {
     ProfileRegistry registry = new ProfileRegistry();
     AgentScheduler scheduler = Mockito.mock(AgentScheduler.class);
 
-    loader.scanAndRegister(agentsDir, registry, scheduler, Set.of("deepseek", "dashscope"));
+    loader.scanAndRegister(
+        agentsDir, registry, scheduler, Set.of("deepseek", "dashscope")::contains);
 
     assertEquals(3, registry.getAll().size());
     assertNotNull(registry.get("agent-a"));
@@ -56,13 +57,13 @@ class AgentScanRegisterTest {
     ProfileRegistry registry = new ProfileRegistry();
     AgentScheduler scheduler = Mockito.mock(AgentScheduler.class);
 
-    loader.scanAndRegister(agentsDir, registry, scheduler, Set.of("deepseek"));
+    loader.scanAndRegister(agentsDir, registry, scheduler, Set.of("deepseek")::contains);
 
     Mockito.verify(scheduler).registerProfile(Mockito.any(Profile.class));
   }
 
   @Test
-  @DisplayName("provider 不在 validProviderNames 中 → 报错不注册")
+  @DisplayName("provider 不在允许列表中 → 报错不注册")
   void invalidProviderSkipped() throws IOException {
     Path agentsDir = tempDir.resolve("agents");
     Files.createDirectories(agentsDir);
@@ -70,7 +71,7 @@ class AgentScanRegisterTest {
 
     ProfileRegistry registry = new ProfileRegistry();
 
-    loader.scanAndRegister(agentsDir, registry, null, Set.of("deepseek"));
+    loader.scanAndRegister(agentsDir, registry, null, Set.of("deepseek")::contains);
 
     assertNull(registry.get("bad-agent"));
   }
@@ -89,7 +90,7 @@ class AgentScanRegisterTest {
 
     ProfileRegistry registry = new ProfileRegistry();
 
-    loader.scanAndRegister(agentsDir, registry, null, Set.of("deepseek"));
+    loader.scanAndRegister(agentsDir, registry, null, Set.of("deepseek")::contains);
 
     assertNotNull(registry.get("tool-agent"));
   }
@@ -100,7 +101,7 @@ class AgentScanRegisterTest {
     Path agentsDir = tempDir.resolve("nonexistent");
     ProfileRegistry registry = new ProfileRegistry();
 
-    assertDoesNotThrow(() -> loader.scanAndRegister(agentsDir, registry, null, Set.of()));
+    assertDoesNotThrow(() -> loader.scanAndRegister(agentsDir, registry, null, Set.of()::contains));
     assertTrue(registry.getAll().isEmpty());
   }
 
